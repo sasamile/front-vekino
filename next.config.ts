@@ -8,13 +8,6 @@ const nextConfig: NextConfig = {
   },
   // Habilitar modo standalone para Docker
   output: 'standalone',
-  // Desactivar Turbopack para builds más estables en EC2
-  experimental: {
-    turbo: false,
-  },
-  // Optimizaciones para producción
-  swcMinify: true,
-  compress: true,
 };
 
 export default nextConfig;
