@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [];
   },
+  // Habilitar modo standalone para Docker
+  output: 'standalone',
 };
 
 export default nextConfig;
