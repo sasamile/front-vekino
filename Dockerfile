@@ -28,12 +28,18 @@ COPY . .
 # Desactivar telemetría de Next.js durante el build
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Variables de entorno para optimizar el build en EC2 (limitar uso de memoria)
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN \
   if [ -f bun.lock ]; then \
     curl -fsSL https://bun.sh/install | bash && \
     export PATH="$HOME/.bun/bin:$PATH" && \
+    echo "Building with bun..." && \
     /root/.bun/bin/bun run build; \
   else \
+    echo "Building with npm..." && \
     npm run build; \
   fi
 

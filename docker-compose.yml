@@ -3,13 +3,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Aumentar memoria disponible para el build en EC2
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     container_name: condominio-frontend
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - NODE_OPTIONS=--max-old-space-size=2048
     restart: unless-stopped
+    # Límites de memoria para el contenedor
+    mem_limit: 2g
+    mem_reservation: 1g
     networks:
       - condominio-network
 
