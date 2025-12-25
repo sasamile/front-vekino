@@ -1,18 +1,22 @@
 # build
-FROM oven/bun:1 AS builder
+FROM node:20 AS builder
 WORKDIR /app
+
+# Instalar Bun para instalar dependencias más rápido
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 # Copiar archivos de dependencias
 COPY package.json bun.lock* ./
 
-# Instalar dependencias
+# Instalar dependencias con Bun (más rápido que npm)
 RUN bun install --frozen-lockfile
 
 # Copiar el resto del código
 COPY . .
 
-# Construir la aplicación
-RUN bun run build
+# Construir la aplicación con Node.js (Next.js funciona mejor con Node.js)
+RUN npm run build
 
 # run
 FROM node:20-slim AS runner
