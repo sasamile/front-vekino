@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Configuración para trabajar con subdominios locales (solo en desarrollo)
+  // Configuración para trabajar con subdominios locales
+  // Solo se aplican rewrites si ENABLE_API_REWRITE=true está definido
   async rewrites() {
-    // Solo aplicar rewrites en desarrollo
-    if (process.env.NODE_ENV === 'development') {
+    // Solo aplicar rewrites si la variable de entorno está habilitada
+    if (process.env.ENABLE_API_REWRITE === 'true') {
       return [
         {
           source: "/api/:path*",
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
         },
       ];
     }
-    // En producción, no aplicar rewrites
+    // Por defecto (sin variable de entorno), no aplicar rewrites
     return [];
   },
   output: 'standalone',

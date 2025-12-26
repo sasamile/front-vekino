@@ -34,9 +34,15 @@ export default function Login() {
         headers['Cookie'] = `better-auth.session_token=${tokenValue}`;
       }
 
-      // El backend está en api-condominio-las-flores.localhost:3000
+      // Detectar automáticamente el entorno
+      // En desarrollo: usa /api (con rewrite si ENABLE_API_REWRITE=true)
+      // En producción: usa la URL completa del backend
+      const apiUrl = process.env.ENABLE_API_REWRITE === 'true'
+        ? '/api/condominios/login'
+        : 'https://api-condominio-las-flores.vekino.site/api/condominios/login';
+
       const response = await axios.post(
-        '/api/condominios/login',
+        apiUrl,
         {
           email,
           password,
