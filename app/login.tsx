@@ -66,25 +66,7 @@ export default function Login() {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="sessionToken"
-            className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
-          >
-            Session Token (opcional)
-          </label>
-          <input
-            id="sessionToken"
-            type="text"
-            value={sessionToken}
-            onChange={(e) => setSessionToken(e.target.value)}
-            placeholder="fef7a511-d249-4cad-8e1b-6a04ccc70879.bd301f95-6572-489c-91e4-41851de7efc2"
-            className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Puedes pegar el token completo o solo el valor
-          </p>
-        </div>
+   
 
         <div>
           <label
