@@ -1,6 +1,6 @@
 services:
   frontend:
-    build: .
+    image: ghcr.io/sasamile/front-vekino:latest
     container_name: my-app-frontend
     restart: unless-stopped
     ports:
@@ -8,4 +8,3 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-
