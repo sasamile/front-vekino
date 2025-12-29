@@ -24,9 +24,16 @@ export async function getValidDomains(): Promise<string[]> {
   // Crear un nuevo fetch y guardarlo como pendiente
   pendingFetch = (async () => {
     try {
+      // Crear un AbortController para timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos timeout
+      
       const response = await fetch('https://vekino.site/api/condominios/domains', {
         cache: 'no-store', // No usar cache del navegador, usar nuestro cache en memoria
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         const domains = await response.json();
@@ -37,8 +44,13 @@ export async function getValidDomains(): Promise<string[]> {
           return domains;
         }
       }
-    } catch (error) {
-      console.error('Error al obtener dominios:', error);
+    } catch (error: any) {
+      // Si es un timeout o error de conexión, usar cache anterior
+      if (error.name === 'AbortError' || error.code === 'UND_ERR_CONNECT_TIMEOUT') {
+        console.warn('Timeout al obtener dominios, usando cache anterior');
+      } else {
+        console.error('Error al obtener dominios:', error);
+      }
     } finally {
       pendingFetch = null;
     }

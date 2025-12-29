@@ -27,36 +27,48 @@ export async function middleware(request: NextRequest) {
   // VALIDAR SUBDOMINIO PRIMERO (antes de cualquier otra verificación)
   // Si hay subdominio, validar que esté en la lista de dominios válidos
   if (subdomain) {
-  // Obtener dominios válidos
-  const validDomains = await getValidDomains();
-  
-  // Validar que el subdominio esté en la lista de dominios válidos
-  if (validDomains.length > 0 && !validDomains.includes(subdomain)) {
-    // Buscar el subdominio más similar
-    const closestSubdomain = findClosestSubdomain(subdomain, validDomains);
-    
-    if (closestSubdomain) {
-      // Construir la URL correcta con el subdominio válido
-      const url = request.nextUrl.clone();
+    try {
+      // Obtener dominios válidos con timeout
+      const validDomains = await Promise.race([
+        getValidDomains(),
+        new Promise<string[]>((resolve) => 
+          setTimeout(() => resolve([]), 3000) // Timeout de 3 segundos
+        )
+      ]);
       
-        if (isLocal) {
-        // Para localhost: redirigir a closestSubdomain.localhost:puerto
-        const port = hostname.includes(':') ? hostname.split(':')[1] : '3000';
-        url.host = `${closestSubdomain}.localhost:${port}`;
-      } else {
-        // Para producción: redirigir a closestSubdomain.vekino.site
-        const domainParts = hostname.split('.');
-        const baseDomain = domainParts.slice(-2).join('.'); // Obtener los últimos 2 (ej: vekino.site)
-        url.host = `${closestSubdomain}.${baseDomain}`;
+      // Validar que el subdominio esté en la lista de dominios válidos
+      // Solo validar si tenemos dominios válidos (si la API falló, permitir acceso)
+      if (validDomains.length > 0 && !validDomains.includes(subdomain)) {
+        // Buscar el subdominio más similar
+        const closestSubdomain = findClosestSubdomain(subdomain, validDomains);
+        
+        if (closestSubdomain) {
+          // Construir la URL correcta con el subdominio válido
+          const url = request.nextUrl.clone();
+          
+          if (isLocal) {
+            // Para localhost: redirigir a closestSubdomain.localhost:puerto
+            const port = hostname.includes(':') ? hostname.split(':')[1] : '3000';
+            url.host = `${closestSubdomain}.localhost:${port}`;
+          } else {
+            // Para producción: redirigir a closestSubdomain.vekino.site
+            const domainParts = hostname.split('.');
+            const baseDomain = domainParts.slice(-2).join('.'); // Obtener los últimos 2 (ej: vekino.site)
+            url.host = `${closestSubdomain}.${baseDomain}`;
+          }
+          
+          // Redirigir al subdominio correcto
+          return NextResponse.redirect(url);
+        }
+        
+        // Si no se encuentra un subdominio similar, retornar 404
+        return new NextResponse('Subdominio no válido', { status: 404 });
       }
-      
-      // Redirigir al subdominio correcto
-      return NextResponse.redirect(url);
+      // Si validDomains está vacío (API falló), permitir acceso para no bloquear la app
+    } catch (error) {
+      // Si hay error al validar, permitir acceso para no bloquear la aplicación
+      console.error('Error al validar subdominio:', error);
     }
-    
-    // Si no se encuentra un subdominio similar, retornar 404
-    return new NextResponse('Subdominio no válido', { status: 404 });
-  }
   }
   
   // Verificar si hay cookie primero (verificación rápida)

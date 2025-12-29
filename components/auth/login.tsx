@@ -1,22 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, CreditCard } from "lucide-react";
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldError,
+} from "@/components/ui/field";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { AuthLayout } from "./auth-layout";
@@ -30,21 +25,44 @@ const loginSchema = z.object({
   password: z.string().min(1, "La contraseña es requerida"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
-
 export default function Login() {
   const { subdomain } = useSubdomain();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const router = useRouter();
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const validate = (): boolean => {
+    try {
+      loginSchema.parse({ email, password });
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: { email?: string; password?: string } = {};
+        error.issues.forEach((issue) => {
+          if (issue.path[0] === "email") {
+            fieldErrors.email = issue.message;
+          }
+          if (issue.path[0] === "password") {
+            fieldErrors.password = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+      }
+      return false;
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validate()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -52,19 +70,18 @@ export default function Login() {
 
       // Determinar el endpoint según si hay subdomain
       // Si no hay subdomain: usar /superadmin/login
-      // Si hay subdomain: usar /api/condominios/login
+      // Si hay subdomain: usar /condominios/login
       const endpoint = !subdomain ? "/superadmin/login" : "/condominios/login";
 
       const response = await axiosInstance.post(endpoint, {
-        email: data.email,
-        password: data.password,
+        email,
+        password,
       });
 
       toast.success("¡Login exitoso!", {
         duration: 3000,
       });
       router.push("/");
-      // Opcional: redirigir o manejar el éxito
       console.log("Login response:", response.data);
     } catch (err: any) {
       const errorMessage =
@@ -78,70 +95,78 @@ export default function Login() {
     }
   };
 
-  const handleSmartCardLogin = () => {
-    // TODO: Implementar login con SmartCard
-    toast("Login con SmartCard próximamente", {
-      icon: "ℹ️",
-      duration: 3000,
-    });
-  };
-
   return (
     <AuthLayout
       title="Inicia sesión en tu cuenta"
       subtitle="Ingresa tus datos para iniciar sesión"
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+      <form onSubmit={onSubmit}>
+        <FieldGroup className="py-4">
           {/* Email Field */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
-                  Correo electrónico
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                    <Input
-                      type="email"
-                      placeholder="Ingresa tu correo electrónico"
-                      className="pl-10 py-5"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <Field data-invalid={!!errors.email}>
+            <FieldLabel htmlFor="login-email" className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
+              Correo electrónico
+            </FieldLabel>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="Ingresa tu correo electrónico"
+                className="pl-10 py-6"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors({ ...errors, email: undefined });
+                  }
+                }}
+                required
+              />
+            </div>
+            {errors.email && (
+              <FieldError>{errors.email}</FieldError>
             )}
-          />
+          </Field>
 
           {/* Password Field */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
-                  Contraseña
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                    <Input
-                      type="password"
-                      placeholder="Ingresa tu contraseña"
-                      className="pl-10 py-5"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <Field data-invalid={!!errors.password}>
+            <FieldLabel htmlFor="login-password" className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
+              Contraseña
+            </FieldLabel>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Ingresa tu contraseña"
+                className="pl-10 pr-10 py-6"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) {
+                    setErrors({ ...errors, password: undefined });
+                  }
+                }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+            {errors.password && (
+              <FieldError>{errors.password}</FieldError>
             )}
-          />
+          </Field>
 
           {/* Forgot Password */}
           <div className="flex items-end justify-end">
@@ -157,12 +182,12 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5"
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
-        </form>
-      </Form>
+        </FieldGroup>
+      </form>
 
       {/* Terms */}
       <p className="text-xs text-zinc-500 dark:text-zinc-500 text-center">
