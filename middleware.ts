@@ -7,7 +7,11 @@ import { canAccessRoute } from './lib/middleware/routes';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hostname = request.headers.get('host') || '';
+  const rawHostname = request.headers.get('host') || '';
+  const isLocal = rawHostname.includes('localhost');
+  // En producción, limpiar el puerto del hostname si está presente
+  // En localhost, mantener el hostname completo (incluye puerto)
+  const hostname = isLocal ? rawHostname : rawHostname.split(':')[0];
   
   // Permitir acceso a archivos estáticos sin verificación
   // Archivos de imagen, CSS, JS, fuentes, etc.
@@ -22,7 +26,6 @@ export async function middleware(request: NextRequest) {
   
   // Extraer el subdominio
   const subdomain = extractSubdomain(hostname);
-  const isLocal = isLocalhost(hostname);
   
   // VALIDAR SUBDOMINIO PRIMERO (antes de cualquier otra verificación)
   // Si hay subdominio, validar que esté en la lista de dominios válidos
@@ -51,10 +54,14 @@ export async function middleware(request: NextRequest) {
             const port = hostname.includes(':') ? hostname.split(':')[1] : '3000';
             url.host = `${closestSubdomain}.localhost:${port}`;
           } else {
-            // Para producción: redirigir a closestSubdomain.vekino.site
+            // Para producción: redirigir a closestSubdomain.vekino.site (sin puerto)
             const domainParts = hostname.split('.');
             const baseDomain = domainParts.slice(-2).join('.'); // Obtener los últimos 2 (ej: vekino.site)
             url.host = `${closestSubdomain}.${baseDomain}`;
+            // Asegurar que no haya puerto en producción
+            url.port = '';
+            // Asegurar que use HTTPS en producción
+            url.protocol = 'https:';
           }
           
           // Redirigir al subdominio correcto
