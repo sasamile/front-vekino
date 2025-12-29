@@ -38,14 +38,12 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* Right Panel - Image (45%) */}
-      <div className="hidden lg:flex lg:w-[45%] relative">
-        <div className="relative w-full h-full">
-          <img
-            src="/img/auth.png"
-            alt="Auth"
-            className="w-full h-full object-cover rounded-bl-[7rem]"
-          />
-        </div>
+      <div className="hidden lg:flex lg:w-[45%] relative min-h-screen">
+        <img
+          src="/img/auth.png"
+          alt="Auth"
+          className="absolute inset-0 w-full h-full object-cover rounded-bl-[7rem]"
+        />
       </div>
     </div>
   );

@@ -9,6 +9,17 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
   
+  // Permitir acceso a archivos estáticos sin verificación
+  // Archivos de imagen, CSS, JS, fuentes, etc.
+  if (
+    pathname.startsWith('/img/') ||
+    pathname.startsWith('/logos/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|woff|woff2|ttf|eot)$/i)
+  ) {
+    return NextResponse.next();
+  }
+  
   // Extraer el subdominio
   const subdomain = extractSubdomain(hostname);
   const isLocal = isLocalhost(hostname);
@@ -16,36 +27,36 @@ export async function middleware(request: NextRequest) {
   // VALIDAR SUBDOMINIO PRIMERO (antes de cualquier otra verificación)
   // Si hay subdominio, validar que esté en la lista de dominios válidos
   if (subdomain) {
-    // Obtener dominios válidos
-    const validDomains = await getValidDomains();
+  // Obtener dominios válidos
+  const validDomains = await getValidDomains();
+  
+  // Validar que el subdominio esté en la lista de dominios válidos
+  if (validDomains.length > 0 && !validDomains.includes(subdomain)) {
+    // Buscar el subdominio más similar
+    const closestSubdomain = findClosestSubdomain(subdomain, validDomains);
     
-    // Validar que el subdominio esté en la lista de dominios válidos
-    if (validDomains.length > 0 && !validDomains.includes(subdomain)) {
-      // Buscar el subdominio más similar
-      const closestSubdomain = findClosestSubdomain(subdomain, validDomains);
+    if (closestSubdomain) {
+      // Construir la URL correcta con el subdominio válido
+      const url = request.nextUrl.clone();
       
-      if (closestSubdomain) {
-        // Construir la URL correcta con el subdominio válido
-        const url = request.nextUrl.clone();
-        
         if (isLocal) {
-          // Para localhost: redirigir a closestSubdomain.localhost:puerto
-          const port = hostname.includes(':') ? hostname.split(':')[1] : '3000';
-          url.host = `${closestSubdomain}.localhost:${port}`;
-        } else {
-          // Para producción: redirigir a closestSubdomain.vekino.site
-          const domainParts = hostname.split('.');
-          const baseDomain = domainParts.slice(-2).join('.'); // Obtener los últimos 2 (ej: vekino.site)
-          url.host = `${closestSubdomain}.${baseDomain}`;
-        }
-        
-        // Redirigir al subdominio correcto
-        return NextResponse.redirect(url);
+        // Para localhost: redirigir a closestSubdomain.localhost:puerto
+        const port = hostname.includes(':') ? hostname.split(':')[1] : '3000';
+        url.host = `${closestSubdomain}.localhost:${port}`;
+      } else {
+        // Para producción: redirigir a closestSubdomain.vekino.site
+        const domainParts = hostname.split('.');
+        const baseDomain = domainParts.slice(-2).join('.'); // Obtener los últimos 2 (ej: vekino.site)
+        url.host = `${closestSubdomain}.${baseDomain}`;
       }
       
-      // Si no se encuentra un subdominio similar, retornar 404
-      return new NextResponse('Subdominio no válido', { status: 404 });
+      // Redirigir al subdominio correcto
+      return NextResponse.redirect(url);
     }
+    
+    // Si no se encuentra un subdominio similar, retornar 404
+    return new NextResponse('Subdominio no válido', { status: 404 });
+  }
   }
   
   // Verificar si hay cookie primero (verificación rápida)
@@ -101,7 +112,7 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   
   if (subdomain) {
-    response.headers.set('x-subdomain', subdomain);
+  response.headers.set('x-subdomain', subdomain);
   }
   
   // Agregar información del usuario autenticado
@@ -120,8 +131,11 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - img/ (image files)
+     * - logos/ (logo files)
      * - favicon.ico (favicon file)
+     * - static files (png, jpg, svg, etc.)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|img|logos|favicon\\.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff|woff2|ttf|eot)$).*)',
   ],
 };
