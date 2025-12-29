@@ -38,7 +38,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* Right Panel - Image (45%) */}
-      <div className="hidden lg:flex lg:w-[45%] relative min-h-screen">
+      <div className="hidden lg:flex lg:w-[45%] relative h-screen">
         <img
           src="/img/auth.png"
           alt="Auth"

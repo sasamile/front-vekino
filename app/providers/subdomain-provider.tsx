@@ -1,8 +1,8 @@
 'use client';
 
 import { getDomains } from '@/actions/subdomain';
+import { useQuery } from '@tanstack/react-query';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-
 
 interface SubdomainContextType {
   subdomain: string | null;
@@ -22,11 +22,9 @@ export function useSubdomain() {
 
 export function SubdomainProvider({ children }: { children: ReactNode }) {
   const [subdomain, setSubdomain] = useState<string | null>(null);
-  const [domains, setDomains] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  // Obtener el subdominio del hostname
   useEffect(() => {
-    // Obtener el subdominio del hostname
     const hostname = window.location.hostname;
     
     // Detectar si es localhost (desarrollo) o dominio de producción
@@ -52,21 +50,29 @@ export function SubdomainProvider({ children }: { children: ReactNode }) {
     if (detectedSubdomain) {
       setSubdomain(detectedSubdomain);
     }
-
-    // Obtener la lista de dominios disponibles usando server action
-    const fetchDomains = async () => {
-      try {
-        const domainsList = await getDomains();
-        setDomains(domainsList);
-      } catch (error) {
-        console.error('Error al obtener dominios:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDomains();
   }, []);
+
+  // Usar React Query para obtener dominios con refetch automático
+  const {
+    data: domains = [],
+    isLoading: loading,
+  } = useQuery({
+    queryKey: ['domains'],
+    queryFn: getDomains,
+    // Refetch cada 5 minutos para obtener nuevos dominios
+    refetchInterval: 5 * 60 * 1000, // 5 minutos
+    // Mantener los datos en cache por 5 minutos
+    staleTime: 5 * 60 * 1000,
+    // Mantener los datos en cache incluso cuando no hay suscriptores
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    // Reintentar automáticamente en caso de error (solo 1 vez para evitar bloqueos)
+    retry: 1,
+    retryDelay: 2000, // 2 segundos entre reintentos
+    // No bloquear la UI si falla - usar datos en cache o array vacío
+    refetchOnWindowFocus: false,
+    // No fallar silenciosamente, pero no bloquear el renderizado
+    throwOnError: false,
+  });
 
   return (
     <SubdomainContext.Provider value={{ subdomain, domains, loading }}>
