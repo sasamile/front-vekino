@@ -15,10 +15,33 @@ export function isPublicRoute(pathname: string): boolean {
 }
 
 /**
+ * Lista de rutas exclusivas para SUPERADMIN
+ * Estas rutas están en app/(dashboard)/(superadmin)/ pero el pathname no incluye el prefijo
+ */
+const SUPERADMIN_ROUTES = [
+  '/condominios',
+  '/administradores',
+];
+
+/**
+ * Lista de rutas exclusivas para ADMIN
+ */
+const ADMIN_ROUTES = [
+  // Agregar rutas de admin aquí si es necesario
+];
+
+/**
+ * Lista de rutas exclusivas para USER
+ */
+const USER_ROUTES = [
+  // Agregar rutas de user aquí si es necesario
+];
+
+/**
  * Verifica si un usuario puede acceder a una ruta según su rol
- * - USER: solo puede acceder a rutas /user/*
- * - ADMIN: solo puede acceder a rutas /admin/* (no puede acceder a /user/* ni /superadmin/*)
- * - SUPERADMIN: solo puede acceder a rutas /superadmin/* (no puede acceder a /user/* ni /admin/*)
+ * - USER: solo puede acceder a rutas /user/* o rutas en USER_ROUTES
+ * - ADMIN: solo puede acceder a rutas /admin/* o rutas en ADMIN_ROUTES
+ * - SUPERADMIN: solo puede acceder a rutas /superadmin/* o rutas en SUPERADMIN_ROUTES
  */
 export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
   // Si la ruta es pública, permitir acceso
@@ -26,7 +49,20 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
     return true;
   }
 
-  // Rutas protegidas por rol
+  // Verificar rutas específicas por rol (rutas de grupos de Next.js)
+  if (SUPERADMIN_ROUTES.some(route => pathname.startsWith(route))) {
+    return userRole === 'SUPERADMIN';
+  }
+  
+  // if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {
+  //   return userRole === 'ADMIN';
+  // }
+  
+  // if (USER_ROUTES.some(route => pathname.startsWith(route))) {
+  //   return userRole === 'USER';
+  // }
+
+  // Rutas protegidas por prefijo de pathname
   if (pathname.startsWith('/admin')) {
     return userRole === 'ADMIN';
   }

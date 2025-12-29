@@ -1,6 +1,6 @@
 import React from "react";
 import { headers } from "next/headers";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { AppSidebar } from "@/components/dashboard/sidebar/app-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import type { UserRole } from "@/lib/middleware/types";
-import { SiteHeader } from "@/components/dashboard/site-header";
+import { SiteHeader } from "@/components/dashboard/sidebar/site-header";
 
 async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
@@ -20,6 +20,14 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const userName =
     headersList.get("x-user-name") || userEmail.split("@")[0] || "Usuario";
 
+  // Título del dashboard según el rol
+  const dashboardTitle =
+    userRole === "SUPERADMIN"
+      ? "Panel de Control"
+      : userRole === "ADMIN"
+      ? "Dashboard Administrativo"
+      : "Mi Dashboard";
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -29,7 +37,7 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
         userEmail={userEmail}
       />
       <SidebarInset>
-        <SiteHeader title="Dashboard" />
+        <SiteHeader title={dashboardTitle} />
         <main className="flex flex-1 flex-col gap-4 p-4">{children}</main>
       </SidebarInset>
     </SidebarProvider>

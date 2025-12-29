@@ -1,0 +1,100 @@
+import type { DashboardData } from "../../../../types/types";
+
+export const mockData: DashboardData = {
+  kpis: {
+    tenantsActivos: 45,
+    tenantsSuspendidos: 3,
+    tenantsPorVencer: 7,
+    mrr: 125000, // en pesos colombianos
+    churn: 2,
+  },
+  alertas: [
+    {
+      id: 1,
+      tipo: "vencimiento",
+      mensaje: "3 tenants con plan por vencer en 7 días",
+      severidad: "alta",
+    },
+    {
+      id: 2,
+      tipo: "limite",
+      mensaje: "2 tenants excedieron límite de unidades",
+      severidad: "media",
+    },
+  ],
+  graficas: {
+    condominiosPorMes: [
+      { mes: "Jul", cantidad: 3 },
+      { mes: "Ago", cantidad: 5 },
+      { mes: "Sep", cantidad: 7 },
+      { mes: "Oct", cantidad: 8 },
+      { mes: "Nov", cantidad: 12 },
+      { mes: "Dic", cantidad: 10 },
+    ],
+    tenantsPorPlan: [
+      { plan: "Básico", cantidad: 25 },
+      { plan: "Premium", cantidad: 15 },
+      { plan: "Enterprise", cantidad: 5 },
+    ],
+    crecimientoIngresos: [
+      { mes: "Jul", mrr: 5000 },
+      { mes: "Ago", mrr: 2000 },
+      { mes: "Sep", mrr: 5000 },
+      { mes: "Oct", mrr: 9000 },
+      { mes: "Nov", mrr: 5000 },
+      { mes: "Dic", mrr: 5000 },
+    ],
+    tenantsPorCiudad: [
+      { ciudad: "Bogotá", cantidad: 18 },
+      { ciudad: "Medellín", cantidad: 12 },
+      { ciudad: "Cali", cantidad: 8 },
+      { ciudad: "Barranquilla", cantidad: 5 },
+      { ciudad: "Otras", cantidad: 2 },
+    ],
+  },
+  tenants: [
+    {
+      id: 1,
+      nombre: "Condominio Las Flores",
+      subdominio: "lasflores",
+      logo: null,
+      estado: "activo",
+      plan: "PREMIUM",
+      unidades: { usadas: 120, limite: 150 },
+      modulos: ["reservas", "documentos", "pqrs"],
+      ciudad: "Bogotá",
+      pais: "Colombia",
+      vencimiento: "2025-12-31",
+      ultimoAcceso: "2025-01-05",
+    },
+    {
+      id: 2,
+      nombre: "Torres del Norte",
+      subdominio: "torresnorte",
+      logo: null,
+      estado: "activo",
+      plan: "BASICO",
+      unidades: { usadas: 45, limite: 50 },
+      modulos: ["reservas", "documentos"],
+      ciudad: "Medellín",
+      pais: "Colombia",
+      vencimiento: "2025-01-10",
+      ultimoAcceso: "2025-01-04",
+    },
+    {
+      id: 3,
+      nombre: "Residencial San José",
+      subdominio: "sanjose",
+      logo: null,
+      estado: "suspendido",
+      plan: "BASICO",
+      unidades: { usadas: 30, limite: 30 },
+      modulos: ["reservas"],
+      ciudad: "Cali",
+      pais: "Colombia",
+      vencimiento: "2024-12-15",
+      ultimoAcceso: "2024-12-10",
+    },
+  ],
+};
+

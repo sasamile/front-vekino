@@ -56,6 +56,7 @@ export async function verifySession(
         headers: {
           'Cookie': `better-auth.session_token=${cookie.value}`,
           'Content-Type': 'application/json',
+          'Accept-Encoding': 'identity', // Evitar compresión para evitar problemas de descompresión
         },
         cache: 'no-store',
         signal: controller.signal,
@@ -64,13 +65,24 @@ export async function verifySession(
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        const data: AuthResponse = await response.json();
-        return data;
+        try {
+          const data: AuthResponse = await response.json();
+          return data;
+        } catch (jsonError: any) {
+          // Si hay error al parsear JSON (posible problema de descompresión), retornar null
+          console.warn('Error al parsear respuesta de verificación de sesión:', jsonError.message);
+          return null;
+        }
       }
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
-      // Si es un timeout o error de conexión, retornar null silenciosamente
-      if (fetchError.name === 'AbortError' || fetchError.code === 'UND_ERR_CONNECT_TIMEOUT') {
+      // Si es un timeout, error de conexión, o error de descompresión, retornar null silenciosamente
+      if (
+        fetchError.name === 'AbortError' || 
+        fetchError.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+        fetchError.message?.includes('terminated') ||
+        fetchError.message?.includes('Gunzip')
+      ) {
         return null;
       }
       throw fetchError;

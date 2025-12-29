@@ -93,13 +93,20 @@ export async function middleware(request: NextRequest) {
     
     // Si la sesión es válida, redirigir a la página principal
     if (authData) {
-      const homeUrl = new URL('/', request.url);
+      // Construir la URL de redirección correctamente
+      const homeUrl = request.nextUrl.clone();
+      homeUrl.pathname = '/';
+      homeUrl.search = ''; // Limpiar query params si los hay
       return NextResponse.redirect(homeUrl);
     }
     
-    // Si hay cookie pero la sesión es inválida, permitir acceso al login
-    // (el usuario puede intentar hacer login de nuevo)
-    return NextResponse.next();
+    // Si hay cookie pero la verificación falló por un error técnico (no por sesión inválida),
+    // redirigir de todas formas para evitar que el usuario se quede atascado después de un login exitoso
+    // El middleware de otras rutas verificará la sesión nuevamente y redirigirá a login si es necesario
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = '/';
+    homeUrl.search = '';
+    return NextResponse.redirect(homeUrl);
   }
   
   // Para otras rutas, verificar autenticación completa

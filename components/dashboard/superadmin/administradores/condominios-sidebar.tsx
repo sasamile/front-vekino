@@ -1,0 +1,141 @@
+"use client";
+
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { getAxiosInstance } from "@/lib/axios-config";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { IconSearch, IconBuilding } from "@tabler/icons-react";
+import type { Condominio } from "@/types/types";
+import { cn } from "@/lib/utils";
+
+interface CondominiosSidebarProps {
+  selectedCondominioId: string | null;
+  onSelectCondominio: (condominioId: string) => void;
+}
+
+export function CondominiosSidebar({
+  selectedCondominioId,
+  onSelectCondominio,
+}: CondominiosSidebarProps) {
+  const { subdomain } = useSubdomain();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data: condominios = [], isLoading } = useQuery<Condominio[]>({
+    queryKey: ["condominios"],
+    queryFn: async () => {
+      const axiosInstance = getAxiosInstance(subdomain);
+      const response = await axiosInstance.get("/condominios");
+      return response.data;
+    },
+  });
+
+  const filteredCondominios = condominios.filter((condominio) =>
+    condominio.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <Card className="h-full flex flex-col max-h-[calc(100vh-12rem)]">
+      <CardHeader className="pb-3">
+        <CardTitle>Condominios</CardTitle>
+        <div className="relative mt-2">
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
+          <Input
+            placeholder="Buscar condominio..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-y-auto p-0">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <Skeleton className="size-12 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredCondominios.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <IconBuilding className="size-12 text-muted-foreground mb-4" />
+            <p className="text-sm text-muted-foreground">
+              {searchTerm
+                ? "No se encontraron condominios"
+                : "No hay condominios disponibles"}
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {filteredCondominios.map((condominio) => (
+              <button
+                key={condominio.id}
+                onClick={() => onSelectCondominio(condominio.id)}
+                className={cn(
+                  "w-full p-4 text-left hover:bg-accent transition-colors",
+                  selectedCondominioId === condominio.id && "bg-accent"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {condominio.logo ? (
+                    <div
+                      className="size-10 rounded-lg overflow-hidden border-2 shadow-sm shrink-0"
+                      style={{
+                        borderColor: condominio.primaryColor || "#3B82F6",
+                      }}
+                    >
+                      <img
+                        src={condominio.logo}
+                        alt={condominio.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `
+                              <div class="w-full h-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: ${condominio.primaryColor || "#3B82F6"}">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                              </div>
+                            `;
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="size-10 rounded-lg overflow-hidden border-2 shadow-sm bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center shrink-0"
+                      style={{
+                        borderColor: condominio.primaryColor || "#3B82F6",
+                      }}
+                    >
+                      <IconBuilding
+                        className="size-5"
+                        style={{ color: condominio.primaryColor || "#3B82F6" }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{condominio.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {condominio.city}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+

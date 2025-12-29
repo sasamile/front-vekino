@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   IconChartBar,
   IconDashboard,
@@ -17,12 +17,12 @@ import {
   IconCreditCard,
   IconCalendar,
   type Icon,
-} from "@tabler/icons-react"
+} from "@tabler/icons-react";
 
-import Logo from "@/components/common/logo"
-import { NavMain } from "@/components/dashboard/nav-main"
-import { NavSecondary } from "@/components/dashboard/nav-secondary"
-import { NavUser } from "@/components/dashboard/nav-user"
+import Logo from "@/components/common/logo";
+import { NavMain } from "@/components/dashboard/sidebar/nav-main";
+import { NavSecondary } from "@/components/dashboard/sidebar/nav-secondary";
+import { NavUser } from "@/components/dashboard/sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -31,24 +31,27 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import type { UserRole } from "@/lib/middleware/types"
+} from "@/components/ui/sidebar";
+import type { UserRole } from "@/lib/middleware/types";
 
 interface NavItem {
-  title: string
-  url: string
-  icon: Icon
+  title: string;
+  url: string;
+  icon: Icon;
 }
 
 // Configuración de navegación por rol
-const getNavConfig = (role: UserRole): {
-  navMain: NavItem[]
-  navSecondary: NavItem[]
+const getNavConfig = (
+  role: UserRole
+): {
+  navMain: NavItem[];
+  navSecondary: NavItem[];
 } => {
-  const basePath = role === 'USER' ? '/user' : role === 'ADMIN' ? '/admin' : '/superadmin'
+  const basePath =
+    role === "USER" ? "/user" : role === "ADMIN" ? "/admin" : "/superadmin";
 
   switch (role) {
-    case 'USER':
+    case "USER":
       return {
         navMain: [
           {
@@ -89,9 +92,9 @@ const getNavConfig = (role: UserRole): {
             icon: IconSearch,
           },
         ],
-      }
+      };
 
-    case 'ADMIN':
+    case "ADMIN":
       return {
         navMain: [
           {
@@ -137,35 +140,25 @@ const getNavConfig = (role: UserRole): {
             icon: IconSearch,
           },
         ],
-      }
+      };
 
-    case 'SUPERADMIN':
+    case "SUPERADMIN":
       return {
         navMain: [
           {
             title: "Dashboard",
-            url: `${basePath}/dashboard`,
+            url: `/`,
             icon: IconDashboard,
           },
           {
-            title: "Resumen General",
-            url: `${basePath}/overview`,
-            icon: IconChartBar,
-          },
-          {
             title: "Condominios",
-            url: `${basePath}/condominios`,
+            url: `/condominios`,
             icon: IconBuilding,
           },
           {
             title: "Administradores",
-            url: `${basePath}/admins`,
+            url: `/administradores`,
             icon: IconUserCog,
-          },
-          {
-            title: "Usuarios",
-            url: `${basePath}/users`,
-            icon: IconUsers,
           },
         ],
         navSecondary: [
@@ -190,31 +183,31 @@ const getNavConfig = (role: UserRole): {
             icon: IconSearch,
           },
         ],
-      }
+      };
 
     default:
       return {
         navMain: [],
         navSecondary: [],
-      }
+      };
   }
-}
+};
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  userRole: UserRole
-  userName?: string
-  userEmail?: string
-  userAvatar?: string
+  userRole: UserRole;
+  userName?: string;
+  userEmail?: string;
+  userAvatar?: string;
 }
 
-export function AppSidebar({ 
-  userRole, 
-  userName = 'Usuario', 
-  userEmail = '', 
+export function AppSidebar({
+  userRole,
+  userName = "Usuario",
+  userEmail = "",
   userAvatar,
-  ...props 
+  ...props
 }: AppSidebarProps) {
-  const navConfig = getNavConfig(userRole)
+  const navConfig = getNavConfig(userRole);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -225,11 +218,8 @@ export function AppSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href="/dashboard">
-                <div className="flex items-center gap-2">
-                  <IconInnerShadowTop className="size-5" />
-                  <span className="text-base font-semibold">Vekino</span>
-                </div>
+              <a href="/">
+                <Logo />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -240,14 +230,14 @@ export function AppSidebar({
         <NavSecondary items={navConfig.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser 
+        <NavUser
           user={{
             name: userName,
             email: userEmail,
             avatar: userAvatar,
-          }} 
+          }}
         />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

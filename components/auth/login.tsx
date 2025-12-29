@@ -79,9 +79,15 @@ export default function Login() {
       });
 
       toast.success("¡Login exitoso!", {
-        duration: 3000,
+        duration: 2000,
       });
-      router.push("/");
+      
+      // Usar window.location para forzar una recarga completa y que el middleware detecte la cookie
+      // Pequeño delay para asegurar que la cookie se guarde
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
+      
       console.log("Login response:", response.data);
     } catch (err: any) {
       const errorMessage =
