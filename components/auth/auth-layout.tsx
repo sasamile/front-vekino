@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import Logo from "../common/logo";
 
 interface AuthLayoutProps {
@@ -39,14 +38,12 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
       </div>
 
       {/* Right Panel - Image (45%) */}
-      <div className="hidden lg:flex lg:w-[45%] relative ">
+      <div className="hidden lg:flex lg:w-[45%] relative">
         <div className="relative w-full h-full">
-          <Image
+          <img
             src="/img/auth.png"
             alt="Auth"
-            fill
-            className="object-cover   rounded-bl-[7rem]"
-            priority
+            className="w-full h-full object-cover rounded-bl-[7rem]"
           />
         </div>
       </div>
