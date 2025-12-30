@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,15 +10,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "@/components/ui/field";
+import { IconX, IconUpload } from "@tabler/icons-react";
 import type { Condominio } from "@/types/types";
+import { CondominioLogo } from "./condominio-logo";
+import toast from "react-hot-toast";
 
 interface EditCondominioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   condominio: Condominio | null;
-  onSave: (data: Partial<Condominio>) => void;
+  onSave: (formData: FormData) => void;
 }
 
 export function EditCondominioDialog({
@@ -26,27 +36,83 @@ export function EditCondominioDialog({
   condominio,
   onSave,
 }: EditCondominioDialogProps) {
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Resetear estado cuando cambia el condominio o se cierra el diálogo
+  useEffect(() => {
+    if (!open) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      setRemoveLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } else if (condominio) {
+      setLogoPreview(condominio.logo || null);
+      setRemoveLogo(false);
+    }
+  }, [open, condominio]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setRemoveLogo(false);
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setRemoveLogo(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
   if (!condominio) return null;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const data: Partial<Condominio> = {
-      name: formData.get("name") as string,
-      nit: formData.get("nit") as string,
-      subdomain: formData.get("subdomain") as string,
-      subscriptionPlan: formData.get("subscriptionPlan") as string,
-      unitLimit: Number(formData.get("unitLimit")),
-      primaryColor: formData.get("primaryColor") as string,
-      address: formData.get("address") as string,
-      city: formData.get("city") as string,
-      country: formData.get("country") as string,
-      timezone: formData.get("timezone") as string,
-      planExpiresAt: formData.get("planExpiresAt") as string,
-      logo: formData.get("logo") as string,
-      isActive: formData.get("isActive") === "true",
-    };
-    onSave(data);
+
+    // Si hay un nuevo archivo de logo, agregarlo
+    if (logoFile) {
+      formData.append("logo", logoFile);
+    }
+
+    // Si se quiere remover el logo, agregar un flag especial
+    // El backend debería manejar esto, pero por ahora solo no enviamos el logo
+    if (removeLogo && !logoFile) {
+      // Opcional: puedes agregar un campo para indicar que se debe borrar
+      // formData.append("removeLogo", "true");
+    }
+
+    // Convertir los valores booleanos a strings
+    const isActiveValue = formData.get("isActive");
+    formData.set("isActive", isActiveValue === "true" ? "true" : "false");
+
+    onSave(formData);
+
+    setTimeout(() => {
+      toast.success("Condominio actualizado correctamente", {
+        duration: 1000,
+      });
+    }, 1500);
+
   };
 
   return (
@@ -59,46 +125,48 @@ export function EditCondominioDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <FieldGroup>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
+              <Field>
+                <FieldLabel htmlFor="name">Nombre</FieldLabel>
                 <Input
                   id="name"
                   name="name"
                   defaultValue={condominio.name}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nit">NIT</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="nit">NIT</FieldLabel>
                 <Input
                   id="nit"
                   name="nit"
                   defaultValue={condominio.nit}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subdomain">Subdominio</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="subdomain">Subdominio</FieldLabel>
                 <Input
                   id="subdomain"
                   name="subdomain"
                   defaultValue={condominio.subdomain}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subscriptionPlan">Plan de Suscripción</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="subscriptionPlan">
+                  Plan de Suscripción
+                </FieldLabel>
                 <Input
                   id="subscriptionPlan"
                   name="subscriptionPlan"
                   defaultValue={condominio.subscriptionPlan}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="unitLimit">Límite de Unidades</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="unitLimit">Límite de Unidades</FieldLabel>
                 <Input
                   id="unitLimit"
                   name="unitLimit"
@@ -106,9 +174,9 @@ export function EditCondominioDialog({
                   defaultValue={condominio.unitLimit}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="primaryColor">Color Primario</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="primaryColor">Color Primario</FieldLabel>
                 <Input
                   id="primaryColor"
                   name="primaryColor"
@@ -117,102 +185,159 @@ export function EditCondominioDialog({
                   className="h-10"
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Dirección</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="address">Dirección</FieldLabel>
                 <Input
                   id="address"
                   name="address"
                   defaultValue={condominio.address}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">Ciudad</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="city">Ciudad</FieldLabel>
                 <Input
                   id="city"
                   name="city"
                   defaultValue={condominio.city}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">País</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="country">País</FieldLabel>
                 <Input
                   id="country"
                   name="country"
                   defaultValue={condominio.country}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Zona Horaria</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="timezone">Zona Horaria</FieldLabel>
                 <Input
                   id="timezone"
                   name="timezone"
                   defaultValue={condominio.timezone}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="planExpiresAt">Vencimiento del Plan</Label>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="planExpiresAt">
+                  Vencimiento del Plan
+                </FieldLabel>
                 <Input
                   id="planExpiresAt"
                   name="planExpiresAt"
-                  type="date"
-                  defaultValue={new Date(condominio.planExpiresAt).toISOString().split('T')[0]}
+                  type="datetime-local"
+                  defaultValue={new Date(condominio.planExpiresAt)
+                    .toISOString()
+                    .slice(0, 16)}
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="logo">URL del Logo</Label>
-                <Input
-                  id="logo"
-                  name="logo"
-                  defaultValue={condominio.logo || ""}
-                  placeholder="https://..."
-                />
-              </div>
+              </Field>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="isActive">Estado</Label>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
+
+            {/* Campo de Logo con file input */}
+            <Field>
+              <FieldLabel>Logo</FieldLabel>
+              {logoPreview && !removeLogo ? (
+                <div className="space-y-2">
+                  <div className="relative inline-block">
+                    <div className="relative">
+                      <CondominioLogo
+                        logo={logoPreview}
+                        name={condominio.name}
+                        primaryColor={condominio.primaryColor}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 rounded-full size-6"
+                        onClick={handleRemoveLogo}
+                      >
+                        <IconX className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                <div
+                  onClick={handleFileClick}
+                  className="border-2 border-dashed border-input rounded-lg p-6 text-center cursor-pointer hover:bg-accent transition-colors"
+                >
+                  <IconUpload className="size-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Haz clic para subir un logo
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    o arrastra y suelta un archivo aquí
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </div>
+              )}
+            </Field>
+
+            <FieldSet>
+              <FieldLabel>Estado</FieldLabel>
+              <FieldGroup className="flex flex-col gap-2">
+                <Field orientation="horizontal">
                   <input
                     type="radio"
+                    id="isActive-true"
                     name="isActive"
                     value="true"
                     defaultChecked={condominio.isActive}
                     className="size-4"
                     required
                   />
-                  <span className="text-sm">Activo</span>
-                </label>
-                <label className="flex items-center gap-2">
+                  <FieldLabel htmlFor="isActive-true" className="font-normal">
+                    Activo
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
                   <input
                     type="radio"
+                    id="isActive-false"
                     name="isActive"
                     value="false"
                     defaultChecked={!condominio.isActive}
                     className="size-4"
                     required
                   />
-                  <span className="text-sm">Inactivo</span>
-                </label>
-              </div>
-            </div>
-          </div>
+                  <FieldLabel htmlFor="isActive-false" className="font-normal">
+                    Inactivo
+                  </FieldLabel>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+          </FieldGroup>
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancelar
             </Button>
-            <Button type="submit">
-              Guardar Cambios
-            </Button>
+            <Button type="submit">Guardar Cambios</Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
-

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import toast from "react-hot-toast"
+import { useQueryClient } from "@tanstack/react-query"
 import { useDebounce } from "@/hooks/use-debounce"
 import {
   Dialog,
@@ -27,6 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { getAxiosInstance } from "@/lib/axios-config"
 import { useSubdomain } from "@/app/providers/subdomain-provider"
 import { Upload, X } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
 
 const condominioSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -37,7 +39,7 @@ const condominioSchema = z.object({
   timezone: z.string().min(1, "El timezone es requerido"),
   subdomain: z.string().min(1, "El subdominio es requerido"),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Color inválido (debe ser hexadecimal)"),
-  subscriptionPlan: z.enum(["BASICO", "PREMIUM", "ENTERPRISE"]),
+  subscriptionPlan: z.enum(["BASICO", "PRO", "ENTERPRISE"]),
   unitLimit: z.number().min(1, "El límite de unidades debe ser mayor a 0"),
   planExpiresAt: z.string().min(1, "La fecha de expiración es requerida"),
   activeModules: z.array(z.string()).min(1, "Selecciona al menos un módulo"),
@@ -63,7 +65,7 @@ const MODULES = [
 
 const SUBSCRIPTION_PLANS = [
   { value: "BASICO", label: "Básico" },
-  { value: "PREMIUM", label: "Premium" },
+  { value: "PRO", label: "Pro" },
   { value: "ENTERPRISE", label: "Enterprise" },
 ]
 
@@ -76,7 +78,9 @@ export function CreateCondominioDialog({
   open,
   onOpenChange,
 }: CreateCondominioDialogProps) {
-  const { subdomain } = useSubdomain()
+  const router = useRouter()
+  const pathname = usePathname()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [subdomainStatus, setSubdomainStatus] = useState<{
@@ -179,10 +183,19 @@ export function CreateCondominioDialog({
         duration: 3000,
       })
 
+      // Invalidar y revalidar las queries para actualizar los datos
+      await queryClient.invalidateQueries({ queryKey: ["condominios"] })
+      await queryClient.invalidateQueries({ queryKey: ["domains"] })
+
       reset()
       setLogoPreview(null)
       setSubdomainStatus({ checking: false, available: null })
       onOpenChange(false)
+      if(pathname.includes("/condominios")) {
+        router.refresh()
+      }else{
+        router.push("/condominios")
+      }
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || err.message || "Error al crear condominio"
@@ -246,8 +259,8 @@ export function CreateCondominioDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(open) => !loading && onOpenChange(open)} >
+      <DialogContent className={`max-w-2xl max-h-[90vh] overflow-y-auto ${loading ? "cursor-not-allowed" : ""}`} >
         <DialogHeader>
           <DialogTitle>Crear Nuevo Condominio</DialogTitle>
           <DialogDescription>
@@ -255,7 +268,7 @@ export function CreateCondominioDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className={loading ? "cursor-not-allowed" : ""} >
           <FieldGroup className="space-y-4">
             {/* Información Básica */}
             <div className="space-y-4">
@@ -266,8 +279,9 @@ export function CreateCondominioDialog({
               <Field data-invalid={!!errors.name}>
                 <FieldLabel>Nombre del Condominio *</FieldLabel>
                 <Input
+                disabled={loading}
                   {...register("name")}
-                  placeholder="Ej: Condominio Las Flores"
+                  placeholder="Ej: Condominio Las Flores "
                 />
                 {errors.name && <FieldError>{errors.name.message}</FieldError>}
               </Field>
@@ -276,6 +290,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.nit}>
                   <FieldLabel>NIT *</FieldLabel>
                   <Input
+                    disabled={loading}
                     {...register("nit")}
                     placeholder="123456789"
                   />
@@ -286,6 +301,7 @@ export function CreateCondominioDialog({
                   <FieldLabel>Subdominio *</FieldLabel>
                   <div className="space-y-2">
                     <Input
+                      disabled={loading}
                       {...register("subdomain")}
                       placeholder="condominio"
                     />
@@ -325,7 +341,8 @@ export function CreateCondominioDialog({
 
               <Field data-invalid={!!errors.address}>
                 <FieldLabel>Dirección *</FieldLabel>
-                <Input
+                <Input 
+                  disabled={loading}
                   {...register("address")}
                   placeholder="Calle 123 #45-67"
                 />
@@ -338,6 +355,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.city}>
                   <FieldLabel>Ciudad *</FieldLabel>
                   <Input
+                    disabled={loading}
                     {...register("city")}
                     placeholder="Bogotá"
                   />
@@ -347,6 +365,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.country}>
                   <FieldLabel>País *</FieldLabel>
                   <Input
+                    disabled={loading}
                     {...register("country")}
                     placeholder="Colombia"
                   />
@@ -359,6 +378,7 @@ export function CreateCondominioDialog({
               <Field data-invalid={!!errors.timezone}>
                 <FieldLabel>Zona Horaria *</FieldLabel>
                 <select
+                  disabled={loading}
                   {...register("timezone")}
                   className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -385,6 +405,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.subscriptionPlan}>
                   <FieldLabel>Plan de Suscripción *</FieldLabel>
                   <select
+                    disabled={loading}
                     {...register("subscriptionPlan")}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -402,6 +423,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.unitLimit}>
                   <FieldLabel>Límite de Unidades *</FieldLabel>
                   <Input
+                    disabled={loading}
                     type="number"
                     {...register("unitLimit", { valueAsNumber: true })}
                     placeholder="100"
@@ -418,6 +440,7 @@ export function CreateCondominioDialog({
                   <FieldLabel>Color Primario *</FieldLabel>
                   <div className="flex gap-2">
                     <Input
+                      disabled={loading}
                       type="color"
                       value={primaryColorValue || "#238af0"}
                       onChange={(e) => {
@@ -425,7 +448,8 @@ export function CreateCondominioDialog({
                       }}
                       className="h-9 w-20 p-1 cursor-pointer"
                     />
-                    <Input
+                    <Input  
+                      disabled={loading}
                       value={primaryColorValue || "#238af0"}
                       onChange={(e) => {
                         setValue("primaryColor", e.target.value, { shouldValidate: true })
@@ -442,6 +466,7 @@ export function CreateCondominioDialog({
                 <Field data-invalid={!!errors.planExpiresAt}>
                   <FieldLabel>Fecha de Expiración del Plan *</FieldLabel>
                   <Input
+                    disabled={loading}
                     type="datetime-local"
                     {...register("planExpiresAt")}
                   />
@@ -462,6 +487,7 @@ export function CreateCondominioDialog({
                   {MODULES.map((module) => (
                     <div key={module.value} className="flex items-center gap-2">
                       <Checkbox
+                        disabled={loading}
                         checked={activeModules.includes(module.value)}
                         onCheckedChange={() => toggleModule(module.value)}
                       />
@@ -517,7 +543,8 @@ export function CreateCondominioDialog({
                             className="max-w-[200px] max-h-[200px] object-contain rounded-md border-2 border-input shadow-sm"
                           />
                           <Button
-                            type="button"
+                            type="button" 
+                            disabled={loading}
                             variant="destructive"
                             className="absolute -top-2 -right-2 rounded-full shadow-lg size-6 cursor-pointer"
                             onClick={handleRemoveLogo}

@@ -15,5 +15,6 @@ export interface Usuario {
   unidadId: string | null;
   createdAt: string;
   updatedAt: string;
+  active: boolean;
 }
 

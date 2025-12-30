@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconSearch, IconFilter } from "@tabler/icons-react";
+import {
+  IconSearch,
+  IconFilter,
+  IconCirclePlusFilled,
+} from "@tabler/icons-react";
 import type { CondominiosFilters } from "@/types/condominios";
+import { CreateCondominioDialog } from "../../sidebar/create-condominio-dialog";
+import { useState } from "react";
 
 interface CondominiosFiltersProps {
   filters: CondominiosFilters;
@@ -33,6 +45,9 @@ export function CondominiosFiltersComponent({
   onClearFilters,
   activeFiltersCount,
 }: CondominiosFiltersProps) {
+  const [createCondominioDialogOpen, setCreateCondominioDialogOpen] =
+    useState(false);
+    
   return (
     <Card>
       <CardHeader>
@@ -43,11 +58,20 @@ export function CondominiosFiltersComponent({
               Busca y filtra condominios por nombre, estado, plan o ciudad
             </CardDescription>
           </div>
-          {activeFiltersCount > 0 && (
-            <Button variant="outline" size="sm" onClick={onClearFilters}>
-              Limpiar filtros ({activeFiltersCount})
+          <div className="flex items-center gap-2">
+            {activeFiltersCount > 0 && (
+              <Button variant="outline" size="sm" onClick={onClearFilters}>
+                Limpiar filtros ({activeFiltersCount})
+              </Button>
+            )}
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear cursor-pointer"
+              onClick={() => setCreateCondominioDialogOpen(true)}
+            >
+              <IconCirclePlusFilled />
+              <span>Crear Condomino</span>
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -66,7 +90,7 @@ export function CondominiosFiltersComponent({
           </div>
 
           {/* Filtro por estado */}
-          <DropdownMenu>
+          <DropdownMenu key="status-filter">
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <IconFilter className="size-4" />
@@ -92,7 +116,7 @@ export function CondominiosFiltersComponent({
           </DropdownMenu>
 
           {/* Filtro por plan */}
-          <DropdownMenu>
+          <DropdownMenu key="plan-filter">
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <IconFilter className="size-4" />
@@ -111,8 +135,8 @@ export function CondominiosFiltersComponent({
               <DropdownMenuItem onClick={() => onPlanFilter("BASICO")}>
                 Básico
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onPlanFilter("PREMIUM")}>
-                Premium
+              <DropdownMenuItem onClick={() => onPlanFilter("PRO")}>
+                Pro
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onPlanFilter("ENTERPRISE")}>
                 Enterprise
@@ -129,8 +153,11 @@ export function CondominiosFiltersComponent({
             />
           </div>
         </div>
+        <CreateCondominioDialog
+          open={createCondominioDialogOpen}
+          onOpenChange={setCreateCondominioDialogOpen}
+        />
       </CardContent>
     </Card>
   );
 }
-
