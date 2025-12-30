@@ -13,7 +13,7 @@ import {
   IconCheck,
   IconX,
 } from "@tabler/icons-react";
-import type { Tenant } from "../../../types/types";
+import type { Tenant } from "@/types/types.ts";
 
 interface TenantsTableProps {
   tenants: Tenant[];
