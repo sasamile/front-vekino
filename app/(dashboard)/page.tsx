@@ -1,9 +1,9 @@
 import React from "react"
 import { headers } from "next/headers"
-import { SuperAdminDashboard } from "@/components/dashboard/superadmin/superadmin-dashboard"
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard"
 import { UserDashboard } from "@/components/dashboard/user-dashboard"
 import type { UserRole } from "@/lib/middleware/types"
+import { SuperAdminDashboard } from "@/components/dashboard/superadmin/dashboard/superadmin-dashboard"
 
 async function DashboardPage() {
   const headersList = await headers()

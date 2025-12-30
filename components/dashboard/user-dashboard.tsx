@@ -10,10 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
-  IconCalendar,
-  IconCreditCard,
   IconHome,
-  IconFileText,
 } from "@tabler/icons-react"
 
 // Datos quemados para USER

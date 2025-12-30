@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IconUser, IconSearch, IconFilter, IconX } from "@tabler/icons-react";
 import type { Usuario } from "@/types/users";
+import Image from "next/image";
 
 interface UsuariosTableProps {
   condominioId: string | null;
@@ -113,9 +114,14 @@ export function UsuariosTable({ condominioId }: UsuariosTableProps) {
   if (!condominioId) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <IconUser className="size-12 text-muted-foreground mx-auto mb-4" />
+        <CardContent className="flex items-center justify-center py-12 h-[calc(100vh-20rem)] ">
+          <div className="text-center justify-center items-center flex flex-col">
+            <Image
+              src={"/img/condominio.png"}
+              width={200}
+              height={100}
+              alt="condominios"
+            />
             <p className="text-muted-foreground">
               Selecciona un condominio para ver sus usuarios
             </p>

@@ -1,10 +1,12 @@
 "use client";
 
+import { AlertsSection } from "./alerts-section";
+import { ChartsSection } from "./charts-section";
+import { KPICards } from "./kpi-cards";
+import { mockData } from "./mock-data";
 import { TenantsTable } from "./tenants-table";
-import { mockData } from "./dashboard/mock-data";
-import { KPICards } from "./dashboard/kpi-cards";
-import { AlertsSection } from "./dashboard/alerts-section";
-import { ChartsSection } from "./dashboard/charts-section";
+
+
 
 export function SuperAdminDashboard() {
   return (
