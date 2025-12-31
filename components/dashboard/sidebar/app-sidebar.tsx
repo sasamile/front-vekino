@@ -163,8 +163,8 @@ const getNavConfig = (
         ],
         navSecondary: [
           {
-            title: "Configuración",
-            url: `${basePath}/settings`,
+            title: "Planes",
+            url: `/planes`,
             icon: IconSettings,
           },
           {

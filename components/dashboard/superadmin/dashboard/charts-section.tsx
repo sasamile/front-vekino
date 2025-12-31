@@ -8,21 +8,22 @@ import { DashboardData } from "@/types/types";
 
 interface ChartsSectionProps {
   graficas: DashboardData["graficas"];
+  isLoading?: boolean;
 }
 
-export function ChartsSection({ graficas }: ChartsSectionProps) {
+export function ChartsSection({ graficas, isLoading = false }: ChartsSectionProps) {
   return (
     <>
       {/* Primera fila de gráficas */}
       <div className="grid gap-4 md:grid-cols-2">
-        <CondominiosChart data={graficas.condominiosPorMes} />
-        <PlanDistributionChart data={graficas.tenantsPorPlan} />
+        <CondominiosChart data={graficas.condominiosPorMes} isLoading={isLoading} />
+        <PlanDistributionChart data={graficas.tenantsPorPlan} isLoading={isLoading} />
       </div>
 
       {/* Segunda fila de gráficas */}
       <div className="grid gap-4 md:grid-cols-2">
-        <MRRChart data={graficas.crecimientoIngresos} />
-        <CityDistributionChart data={graficas.tenantsPorCiudad} />
+        <MRRChart data={graficas.crecimientoIngresos} isLoading={isLoading} />
+        <CityDistributionChart data={graficas.tenantsPorCiudad} isLoading={isLoading} />
       </div>
     </>
   );

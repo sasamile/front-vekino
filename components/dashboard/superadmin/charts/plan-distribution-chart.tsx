@@ -7,16 +7,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { TenantPorPlan } from "../../../../types/types";
 
 interface PlanDistributionChartProps {
   data: TenantPorPlan[];
+  isLoading?: boolean;
 }
 
 const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500"];
 
 export function PlanDistributionChart({
   data,
+  isLoading = false,
 }: PlanDistributionChartProps) {
   const total = data.reduce((sum, item) => sum + item.cantidad, 0);
 
@@ -27,28 +30,42 @@ export function PlanDistributionChart({
         <CardDescription>Tenants activos por tipo de plan</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {data.map((item, index) => {
-            const percentage = (item.cantidad / total) * 100;
-
-            return (
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{item.plan}</span>
-                  <span className="text-muted-foreground">
-                    {item.cantidad} ({percentage.toFixed(1)}%)
-                  </span>
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-16" />
                 </div>
-                <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${colors[index]} transition-all`}
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+                <Skeleton className="h-3 w-full rounded-full" />
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {data.map((item, index) => {
+              const percentage = (item.cantidad / total) * 100;
+
+              return (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.plan}</span>
+                    <span className="text-muted-foreground">
+                      {item.cantidad} ({percentage.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${colors[index % colors.length]} transition-all`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

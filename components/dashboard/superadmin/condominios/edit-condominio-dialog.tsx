@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { getAxiosInstance } from "@/lib/axios-config";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +22,7 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { IconX, IconUpload } from "@tabler/icons-react";
-import type { Condominio } from "@/types/types";
+import type { Condominio, PlanPricing } from "@/types/types";
 import { CondominioLogo } from "./condominio-logo";
 import toast from "react-hot-toast";
 
@@ -36,10 +39,22 @@ export function EditCondominioDialog({
   condominio,
   onSave,
 }: EditCondominioDialogProps) {
+  const { subdomain } = useSubdomain();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Obtener planes disponibles
+  const { data: plans = [] } = useQuery<PlanPricing[]>({
+    queryKey: ["plan-pricing"],
+    queryFn: async () => {
+      const axiosInstance = getAxiosInstance(subdomain);
+      const response = await axiosInstance.get("/plan-pricing");
+      return response.data;
+    },
+    enabled: open, // Solo hacer la query cuando el diálogo está abierto
+  });
 
   // Resetear estado cuando cambia el condominio o se cierra el diálogo
   useEffect(() => {
@@ -158,12 +173,33 @@ export function EditCondominioDialog({
                 <FieldLabel htmlFor="subscriptionPlan">
                   Plan de Suscripción
                 </FieldLabel>
-                <Input
+                <select
                   id="subscriptionPlan"
                   name="subscriptionPlan"
-                  defaultValue={condominio.subscriptionPlan}
                   required
-                />
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  defaultValue={condominio.subscriptionPlan}
+                >
+                  {plans.length > 0 ? (
+                    plans.map((plan) => (
+                      <option key={plan.id} value={plan.plan}>
+                        {plan.plan}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value={condominio.subscriptionPlan}>
+                        {condominio.subscriptionPlan}
+                      </option>
+                      <option value="BASICO">BASICO</option>
+                      <option value="PRO">PRO</option>
+                      <option value="ENTERPRISE">ENTERPRISE</option>
+                    </>
+                  )}
+                </select>
+                <FieldDescription>
+                  Selecciona el plan de suscripción del condominio
+                </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel htmlFor="unitLimit">Límite de Unidades</FieldLabel>

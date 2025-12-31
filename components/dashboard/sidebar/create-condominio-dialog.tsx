@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import toast from "react-hot-toast"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient, useQuery } from "@tanstack/react-query"
 import { useDebounce } from "@/hooks/use-debounce"
+import type { PlanPricing } from "@/types/types"
 import {
   Dialog,
   DialogContent,
@@ -63,7 +64,8 @@ const MODULES = [
   { value: "pqrs", label: "PQRS" },
 ]
 
-const SUBSCRIPTION_PLANS = [
+// Planes por defecto si no hay planes configurados en la API
+const DEFAULT_SUBSCRIPTION_PLANS = [
   { value: "BASICO", label: "Básico" },
   { value: "PRO", label: "Pro" },
   { value: "ENTERPRISE", label: "Enterprise" },
@@ -81,6 +83,7 @@ export function CreateCondominioDialog({
   const router = useRouter()
   const pathname = usePathname()
   const queryClient = useQueryClient()
+  const { subdomain } = useSubdomain()
   const [loading, setLoading] = useState(false)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [subdomainStatus, setSubdomainStatus] = useState<{
@@ -88,6 +91,17 @@ export function CreateCondominioDialog({
     available: boolean | null
     suggested?: string
   }>({ checking: false, available: null })
+
+  // Obtener planes disponibles desde la API
+  const { data: plans = [] } = useQuery<PlanPricing[]>({
+    queryKey: ["plan-pricing"],
+    queryFn: async () => {
+      const axiosInstance = getAxiosInstance(subdomain)
+      const response = await axiosInstance.get("/plan-pricing")
+      return response.data
+    },
+    enabled: open, // Solo hacer la query cuando el diálogo está abierto
+  })
 
   const {
     register,
@@ -409,11 +423,19 @@ export function CreateCondominioDialog({
                     {...register("subscriptionPlan")}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {SUBSCRIPTION_PLANS.map((plan) => (
-                      <option key={plan.value} value={plan.value}>
-                        {plan.label}
-                      </option>
-                    ))}
+                    {plans.length > 0 ? (
+                      plans.map((plan) => (
+                        <option key={plan.id} value={plan.plan}>
+                          {plan.plan}
+                        </option>
+                      ))
+                    ) : (
+                      DEFAULT_SUBSCRIPTION_PLANS.map((plan) => (
+                        <option key={plan.value} value={plan.value}>
+                          {plan.label}
+                        </option>
+                      ))
+                    )}
                   </select>
                   {errors.subscriptionPlan && (
                     <FieldError>{errors.subscriptionPlan.message}</FieldError>
