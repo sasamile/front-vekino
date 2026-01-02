@@ -17,8 +17,12 @@ async function handler(
   let backendUrl: string;
   
   if (isLocal) {
-    // En desarrollo, usar el proxy local que apunta a vekino.site
-    backendUrl = "https://vekino.site";
+    // En desarrollo, usar el subdominio correcto si existe
+    if (subdomain) {
+      backendUrl = `https://${subdomain}.vekino.site`;
+    } else {
+      backendUrl = "https://vekino.site";
+    }
   } else {
     // En producción, usar el subdominio correcto
     if (subdomain) {
@@ -33,6 +37,16 @@ async function handler(
 
   const headers = new Headers(req.headers);
   headers.delete("host");
+  
+  // Asegurar que las cookies se envíen correctamente
+  // Construir el header Cookie con todas las cookies
+  const cookies: string[] = [];
+  req.cookies.getAll().forEach((cookie) => {
+    cookies.push(`${cookie.name}=${cookie.value}`);
+  });
+  if (cookies.length > 0) {
+    headers.set('Cookie', cookies.join('; '));
+  }
 
   const res = await fetch(target, {
     method: req.method,

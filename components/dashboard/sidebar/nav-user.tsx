@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -8,6 +9,9 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
+import { useSubdomain } from "@/app/providers/subdomain-provider"
+import { getAxiosInstance } from "@/lib/axios-config"
+import toast from "react-hot-toast"
 
 import {
   Avatar,
@@ -34,6 +38,7 @@ export function NavUser({
   user,
 }: {
   user: {
+    image?: string
     name: string
     email: string
     avatar?: string
@@ -41,12 +46,36 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const router = useRouter()
+  const { subdomain } = useSubdomain()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const handleLogout = () => {
-    // Eliminar la cookie de sesión
-    document.cookie = 'better-auth.session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-    // Redirigir al login
-    router.push('/auth/login')
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    
+    try {
+      const axiosInstance = getAxiosInstance(subdomain)
+      await axiosInstance.post("/logout")
+      
+      toast.success("Sesión cerrada exitosamente", {
+        duration: 2000,
+      })
+      
+      // Pequeño delay para asegurar que el mensaje se muestre
+      setTimeout(() => {
+        router.push("/auth/login")
+      }, 500)
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al cerrar sesión"
+      
+      toast.error(errorMessage, {
+        duration: 3000,
+      })
+      
+      setIsLoggingOut(false)
+    }
   }
 
   const getInitials = (name: string) => {
@@ -69,7 +98,7 @@ export function NavUser({
               suppressHydrationWarning
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={user.image} alt={user.name} />
                 <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -117,9 +146,9 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
               <IconLogout />
-              Cerrar sesión
+              {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

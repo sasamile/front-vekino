@@ -211,3 +211,187 @@ export interface UpdatePlanPricingRequest {
   isActive?: boolean;
 }
 
+export type UnidadTipo = "APARTAMENTO" | "CASA" | "LOCAL_COMERCIAL";
+export type UnidadEstado = "VACIA" | "OCUPADA" | "EN_MANTENIMIENTO";
+
+export interface Unidad {
+  id: string;
+  identificador: string;
+  tipo: UnidadTipo;
+  area: number;
+  coeficienteCopropiedad: number;
+  valorCuotaAdministracion: number;
+  estado: UnidadEstado;
+  condominioId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUnidadRequest {
+  identificador: string;
+  tipo: UnidadTipo;
+  area: number;
+  coeficienteCopropiedad: number;
+  valorCuotaAdministracion: number;
+  estado: UnidadEstado;
+}
+
+export type ResidenteRole = "ADMIN" | "PROPIETARIO" | "ARRENDATARIO" | "RESIDENTE";
+export type TipoDocumento = "CC" | "CE" | "NIT" | "PASAPORTE" | "OTRO";
+
+export interface Residente {
+  id: string;
+  name: string;
+  email: string;
+  role: ResidenteRole;
+  firstName: string;
+  lastName: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  telefono: string;
+  unidadId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UnidadWithResidentesResponse extends Unidad {
+  usuarios: Residente[];
+  totalUsuarios: number;
+}
+
+export interface CreateResidenteRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: ResidenteRole;
+  firstName: string;
+  lastName: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  telefono: string;
+  unidadId: string;
+}
+
+export interface UpdateResidenteRequest {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: ResidenteRole;
+  firstName?: string;
+  lastName?: string;
+  tipoDocumento?: TipoDocumento;
+  numeroDocumento?: string;
+  telefono?: string;
+  unidadId?: string;
+}
+
+// Espacios Comunes
+export type EspacioComunTipo = 
+  | "SALON_SOCIAL"
+  | "ZONA_BBQ"
+  | "SAUNA"
+  | "CASA_EVENTOS"
+  | "GIMNASIO"
+  | "PISCINA"
+  | "CANCHA_DEPORTIVA"
+  | "PARQUEADERO"
+  | "OTRO";
+
+export type UnidadTiempo = "HORAS" | "DIAS" | "MESES";
+
+export interface HorarioDisponibilidad {
+  dia: number; // 0-6 (Lunes-Domingo)
+  horaInicio: string; // "09:00"
+  horaFin: string; // "22:00"
+}
+
+export interface EspacioComun {
+  id: string;
+  nombre: string;
+  tipo: EspacioComunTipo;
+  capacidad: number;
+  descripcion: string | null;
+  unidadTiempo: UnidadTiempo;
+  precioPorUnidad: number;
+  activo: boolean;
+  imagen: string | null;
+  horariosDisponibilidad: string; // JSON string
+  requiereAprobacion: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEspacioComunRequest {
+  nombre: string;
+  tipo: EspacioComunTipo;
+  capacidad: number;
+  descripcion?: string;
+  unidadTiempo: UnidadTiempo;
+  precioPorUnidad: number;
+  activo?: boolean;
+  horariosDisponibilidad: string; // JSON string
+  requiereAprobacion?: boolean;
+}
+
+export interface UpdateEspacioComunRequest {
+  nombre?: string;
+  tipo?: EspacioComunTipo;
+  capacidad?: number;
+  descripcion?: string;
+  unidadTiempo?: UnidadTiempo;
+  precioPorUnidad?: number;
+  activo?: boolean;
+  horariosDisponibilidad?: string;
+  requiereAprobacion?: boolean;
+}
+
+// Reservas
+export type ReservaEstado = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
+
+export interface Reserva {
+  id: string;
+  espacioComunId: string;
+  espacioComun?: EspacioComun;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  unidadId: string | null;
+  unidad?: {
+    id: string;
+    identificador: string;
+  };
+  fechaInicio: string;
+  fechaFin: string;
+  cantidadPersonas: number | null;
+  estado: ReservaEstado;
+  motivo: string | null;
+  observaciones: string | null;
+  precioTotal: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateReservaRequest {
+  espacioComunId: string;
+  unidadId?: string;
+  fechaInicio: string;
+  fechaFin: string;
+  cantidadPersonas?: number;
+  motivo?: string;
+  observaciones?: string;
+}
+
+export interface UpdateReservaRequest {
+  espacioComunId?: string;
+  unidadId?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  cantidadPersonas?: number;
+  motivo?: string;
+  observaciones?: string;
+  estado?: ReservaEstado;
+}
+

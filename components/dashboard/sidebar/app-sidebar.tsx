@@ -17,6 +17,7 @@ import {
   IconCreditCard,
   IconCalendar,
   type Icon,
+  IconBuildingCommunity,
 } from "@tabler/icons-react";
 
 import Logo from "@/components/common/logo";
@@ -99,29 +100,30 @@ const getNavConfig = (
         navMain: [
           {
             title: "Dashboard",
-            url: `${basePath}/dashboard`,
+            url: `/`,
             icon: IconDashboard,
           },
           {
-            title: "Resumen",
-            url: `${basePath}/overview`,
-            icon: IconChartBar,
+            title: "Unidades",
+            url: `/unidades`,
+            icon: IconBuilding,
           },
           {
-            title: "Usuarios",
-            url: `${basePath}/users`,
+            title: "Residentes",
+            url: `/residentes`,
             icon: IconUsers,
           },
           {
-            title: "Reservas",
-            url: `${basePath}/reservations`,
-            icon: IconCalendar,
+            title: "Espacio Comunal",
+            url: `/espacio-comunal`,
+            icon: IconBuildingCommunity,
           },
           {
-            title: "Instalaciones",
-            url: `${basePath}/facilities`,
-            icon: IconBuilding,
+            title: "Reservas",
+            url: `/reservas`,
+            icon: IconCalendar,
           },
+        
         ],
         navSecondary: [
           {
@@ -226,12 +228,13 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navConfig.navMain} />
+        <NavMain items={navConfig.navMain} userRole={userRole} />
         <NavSecondary items={navConfig.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser
           user={{
+            image: userAvatar,
             name: userName,
             email: userEmail,
             avatar: userAvatar,

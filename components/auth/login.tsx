@@ -16,6 +16,7 @@ import { useSubdomain } from "@/app/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { AuthLayout } from "./auth-layout";
 import { useRouter } from "next/navigation";
+import { useCondominio } from "@/app/providers/condominio-provider";
 
 const loginSchema = z.object({
   email: z
@@ -27,12 +28,16 @@ const loginSchema = z.object({
 
 export default function Login() {
   const { subdomain } = useSubdomain();
+  const { condominio } = useCondominio();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const router = useRouter();
+
+  // Obtener el color primario del condominio o usar el azul por defecto
+  const primaryColor = condominio?.primaryColor || "#3B82F6";
 
   const validate = (): boolean => {
     try {
@@ -178,7 +183,8 @@ export default function Login() {
           <div className="flex items-end justify-end">
             <a
               href="#"
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-600"
+              className="text-sm hover:opacity-80 transition-opacity"
+              style={{ color: primaryColor }}
             >
               Olvidé mi contraseña
             </a>
@@ -188,7 +194,24 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5"
+            className="w-full text-white py-5"
+            style={{
+              backgroundColor: primaryColor,
+              borderColor: primaryColor,
+            }}
+            onMouseEnter={(e) => {
+              // Oscurecer el color al hacer hover
+              const rgb = hexToRgb(primaryColor);
+              if (rgb) {
+                const darker = `rgb(${Math.max(0, rgb.r - 20)}, ${Math.max(0, rgb.g - 20)}, ${Math.max(0, rgb.b - 20)})`;
+                e.currentTarget.style.backgroundColor = darker;
+                e.currentTarget.style.borderColor = darker;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = primaryColor;
+              e.currentTarget.style.borderColor = primaryColor;
+            }}
           >
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
@@ -201,10 +224,23 @@ export default function Login() {
         <a
           href="#"
           className="underline hover:text-zinc-700 dark:hover:text-zinc-700"
+          style={{ color: primaryColor }}
         >
           Condiciones de uso
         </a>
       </p>
     </AuthLayout>
   );
+}
+
+// Función auxiliar para convertir hex a RGB
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
 }

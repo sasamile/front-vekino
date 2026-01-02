@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "./providers/query-provider";
 import { SubdomainProvider } from "./providers/subdomain-provider";
+import { CondominioProvider } from "./providers/condominio-provider";
 import { Toaster } from "react-hot-toast";
 
 const geistMono = Geist_Mono({
@@ -39,7 +40,9 @@ export default function RootLayout({
       >
         <QueryProvider>
           <SubdomainProvider>
-            {children}
+            <CondominioProvider>
+              {children}
+            </CondominioProvider>
             <Toaster
               position="top-center"
               toastOptions={{

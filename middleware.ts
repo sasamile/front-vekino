@@ -146,6 +146,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-user-role', authData.user.role);
   response.headers.set('x-user-email', authData.user.email);
   response.headers.set('x-user-name', authData.user.name || '');
+  response.headers.set('x-user-image', authData.user.image || '');
   
   return response;
 }

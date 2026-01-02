@@ -25,17 +25,19 @@ const SUPERADMIN_ROUTES = [
 
 /**
  * Lista de rutas exclusivas para ADMIN
+ * Estas rutas están en app/(dashboard)/(admin)/ pero el pathname no incluye el prefijo
  */
 const ADMIN_ROUTES = [
-  // Agregar rutas de admin aquí si es necesario
+  '/unidades',
+  '/residentes',
 ];
 
 /**
  * Lista de rutas exclusivas para USER
  */
-const USER_ROUTES = [
-  // Agregar rutas de user aquí si es necesario
-];
+// const USER_ROUTES = [
+//   // Agregar rutas de user aquí si es necesario
+// ];
 
 /**
  * Verifica si un usuario puede acceder a una ruta según su rol
@@ -54,9 +56,9 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
     return userRole === 'SUPERADMIN';
   }
   
-  // if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {
-  //   return userRole === 'ADMIN';
-  // }
+  if (ADMIN_ROUTES.some(route => pathname.startsWith(route))) {
+    return userRole === 'ADMIN';
+  }
   
   // if (USER_ROUTES.some(route => pathname.startsWith(route))) {
   //   return userRole === 'USER';

@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import Logo from "../common/logo";
+import { useCondominio } from "@/app/providers/condominio-provider";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -10,6 +11,8 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+  const { condominio } = useCondominio();
+
   return (
     <div className="min-h-screen w-screen flex">
       {/* Left Panel - Login Form (55%) */}
