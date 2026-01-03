@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,13 +9,9 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Field,
   FieldGroup,
@@ -23,13 +19,12 @@ import {
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
-import type { CreatePostRequest, Unidad } from "@/types/types";
-import { IconPhoto, IconX, IconSend } from "@tabler/icons-react";
+import type { Unidad } from "@/types/types";
+import { IconPhoto, IconX, IconSend, IconFile, IconVideo, IconMusic } from "@tabler/icons-react";
 
 const postSchema = z.object({
   titulo: z.string().optional(),
   contenido: z.string().min(1, "El contenido es requerido"),
-  imagen: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
   unidadId: z.string().optional(),
 });
 
@@ -47,16 +42,15 @@ export function CreatePostDialog({
   const queryClient = useQueryClient();
   const { subdomain } = useSubdomain();
   const [loading, setLoading] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState<string>("");
-  const [currentUser, setCurrentUser] = useState<{ name: string; id: string } | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Obtener usuario actual
-  useQuery({
+  const { data: currentUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
       const axiosInstance = getAxiosInstance(subdomain);
       const response = await axiosInstance.get("/condominios/me");
-      setCurrentUser({ name: response.data.name || "Usuario", id: response.data.id });
       return response.data;
     },
     enabled: open,
@@ -85,30 +79,42 @@ export function CreatePostDialog({
     defaultValues: {
       titulo: "",
       contenido: "",
-      imagen: "",
       unidadId: "",
     },
   });
 
-  const imagenUrl = watch("imagen");
   const contenido = watch("contenido");
+  const titulo = watch("titulo");
 
-  // Actualizar preview cuando cambia la URL
-  useEffect(() => {
-    if (imagenUrl && imagenUrl.trim() !== "") {
-      setImagenPreview(imagenUrl);
-    } else {
-      setImagenPreview("");
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + selectedFiles.length > 10) {
+      toast.error("Máximo 10 archivos por post");
+      return;
     }
-  }, [imagenUrl]);
+    setSelectedFiles((prev) => [...prev, ...files]);
+  };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const getFilePreview = (file: File): string => {
+    if (file.type.startsWith("image/")) {
+      return URL.createObjectURL(file);
+    }
+    return "";
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith("image/")) {
+      return <IconPhoto className="size-5" />;
+    } else if (file.type.startsWith("video/")) {
+      return <IconVideo className="size-5" />;
+    } else if (file.type.startsWith("audio/")) {
+      return <IconMusic className="size-5" />;
+    }
+    return <IconFile className="size-5" />;
   };
 
   const onSubmit = async (data: PostFormData) => {
@@ -117,14 +123,28 @@ export function CreatePostDialog({
     try {
       const axiosInstance = getAxiosInstance(subdomain);
       
-      const requestData: CreatePostRequest = {
-        titulo: data.titulo || undefined,
-        contenido: data.contenido,
-        imagen: data.imagen || undefined,
-        unidadId: data.unidadId || undefined,
-      };
+      // Crear FormData
+      const formData = new FormData();
+      
+      if (data.titulo) {
+        formData.append("titulo", data.titulo);
+      }
+      formData.append("contenido", data.contenido);
+      
+      if (data.unidadId) {
+        formData.append("unidadId", data.unidadId);
+      }
 
-      await axiosInstance.post("/comunicacion/posts", requestData);
+      // Agregar archivos
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await axiosInstance.post("/comunicacion/posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       toast.success("Post publicado exitosamente", {
         duration: 2000,
@@ -133,7 +153,10 @@ export function CreatePostDialog({
       await queryClient.invalidateQueries({ queryKey: ["posts"] });
 
       reset();
-      setImagenPreview("");
+      setSelectedFiles([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       onOpenChange(false);
     } catch (error: any) {
       const errorMessage =
@@ -152,180 +175,178 @@ export function CreatePostDialog({
   const handleClose = () => {
     if (!loading) {
       reset();
-      setImagenPreview("");
+      setSelectedFiles([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       onOpenChange(false);
     }
   };
 
+  const characterCount = contenido?.length || 0;
+  const hasContent = contenido && contenido.trim().length > 0;
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Crear Publicación</DialogTitle>
-          <DialogDescription>
-            Comparte algo con la comunidad
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-[600px] p-0 mt-8 gap-0">
+        <DialogTitle className="sr-only">Crear Publicación</DialogTitle>
+        {/* Header minimalista */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <button
+            onClick={handleClose}
+            className="p-2 rounded-full hover:bg-muted transition-colors"
+            disabled={loading}
+          >
+            <IconX className="size-5" />
+          </button>
+          <Button
+            type="submit"
+            form="create-post-form"
+            disabled={loading || !hasContent}
+            className="rounded-full px-6"
+            size="sm"
+          >
+            {loading ? "Publicando..." : "Publicar"}
+          </Button>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Preview del post */}
-          {(contenido || imagenPreview) && (
-            <div className="bg-muted/30 rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {currentUser ? getInitials(currentUser.name) : "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-semibold text-sm">
-                    {currentUser?.name || "Tú"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Ahora</div>
-                </div>
-              </div>
-              {watch("titulo") && (
-                <h3 className="font-semibold text-base">{watch("titulo")}</h3>
-              )}
-              {contenido && (
-                <p className="text-sm whitespace-pre-wrap">{contenido}</p>
-              )}
-              {imagenPreview && (
-                <div className="rounded-lg overflow-hidden bg-muted">
-                  <img
-                    src={imagenPreview}
-                    alt="Preview"
-                    className="w-full h-auto max-h-64 object-contain"
-                    onError={() => {
-                      setImagenPreview("");
-                      toast.error("No se pudo cargar la imagen");
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          <FieldGroup>
+        {/* Formulario */}
+        <form
+          id="create-post-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col"
+        >
+          <FieldGroup className="p-4 space-y-4">
+            {/* Título opcional */}
             <Field>
-              <div className="flex items-center gap-3 mb-2">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {currentUser ? getInitials(currentUser.name) : "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <Input
-                    {...register("titulo")}
-                    placeholder="¿En qué estás pensando? (opcional)"
-                    disabled={loading}
-                    className="border-0 bg-transparent text-lg font-medium placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
-                  />
-                </div>
-              </div>
+              <input
+                {...register("titulo")}
+                placeholder="Título (opcional)"
+                disabled={loading}
+                className="w-full text-xl font-semibold bg-transparent border-0 outline-none placeholder:text-muted-foreground resize-none"
+                maxLength={100}
+              />
               {errors.titulo && (
                 <FieldError>{errors.titulo.message}</FieldError>
               )}
             </Field>
 
+            {/* Contenido principal */}
             <Field>
               <textarea
                 {...register("contenido")}
-                placeholder="Escribe tu mensaje..."
+                placeholder="¿Qué está pasando?"
                 disabled={loading}
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                style={{ minHeight: "120px" }}
+                className="w-full min-h-[200px] text-[15px] bg-transparent border-0 outline-none placeholder:text-muted-foreground resize-none"
+                style={{ minHeight: "200px" }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = `${Math.min(target.scrollHeight, 500)}px`;
+                }}
               />
               {errors.contenido && (
                 <FieldError>{errors.contenido.message}</FieldError>
               )}
             </Field>
 
-            <Field>
+            {/* Preview de archivos */}
+            {selectedFiles.length > 0 && (
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2 border rounded-md px-3 py-2">
-                    <IconPhoto className="size-5 text-muted-foreground" />
-                    <Input
-                      {...register("imagen")}
-                      type="url"
-                      placeholder="Pega la URL de una imagen..."
-                      disabled={loading}
-                      className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
-                    />
-                    {imagenPreview && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={() => {
-                          reset({ ...watch(), imagen: "" });
-                          setImagenPreview("");
-                        }}
-                      >
-                        <IconX className="size-4" />
-                      </Button>
+                {selectedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="relative group rounded-xl overflow-hidden border border-border"
+                  >
+                    {file.type.startsWith("image/") ? (
+                      <div className="relative">
+                        <img
+                          src={getFilePreview(file)}
+                          alt={file.name}
+                          className="w-full h-auto max-h-[300px] object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <IconX className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted">
+                          {getFileIcon(file)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="p-2 rounded-full hover:bg-muted transition-colors"
+                        >
+                          <IconX className="size-4" />
+                        </button>
+                      </div>
                     )}
                   </div>
-                </div>
-                {imagenPreview && (
-                  <div className="relative rounded-lg overflow-hidden border bg-muted">
-                    <img
-                      src={imagenPreview}
-                      alt="Preview"
-                      className="w-full h-auto max-h-64 object-contain"
-                      onError={() => {
-                        setImagenPreview("");
-                        toast.error("No se pudo cargar la imagen");
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              {errors.imagen && (
-                <FieldError>{errors.imagen.message}</FieldError>
-              )}
-            </Field>
-
-            <Field>
-              <select
-                {...register("unidadId")}
-                disabled={loading || unidades.length === 0}
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">
-                  {unidades.length === 0 ? "Cargando unidades..." : "Agregar ubicación (opcional)"}
-                </option>
-                {unidades.map((unidad) => (
-                  <option key={unidad.id} value={unidad.id}>
-                    {unidad.identificador} - {unidad.tipo}
-                  </option>
                 ))}
-              </select>
-              {errors.unidadId && (
-                <FieldError>{errors.unidadId.message}</FieldError>
-              )}
-            </Field>
+              </div>
+            )}
+
+            {/* Selector de unidad */}
+            {unidades.length > 0 && (
+              <Field>
+                <select
+                  {...register("unidadId")}
+                  disabled={loading}
+                  className="w-full text-sm bg-transparent border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Agregar ubicación (opcional)</option>
+                  {unidades.map((unidad) => (
+                    <option key={unidad.id} value={unidad.id}>
+                      {unidad.identificador} - {unidad.tipo}
+                    </option>
+                  ))}
+                </select>
+                {errors.unidadId && (
+                  <FieldError>{errors.unidadId.message}</FieldError>
+                )}
+              </Field>
+            )}
           </FieldGroup>
 
-          <div className="flex items-center justify-end gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading || !contenido}
-              className="gap-2"
-            >
-              <IconSend className="size-4" />
-              {loading ? "Publicando..." : "Publicar"}
-            </Button>
+          {/* Footer con acciones */}
+          <div className="border-t border-border p-4 flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+                onChange={handleFileSelect}
+                disabled={loading}
+                className="hidden"
+                id="file-input"
+              />
+              <label
+                htmlFor="file-input"
+                className="p-2 rounded-full hover:bg-primary/10 text-primary cursor-pointer transition-colors"
+                title="Agregar archivos"
+              >
+                <IconPhoto className="size-5" />
+              </label>
+            </div>
+
+            {hasContent && (
+              <div className="text-xs text-muted-foreground">
+                {characterCount} caracteres
+              </div>
+            )}
           </div>
         </form>
       </DialogContent>

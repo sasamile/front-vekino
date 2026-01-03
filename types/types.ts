@@ -594,6 +594,11 @@ export interface PostReactions {
   userReaction: ReactionType | null;
 }
 
+export interface ReactionCount {
+  tipo: ReactionType;
+  count: number;
+}
+
 export interface Post {
   id: string;
   titulo: string | null;
@@ -616,9 +621,11 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
   comentariosCount?: number;
-  likesCount?: number; // Deprecated: usar reactions.total
-  userLiked?: boolean; // Deprecated: usar reactions.userReaction
-  reactions?: PostReactions;
+  likesCount?: number; // Deprecated: usar reactionsCount
+  userLiked?: boolean; // Deprecated: usar userReaction
+  userReaction?: ReactionType | null; // Tipo de reacción del usuario actual
+  reactionsCount?: ReactionCount[]; // Conteo por tipo de reacción
+  reactions?: PostReactions; // Formato antiguo (deprecated)
 }
 
 export interface CreatePostRequest {

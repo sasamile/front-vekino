@@ -21,6 +21,7 @@ import {
   IconCoin,
   IconFile,
   IconUser,
+  IconTicket,
 } from "@tabler/icons-react";
 
 import Logo from "@/components/common/logo";
@@ -135,6 +136,11 @@ const getNavConfig = (
             title: "Comunidad",
             url: `/comunidad`,
             icon: IconUser,
+          },
+          {
+            title: "Tickets",
+            url: `/tickets`,
+            icon: IconTicket,
           },
         ],
         navSecondary: [
