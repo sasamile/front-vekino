@@ -395,3 +395,287 @@ export interface UpdateReservaRequest {
   estado?: ReservaEstado;
 }
 
+// Finanzas - Facturas
+export type FacturaEstado = "PENDIENTE" | "ENVIADA" | "PAGADA" | "VENCIDA" | "CANCELADA";
+
+export interface Factura {
+  id: string;
+  numeroFactura: string;
+  unidadId: string;
+  unidad?: {
+    id: string;
+    identificador: string;
+    tipo: UnidadTipo;
+  };
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  periodo: string; // "YYYY-MM"
+  fechaEmision: string;
+  fechaVencimiento: string;
+  valor: number;
+  descripcion: string | null;
+  estado: FacturaEstado;
+  fechaEnvio: string | null;
+  fechaPago: string | null;
+  observaciones: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFacturaRequest {
+  unidadId: string;
+  userId?: string;
+  periodo: string; // "YYYY-MM"
+  fechaVencimiento: string; // ISO 8601
+  valor: number;
+  descripcion?: string;
+  observaciones?: string;
+}
+
+export interface CreateFacturasBulkRequest {
+  periodo: string; // "YYYY-MM"
+  fechaEmision: string; // ISO 8601
+  fechaVencimiento: string; // ISO 8601
+  enviarFacturas?: boolean;
+}
+
+export interface FacturasBulkResponse {
+  total: number;
+  facturas: Factura[];
+}
+
+// Finanzas - Pagos
+export type PagoEstado = "PENDIENTE" | "PROCESANDO" | "APROBADO" | "RECHAZADO" | "CANCELADO";
+export type MetodoPago = "WOMPI" | "EFECTIVO";
+
+export interface Pago {
+  id: string;
+  facturaId: string;
+  factura?: {
+    id: string;
+    numeroFactura: string;
+    valor: number;
+    estado: FacturaEstado;
+  };
+  userId: string;
+  valor: number;
+  metodoPago: MetodoPago;
+  estado: PagoEstado;
+  wompiTransactionId: string | null;
+  wompiReference: string | null;
+  wompiPaymentLink: string | null;
+  fechaPago: string | null;
+  observaciones: string | null;
+  createdAt: string;
+  updatedAt: string;
+  paymentLink?: string; // Link de pago para redirigir al usuario
+  wompiStatus?: {
+    id: string;
+    status: string;
+    amount_in_cents: number;
+    currency: string;
+    reference: string;
+    created_at: string;
+    finalized_at: string | null;
+  };
+}
+
+export interface CreatePagoRequest {
+  facturaId: string;
+  metodoPago?: MetodoPago;
+  observaciones?: string;
+}
+
+// Comunicación - Tickets
+export type TicketEstado = "ABIERTO" | "EN_PROGRESO" | "RESUELTO" | "CERRADO";
+export type TicketPrioridad = "BAJA" | "MEDIA" | "ALTA" | "URGENTE";
+
+export interface Ticket {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  estado: TicketEstado;
+  categoria: string | null;
+  prioridad: TicketPrioridad;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  };
+  unidadId: string | null;
+  unidad?: {
+    id: string;
+    identificador: string;
+  };
+  asignadoA: string | null;
+  fechaResolucion: string | null;
+  createdAt: string;
+  updatedAt: string;
+  comentariosCount?: number;
+}
+
+export interface CreateTicketRequest {
+  titulo: string;
+  descripcion: string;
+  categoria?: string;
+  prioridad?: TicketPrioridad;
+  unidadId?: string;
+}
+
+export interface UpdateTicketRequest {
+  titulo?: string;
+  descripcion?: string;
+  categoria?: string;
+  prioridad?: TicketPrioridad;
+  unidadId?: string;
+  estado?: TicketEstado;
+  asignadoA?: string;
+}
+
+export interface TicketComentario {
+  id: string;
+  ticketId: string;
+  userId: string;
+  contenido: string;
+  esInterno: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  };
+}
+
+export interface CreateTicketComentarioRequest {
+  contenido: string;
+  esInterno?: boolean;
+}
+
+export interface TicketsResponse {
+  data: Ticket[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// Comunicación - Foro
+export type ReactionType = "LIKE" | "LOVE" | "LAUGH" | "WOW" | "SAD" | "ANGRY";
+export type AttachmentType = "IMAGEN" | "VIDEO" | "AUDIO" | "DOCUMENTO";
+
+export interface PostAttachment {
+  id: string;
+  tipo: AttachmentType;
+  url: string;
+  nombre: string;
+  tamaño: number;
+  mimeType: string;
+  thumbnailUrl?: string | null;
+  createdAt: string;
+}
+
+export interface PostReactions {
+  LIKE: number;
+  LOVE: number;
+  LAUGH: number;
+  WOW: number;
+  SAD: number;
+  ANGRY: number;
+  total: number;
+  userReaction: ReactionType | null;
+}
+
+export interface Post {
+  id: string;
+  titulo: string | null;
+  contenido: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  };
+  unidadId: string | null;
+  unidad?: {
+    id: string;
+    identificador: string;
+  };
+  imagen: string | null; // Deprecated: usar attachments
+  attachments?: PostAttachment[];
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+  comentariosCount?: number;
+  likesCount?: number; // Deprecated: usar reactions.total
+  userLiked?: boolean; // Deprecated: usar reactions.userReaction
+  reactions?: PostReactions;
+}
+
+export interface CreatePostRequest {
+  titulo?: string;
+  contenido: string;
+  imagen?: string; // Deprecated: usar attachments
+  unidadId?: string;
+  attachments?: Array<{
+    tipo: AttachmentType;
+    url: string;
+    nombre: string;
+    tamaño: number;
+    mimeType: string;
+    thumbnailUrl?: string;
+  }>;
+}
+
+export interface UpdatePostRequest {
+  titulo?: string;
+  contenido?: string;
+  imagen?: string;
+  activo?: boolean;
+}
+
+export interface PostComentario {
+  id: string;
+  postId: string;
+  userId: string;
+  contenido: string;
+  activo: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  };
+  unidad?: {
+    id: string;
+    identificador: string;
+  };
+}
+
+export interface CreatePostComentarioRequest {
+  contenido: string;
+}
+
+export interface CreatePostReactionRequest {
+  tipo: ReactionType;
+}
+
+export interface PostsResponse {
+  data: Post[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+

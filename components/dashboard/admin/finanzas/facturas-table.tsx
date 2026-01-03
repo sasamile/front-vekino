@@ -10,6 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconEye,
+  IconSend,
+  IconCurrencyDollar,
+  IconTrash,
+} from "@tabler/icons-react";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,21 +28,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  IconBuilding,
-  IconChevronLeft,
-  IconChevronRight,
-  IconPencil,
-} from "@tabler/icons-react";
-import { Trash } from "lucide-react";
-import type { EspacioComun } from "@/types/types";
+import type { Factura } from "@/types/types";
 
-interface EspaciosTableProps {
-  espacios: EspacioComun[];
+interface FacturasTableProps {
+  facturas: Factura[];
   isLoading: boolean;
   error: Error | null;
-  onEdit?: (espacio: EspacioComun) => void;
-  onDelete?: (espacio: EspacioComun) => void;
+  onView?: (factura: Factura) => void;
+  onEnviar?: (factura: Factura) => void;
+  onPagar?: (factura: Factura) => void;
+  onDelete?: (factura: Factura) => void;
+  isAdmin?: boolean;
   total?: number;
   currentPage?: number;
   totalPages?: number;
@@ -43,45 +47,69 @@ interface EspaciosTableProps {
   onLimitChange?: (limit: number) => void;
 }
 
-const TIPO_LABELS: Record<string, string> = {
-  SALON_SOCIAL: "Salón Social",
-  ZONA_BBQ: "Zona BBQ",
-  SAUNA: "Sauna",
-  CASA_EVENTOS: "Casa de Eventos",
-  GIMNASIO: "Gimnasio",
-  PISCINA: "Piscina",
-  CANCHA_DEPORTIVA: "Cancha Deportiva",
-  PARQUEADERO: "Parqueadero",
-  OTRO: "Otro",
+const ESTADO_LABELS: Record<string, string> = {
+  PENDIENTE: "Pendiente",
+  ENVIADA: "Enviada",
+  PAGADA: "Pagada",
+  VENCIDA: "Vencida",
+  CANCELADA: "Cancelada",
 };
 
-const UNIDAD_TIEMPO_LABELS: Record<string, string> = {
-  HORAS: "Horas",
-  DIAS: "Días",
-  MESES: "Meses",
+const ESTADO_COLORS: Record<string, string> = {
+  PENDIENTE: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+  ENVIADA: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  PAGADA: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  VENCIDA: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+  CANCELADA: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
-export function EspaciosTable({
-  espacios,
+export function FacturasTable({
+  facturas,
   isLoading,
   error,
-  onEdit,
+  onView,
+  onEnviar,
+  onPagar,
   onDelete,
+  isAdmin = false,
   total = 0,
   currentPage = 1,
   totalPages = 0,
   limit = 10,
   onPageChange,
   onLimitChange,
-}: EspaciosTableProps) {
+}: FacturasTableProps) {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn("Fecha inválida:", dateString);
+      return dateString;
+    }
+    return date.toLocaleDateString("es-CO", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(value);
+  };
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Listado de Espacios Comunes</CardTitle>
+            <CardTitle>Listado de Facturas</CardTitle>
             <CardDescription className="py-2">
-              Gestiona todos los espacios comunes disponibles para reservas
+              Gestiona todas las facturas del condominio
             </CardDescription>
           </div>
         </div>
@@ -89,7 +117,7 @@ export function EspaciosTable({
       <CardContent>
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-            Error al cargar los espacios comunes. Por favor, intenta nuevamente.
+            Error al cargar las facturas. Por favor, intenta nuevamente.
           </div>
         )}
 
@@ -98,10 +126,12 @@ export function EspaciosTable({
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-4 text-sm font-medium">Nombre</th>
-                  <th className="text-left p-4 text-sm font-medium">Tipo</th>
-                  <th className="text-left p-4 text-sm font-medium">Capacidad</th>
-                  <th className="text-left p-4 text-sm font-medium">Precio</th>
+                  <th className="text-left p-4 text-sm font-medium">Número</th>
+                  <th className="text-left p-4 text-sm font-medium">Unidad</th>
+                  <th className="text-left p-4 text-sm font-medium">Usuario</th>
+                  <th className="text-left p-4 text-sm font-medium">Período</th>
+                  <th className="text-left p-4 text-sm font-medium">Vencimiento</th>
+                  <th className="text-left p-4 text-sm font-medium">Valor</th>
                   <th className="text-left p-4 text-sm font-medium">Estado</th>
                   <th className="text-left p-4 text-sm font-medium">Acciones</th>
                 </tr>
@@ -113,16 +143,22 @@ export function EspaciosTable({
                       <Skeleton className="h-4 w-32" />
                     </td>
                     <td className="p-4">
+                      <Skeleton className="h-4 w-28" />
+                    </td>
+                    <td className="p-4">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="p-4">
                       <Skeleton className="h-4 w-24" />
                     </td>
                     <td className="p-4">
-                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-32" />
                     </td>
                     <td className="p-4">
                       <Skeleton className="h-4 w-24" />
                     </td>
                     <td className="p-4">
-                      <Skeleton className="h-6 w-20 rounded-full" />
+                      <Skeleton className="h-6 w-24 rounded-full" />
                     </td>
                     <td className="p-4">
                       <div className="flex gap-2">
@@ -135,10 +171,9 @@ export function EspaciosTable({
               </tbody>
             </table>
           </div>
-        ) : espacios.length === 0 ? (
+        ) : facturas.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <IconBuilding className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p>No hay espacios comunes registrados</p>
+            <p>No hay facturas registradas</p>
           </div>
         ) : (
           <>
@@ -146,81 +181,112 @@ export function EspaciosTable({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-4 text-sm font-medium">Nombre</th>
-                    <th className="text-left p-4 text-sm font-medium">Tipo</th>
-                    <th className="text-left p-4 text-sm font-medium">Capacidad</th>
-                    <th className="text-left p-4 text-sm font-medium">Precio</th>
+                    <th className="text-left p-4 text-sm font-medium">Número</th>
+                    <th className="text-left p-4 text-sm font-medium">Unidad</th>
+                    <th className="text-left p-4 text-sm font-medium">Usuario</th>
+                    <th className="text-left p-4 text-sm font-medium">Período</th>
+                    <th className="text-left p-4 text-sm font-medium">Vencimiento</th>
+                    <th className="text-left p-4 text-sm font-medium">Valor</th>
                     <th className="text-left p-4 text-sm font-medium">Estado</th>
                     <th className="text-left p-4 text-sm font-medium">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {espacios.map((espacio) => (
+                  {facturas.map((factura) => (
                     <tr
-                      key={espacio.id}
+                      key={factura.id}
                       className="border-b hover:bg-accent/50 transition-colors"
                     >
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <IconBuilding className="size-4 text-muted-foreground" />
-                          <span className="font-medium">{espacio.nombre}</span>
+                        <div className="font-medium text-sm">
+                          {factura.numeroFactura}
                         </div>
-                        {espacio.descripcion && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {espacio.descripcion.length > 50
-                              ? `${espacio.descripcion.substring(0, 50)}...`
-                              : espacio.descripcion}
-                          </p>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm font-medium">
+                          {factura.unidad?.identificador || "N/A"}
+                        </div>
+                        {factura.unidad?.tipo && (
+                          <div className="text-xs text-muted-foreground">
+                            {factura.unidad.tipo}
+                          </div>
                         )}
                       </td>
                       <td className="p-4">
-                        <span className="text-sm">{TIPO_LABELS[espacio.tipo] || espacio.tipo}</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm">{espacio.capacidad} personas</span>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-sm">
-                          <span className="font-medium">
-                            ${espacio.precioPorUnidad.toLocaleString()}
-                          </span>
-                          <span className="text-muted-foreground"> / {UNIDAD_TIEMPO_LABELS[espacio.unidadTiempo]}</span>
+                        <div className="text-sm font-medium">
+                          {factura.user?.name || "N/A"}
                         </div>
+                        {factura.user?.email && (
+                          <div className="text-xs text-muted-foreground">
+                            {factura.user.email}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs">{factura.periodo}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-xs">{formatDate(factura.fechaVencimiento)}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm font-medium">
+                          {formatCurrency(factura.valor)}
+                        </span>
                       </td>
                       <td className="p-4">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                            espacio.activo
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                              : "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400"
+                            ESTADO_COLORS[factura.estado] || ESTADO_COLORS.PENDIENTE
                           }`}
                         >
-                          {espacio.activo ? "Activo" : "Inactivo"}
+                          {ESTADO_LABELS[factura.estado] || factura.estado}
                         </span>
                       </td>
                       <td className="p-4">
-                        <div className="flex gap-1">
-                          {onEdit && (
+                        <div className="flex gap-1 flex-wrap">
+                          {onView && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1.5 h-8 px-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                              onClick={() => onView(factura)}
+                              title="Ver factura"
+                            >
+                              <IconEye className="size-4" />
+                            </Button>
+                          )}
+                          {isAdmin && onEnviar && factura.estado === "PENDIENTE" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1.5 h-8 px-2 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                              onClick={() => onEnviar(factura)}
+                              title="Enviar factura"
+                            >
+                              <IconSend className="size-4" />
+                            </Button>
+                          )}
+                          {onPagar && (factura.estado === "PENDIENTE" || factura.estado === "ENVIADA" || factura.estado === "VENCIDA") && (
                             <Button
                               variant="ghost"
                               size="sm"
                               className="gap-1.5 h-8 px-2 hover:bg-primary/10 hover:text-primary"
-                              onClick={() => onEdit(espacio)}
-                              title="Editar espacio"
+                              onClick={() => onPagar(factura)}
+                              title="Pagar factura"
                             >
-                              <IconPencil className="size-4" />
+                              <IconCurrencyDollar className="size-4" />
                             </Button>
                           )}
-                          {onDelete && (
+                          {isAdmin && onDelete && factura.estado !== "PAGADA" && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   className="gap-1.5 h-8 px-2 hover:bg-destructive/10 hover:text-destructive"
-                                  title="Eliminar espacio"
+                                  title="Eliminar factura"
                                 >
-                                  <Trash className="size-4" />
+                                  <IconTrash className="size-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
@@ -230,14 +296,15 @@ export function EspaciosTable({
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
                                     Esta acción no se puede deshacer. Esto eliminará
-                                    permanentemente el espacio común "{espacio.nombre}" y
-                                    todos sus datos asociados de nuestros servidores.
+                                    permanentemente la factura "{factura.numeroFactura}" 
+                                    de la unidad {factura.unidad?.identificador || "N/A"}.
+                                    Solo se pueden eliminar facturas que no tengan pagos asociados.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => onDelete(espacio)}
+                                    onClick={() => onDelete(factura)}
                                     className="bg-destructive px-4 py-2 rounded-md text-white hover:bg-destructive/90"
                                   >
                                     Eliminar
@@ -261,7 +328,7 @@ export function EspaciosTable({
                   {total > 0 && (
                     <div className="text-sm text-muted-foreground">
                       Mostrando {(currentPage - 1) * limit + 1} -{" "}
-                      {Math.min(currentPage * limit, total)} de {total} espacios
+                      {Math.min(currentPage * limit, total)} de {total} facturas
                       {totalPages > 1 &&
                         ` - Página ${currentPage} de ${totalPages}`}
                     </div>

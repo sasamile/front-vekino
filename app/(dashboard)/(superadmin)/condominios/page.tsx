@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import axios from "axios";
 import { useDebounce } from "@/hooks/use-debounce";
+import toast from "react-hot-toast";
 import type { Condominio } from "@/types/types";
 import type {
   CondominiosFilters,
@@ -135,6 +136,33 @@ function SuperAdminCondominiosPage() {
     setEditModalOpen(true);
   };
 
+  // Mutación para eliminar condominio
+  const deleteMutation = useMutation({
+    mutationFn: async (condominioId: string) => {
+      const axiosInstance = getAxiosInstance(subdomain);
+      await axiosInstance.post(`/condominios/${condominioId}/delete`);
+    },
+    onSuccess: () => {
+      toast.success("Condominio eliminado exitosamente", {
+        duration: 2000,
+      });
+      queryClient.invalidateQueries({ queryKey: ["condominios"] });
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al eliminar el condominio";
+      toast.error(errorMessage, {
+        duration: 3000,
+      });
+    },
+  });
+
+  const handleDelete = (condominio: Condominio) => {
+    deleteMutation.mutate(condominio.id);
+  };
+
   const handleSave = async (formData: FormData) => {
     if (!selectedCondominio) return;
 
@@ -195,6 +223,7 @@ function SuperAdminCondominiosPage() {
         error={error}
         onView={handleView}
         onEdit={handleEdit}
+        onDelete={handleDelete}
         total={total}
         currentPage={currentPage}
         totalPages={totalPages}

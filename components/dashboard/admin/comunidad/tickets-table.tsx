@@ -10,6 +10,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconEye,
+  IconEdit,
+  IconTrash,
+  IconCheck,
+  IconX,
+  IconRefresh,
+  IconChevronDown,
+} from "@tabler/icons-react";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,24 +32,22 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  IconCalendar,
-  IconChevronLeft,
-  IconChevronRight,
-  IconPencil,
-  IconEye,
-  IconCheck,
-  IconX,
-} from "@tabler/icons-react";
-import type { Reserva } from "@/types/types";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import type { Ticket, TicketEstado } from "@/types/types";
 
-interface ReservasTableProps {
-  reservas: Reserva[];
+interface TicketsTableProps {
+  tickets: Ticket[];
   isLoading: boolean;
   error: Error | null;
-  onView?: (reserva: Reserva) => void;
-  onEdit?: (reserva: Reserva) => void;
-  onAprobar?: (reserva: Reserva) => void;
-  onCancelar?: (reserva: Reserva) => void;
+  onView?: (ticket: Ticket) => void;
+  onEdit?: (ticket: Ticket) => void;
+  onDelete?: (ticket: Ticket) => void;
+  onEstadoChange?: (ticket: Ticket, nuevoEstado: TicketEstado) => void;
   isAdmin?: boolean;
   total?: number;
   currentPage?: number;
@@ -49,27 +58,41 @@ interface ReservasTableProps {
 }
 
 const ESTADO_LABELS: Record<string, string> = {
-  PENDIENTE: "Pendiente",
-  CONFIRMADA: "Confirmada",
-  CANCELADA: "Cancelada",
-  COMPLETADA: "Completada",
+  ABIERTO: "Abierto",
+  EN_PROGRESO: "En Progreso",
+  RESUELTO: "Resuelto",
+  CERRADO: "Cerrado",
 };
 
 const ESTADO_COLORS: Record<string, string> = {
-  PENDIENTE: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
-  CONFIRMADA: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-  CANCELADA: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
-  COMPLETADA: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  ABIERTO: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  EN_PROGRESO: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+  RESUELTO: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  CERRADO: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
-export function ReservasTable({
-  reservas,
+const PRIORIDAD_LABELS: Record<string, string> = {
+  BAJA: "Baja",
+  MEDIA: "Media",
+  ALTA: "Alta",
+  URGENTE: "Urgente",
+};
+
+const PRIORIDAD_COLORS: Record<string, string> = {
+  BAJA: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
+  MEDIA: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  ALTA: "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
+  URGENTE: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+};
+
+export function TicketsTable({
+  tickets,
   isLoading,
   error,
   onView,
   onEdit,
-  onAprobar,
-  onCancelar,
+  onDelete,
+  onEstadoChange,
   isAdmin = false,
   total = 0,
   currentPage = 1,
@@ -77,33 +100,18 @@ export function ReservasTable({
   limit = 10,
   onPageChange,
   onLimitChange,
-}: ReservasTableProps) {
-  // Formatear fecha de UTC a hora local
-  // El backend retorna fechas en UTC (ej: "2026-01-02T14:00:00.000Z")
-  // Necesitamos convertirlas a hora local para mostrarlas correctamente
-  // Ejemplo: 14:00 UTC → 09:00 hora Colombia (UTC-5)
+}: TicketsTableProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
-    
-    // Crear objeto Date desde la string UTC
-    // Si viene con 'Z' o sin timezone, JavaScript lo interpreta como UTC
     const date = new Date(dateString);
-    
-    // Verificar que la fecha sea válida
     if (isNaN(date.getTime())) {
-      console.warn("Fecha inválida:", dateString);
       return dateString;
     }
-    
-    // Convertir a hora local usando toLocaleString
-    // Esto automáticamente convierte de UTC a la zona horaria del navegador
-    return date.toLocaleString("es-CO", {
+    return date.toLocaleDateString("es-CO", {
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Usar timezone del navegador
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
   };
 
@@ -112,9 +120,9 @@ export function ReservasTable({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Listado de Reservas</CardTitle>
+            <CardTitle>Listado de Tickets</CardTitle>
             <CardDescription className="py-2">
-              Gestiona todas las reservas de espacios comunes
+              Gestiona los tickets de administración del condominio
             </CardDescription>
           </div>
         </div>
@@ -122,7 +130,7 @@ export function ReservasTable({
       <CardContent>
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-            Error al cargar las reservas. Por favor, intenta nuevamente.
+            Error al cargar los tickets. Por favor, intenta nuevamente.
           </div>
         )}
 
@@ -131,40 +139,44 @@ export function ReservasTable({
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-4 text-sm font-medium">Espacio</th>
-                  <th className="text-left p-4 text-sm font-medium">Usuario</th>
-                  <th className="text-left p-4 text-sm font-medium">Fecha Inicio</th>
-                  <th className="text-left p-4 text-sm font-medium">Fecha Fin</th>
+                  <th className="text-left p-3 text-sm font-medium">Título</th>
+                  <th className="text-left p-3 text-sm font-medium">Usuario</th>
+                  <th className="text-left p-3 text-sm font-medium">Unidad</th>
+                  <th className="text-left p-3 text-sm font-medium">Categoría</th>
+                  <th className="text-left p-3 text-sm font-medium">Prioridad</th>
                   <th className="text-left p-4 text-sm font-medium">Estado</th>
-                  <th className="text-left p-4 text-sm font-medium">Precio</th>
-                  <th className="text-left p-4 text-sm font-medium">Acciones</th>
+                  <th className="text-left p-3 text-sm font-medium">Fecha</th>
+                  <th className="text-left p-3 text-sm font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <tr key={index} className="border-b">
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-20" />
+                    </td>
+                    <td className="p-2">  
+                      <Skeleton className="h-2  w-20" />
+                    </td>
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-20" />
+                    </td>
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-20" />
+                    </td>
+                    <td className="p-2">  
+                      <Skeleton className="h-4 w-20 rounded-full" />
+                    </td>
+                    <td className="p-2">
+                      <Skeleton className="h-4 w-24 rounded-full" />
                     </td>
                     <td className="p-4">
-                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-2 w-20" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="p-4">
-                      <Skeleton className="h-6 w-24 rounded-full" />
-                    </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-24" />
-                    </td>
-                    <td className="p-4">
+                  
+                    <td className="p-2">  
                       <div className="flex gap-2">
-                        <Skeleton className="h-8 w-16" />
-                        <Skeleton className="h-8 w-16" />
+                        <Skeleton className="h-4 w-12" />
                       </div>
                     </td>
                   </tr>
@@ -172,10 +184,9 @@ export function ReservasTable({
               </tbody>
             </table>
           </div>
-        ) : reservas.length === 0 ? (
+        ) : tickets.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <IconCalendar className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p>No hay reservas registradas</p>
+            <p>No hay tickets registrados</p>
           </div>
         ) : (
           <>
@@ -183,95 +194,157 @@ export function ReservasTable({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-4 text-sm font-medium">Espacio</th>
+                    <th className="text-left p-4 text-sm font-medium">Título</th>
                     <th className="text-left p-4 text-sm font-medium">Usuario</th>
-                    <th className="text-left p-4 text-sm font-medium">Fecha Inicio</th>
-                    <th className="text-left p-4 text-sm font-medium">Fecha Fin</th>
+                    <th className="text-left p-4 text-sm font-medium">Unidad</th>
+                    <th className="text-left p-4 text-sm font-medium">Categoría</th>
+                    <th className="text-left p-4 text-sm font-medium">Prioridad</th>
                     <th className="text-left p-4 text-sm font-medium">Estado</th>
-                    <th className="text-left p-4 text-sm font-medium">Precio</th>
+                    <th className="text-left p-4 text-sm font-medium">Fecha</th>
                     <th className="text-left p-4 text-sm font-medium">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reservas.map((reserva) => (
+                  {tickets.map((ticket) => (
                     <tr
-                      key={reserva.id}
+                      key={ticket.id}
                       className="border-b hover:bg-accent/50 transition-colors"
                     >
                       <td className="p-4">
-                        <div className="font-medium text-sm">
-                          {reserva.espacioComun?.nombre || "N/A"}
+                        <div className="font-medium text-xs max-w-xs truncate">
+                          {ticket.titulo}
                         </div>
-                        {reserva.espacioComun?.tipo && (
+                      </td>
+                      <td className="p-4">
+                        <div className="text-xs font-medium">
+                          {ticket.user?.name || "N/A"}
+                        </div>
+                        {ticket.user?.email && (
                           <div className="text-xs text-muted-foreground">
-                            {reserva.espacioComun.tipo}
+                            {ticket.user.email}
                           </div>
                         )}
                       </td>
                       <td className="p-4">
-                        <div className="text-sm font-medium">
-                          {reserva.user?.name || "N/A"}
+                        <div className="text-xs">
+                          {ticket.unidad?.identificador || "N/A"}
                         </div>
-                        {reserva.user?.email && (
-                          <div className="text-xs text-muted-foreground">
-                            {reserva.user.email}
-                          </div>
-                        )}
                       </td>
                       <td className="p-4">
-                        <span className="text-xs">{formatDate(reserva.fechaInicio)}</span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-xs">{formatDate(reserva.fechaFin)}</span>
+                        <span className="text-xs">
+                          {ticket.categoria || "Sin categoría"}
+                        </span>
                       </td>
                       <td className="p-4">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                            ESTADO_COLORS[reserva.estado] || ESTADO_COLORS.PENDIENTE
+                            PRIORIDAD_COLORS[ticket.prioridad] || PRIORIDAD_COLORS.MEDIA
                           }`}
                         >
-                          {ESTADO_LABELS[reserva.estado] || reserva.estado}
+                          {PRIORIDAD_LABELS[ticket.prioridad] || ticket.prioridad}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm font-medium">
-                          ${reserva.precioTotal.toLocaleString()}
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                            ESTADO_COLORS[ticket.estado] || ESTADO_COLORS.ABIERTO
+                          }`}
+                        >
+                          {ESTADO_LABELS[ticket.estado] || ticket.estado}
                         </span>
                       </td>
                       <td className="p-4">
-                        <div className="flex gap-1 flex-wrap">
+                        <span className="text-xs">{formatDate(ticket.createdAt)}</span>
+                      </td>
+                    
+                      <td className="p-4">
+                        <div className="flex gap-1 ">
                           {onView && (
                             <Button
                               variant="ghost"
                               size="sm"
                               className="gap-1.5 h-8 px-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                              onClick={() => onView(reserva)}
-                              title="Ver reserva"
+                              onClick={() => onView(ticket)}
+                              title="Ver ticket"
                             >
                               <IconEye className="size-4" />
                             </Button>
+                          )}
+                          {/* Acciones de administrador - siempre mostrar si las funciones están definidas */}
+                          {onEstadoChange && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="gap-1.5 h-8 px-2 hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-purple-900/20 dark:hover:text-purple-400"
+                                  title="Cambiar estado"
+                                >
+                                  <IconRefresh className="size-4" />
+                                  <IconChevronDown className="size-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => onEstadoChange(ticket, "ABIERTO")}
+                                  disabled={ticket.estado === "ABIERTO"}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="size-2 rounded-full bg-blue-500" />
+                                    Abrir
+                                  </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => onEstadoChange(ticket, "EN_PROGRESO")}
+                                  disabled={ticket.estado === "EN_PROGRESO"}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="size-2 rounded-full bg-yellow-500" />
+                                    Recibir / En Progreso
+                                  </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => onEstadoChange(ticket, "RESUELTO")}
+                                  disabled={ticket.estado === "RESUELTO"}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="size-2 rounded-full bg-green-500" />
+                                    Resolver
+                                  </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => onEstadoChange(ticket, "CERRADO")}
+                                  disabled={ticket.estado === "CERRADO"}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <div className="size-2 rounded-full bg-gray-500" />
+                                    Cerrar
+                                  </div>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                           {onEdit && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="gap-1.5 h-8 px-2 hover:bg-primary/10 hover:text-primary"
-                              onClick={() => onEdit(reserva)}
-                              title="Editar reserva"
+                              className="gap-1.5 h-8 px-2 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                              onClick={() => onEdit(ticket)}
+                              title="Editar ticket"
                             >
-                              <IconPencil className="size-4" />
+                              <IconEdit className="size-4" />
                             </Button>
                           )}
-                          {isAdmin && onAprobar && reserva.estado === "PENDIENTE" && (
+                          {onDelete && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="gap-1.5 h-8 px-2 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
-                                  title="Aprobar reserva"
+                                  className="gap-1.5 h-8 px-2 hover:bg-destructive/10 hover:text-destructive"
+                                  title="Eliminar ticket"
                                 >
-                                  <IconCheck className="size-4" />
+                                  <IconTrash className="size-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
@@ -280,53 +353,17 @@ export function ReservasTable({
                                     ¿Estás absolutamente seguro?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta acción aprobará la reserva del espacio "{reserva.espacioComun?.nombre || "N/A"}" 
-                                    para el usuario {reserva.user?.name || "N/A"}. 
-                                    La reserva quedará confirmada y no podrá ser modificada fácilmente.
+                                    Esta acción no se puede deshacer. Esto eliminará
+                                    permanentemente el ticket "{ticket.titulo}".
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => onAprobar(reserva)}
-                                    className="bg-green-600 px-4 py-2 rounded-md text-white hover:bg-green-700"
-                                  >
-                                    Aprobar
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                          {onCancelar && (reserva.estado === "PENDIENTE" || reserva.estado === "CONFIRMADA") && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="gap-1.5 h-8 px-2 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                                  title="Cancelar reserva"
-                                >
-                                  <IconX className="size-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    ¿Estás absolutamente seguro?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto cancelará
-                                    permanentemente la reserva del espacio "{reserva.espacioComun?.nombre || "N/A"}" 
-                                    para el usuario {reserva.user?.name || "N/A"}.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => onCancelar(reserva)}
+                                    onClick={() => onDelete(ticket)}
                                     className="bg-destructive px-4 py-2 rounded-md text-white hover:bg-destructive/90"
                                   >
-                                    Cancelar Reserva
+                                    Eliminar
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -347,7 +384,7 @@ export function ReservasTable({
                   {total > 0 && (
                     <div className="text-sm text-muted-foreground">
                       Mostrando {(currentPage - 1) * limit + 1} -{" "}
-                      {Math.min(currentPage * limit, total)} de {total} reservas
+                      {Math.min(currentPage * limit, total)} de {total} tickets
                       {totalPages > 1 &&
                         ` - Página ${currentPage} de ${totalPages}`}
                     </div>

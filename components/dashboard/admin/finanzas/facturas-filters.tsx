@@ -19,50 +19,69 @@ import {
 import {
   IconFilter,
 } from "@tabler/icons-react";
-import type { ReservaEstado, EspacioComun } from "@/types/types";
+import type { FacturaEstado } from "@/types/types";
 
-export interface ReservasFilters {
+export interface FacturasFilters {
   page?: number;
   limit?: number;
-  estado?: ReservaEstado;
-  espacioComunId?: string;
-  fechaDesde?: string;
-  fechaHasta?: string;
+  unidadId?: string;
+  userId?: string;
+  periodo?: string;
+  estado?: FacturaEstado;
+  fechaVencimientoDesde?: string;
+  fechaVencimientoHasta?: string;
 }
 
-interface ReservasFiltersProps {
-  filters: ReservasFilters;
-  espacios: EspacioComun[];
-  onEstadoFilter: (estado: ReservaEstado | null) => void;
-  onEspacioFilter: (espacioId: string | null) => void;
-  onFechaDesdeChange: (fecha: string) => void;
-  onFechaHastaChange: (fecha: string) => void;
+interface FacturasFiltersProps {
+  filters: FacturasFilters;
+  unidades: Array<{ id: string; identificador: string }>;
+  onUnidadFilter: (unidadId: string | null) => void;
+  onPeriodoFilter: (periodo: string) => void;
+  onEstadoFilter: (estado: FacturaEstado | null) => void;
+  onFechaVencimientoDesdeChange: (fecha: string) => void;
+  onFechaVencimientoHastaChange: (fecha: string) => void;
   onClearFilters: () => void;
   activeFiltersCount: number;
 }
 
-const ESTADO_OPTIONS: { value: ReservaEstado; label: string }[] = [
+const ESTADO_OPTIONS: { value: FacturaEstado; label: string }[] = [
   { value: "PENDIENTE", label: "Pendiente" },
-  { value: "CONFIRMADA", label: "Confirmada" },
+  { value: "ENVIADA", label: "Enviada" },
+  { value: "PAGADA", label: "Pagada" },
+  { value: "VENCIDA", label: "Vencida" },
   { value: "CANCELADA", label: "Cancelada" },
-  { value: "COMPLETADA", label: "Completada" },
 ];
 
-export function ReservasFiltersComponent({
+export function FacturasFiltersComponent({
   filters,
-  espacios,
+  unidades,
+  onUnidadFilter,
+  onPeriodoFilter,
   onEstadoFilter,
-  onEspacioFilter,
-  onFechaDesdeChange,
-  onFechaHastaChange,
+  onFechaVencimientoDesdeChange,
+  onFechaVencimientoHastaChange,
   onClearFilters,
   activeFiltersCount,
-}: ReservasFiltersProps) {
+}: FacturasFiltersProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [periodoInput, setPeriodoInput] = useState(filters.periodo || "");
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    setPeriodoInput(filters.periodo || "");
+  }, [filters.periodo]);
+
+  const handlePeriodoChange = (value: string) => {
+    setPeriodoInput(value);
+    if (value.match(/^\d{4}-\d{2}$/)) {
+      onPeriodoFilter(value);
+    } else if (value === "") {
+      onPeriodoFilter("");
+    }
+  };
 
   if (!isMounted) {
     return (
@@ -72,7 +91,7 @@ export function ReservasFiltersComponent({
             <div>
               <CardTitle>Filtros de Búsqueda</CardTitle>
               <CardDescription>
-                Filtra reservas por estado, espacio o rango de fechas
+                Filtra facturas por unidad, período, estado o rango de fechas
               </CardDescription>
             </div>
           </div>
@@ -96,7 +115,7 @@ export function ReservasFiltersComponent({
           <div>
             <CardTitle>Filtros de Búsqueda</CardTitle>
             <CardDescription>
-              Filtra reservas por estado, espacio o rango de fechas
+              Filtra facturas por unidad, período, estado o rango de fechas
             </CardDescription>
           </div>
           {activeFiltersCount > 0 && (
@@ -136,13 +155,13 @@ export function ReservasFiltersComponent({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Filtro por espacio */}
+          {/* Filtro por unidad */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2 min-w-[180px]">
                 <IconFilter className="size-4" />
-                Espacio
-                {filters.espacioComunId && (
+                Unidad
+                {filters.unidadId && (
                   <span className="ml-1 rounded-full bg-primary text-primary-foreground size-5 flex items-center justify-center text-xs">
                     ✓
                   </span>
@@ -150,38 +169,49 @@ export function ReservasFiltersComponent({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="max-h-[300px] overflow-y-auto">
-              <DropdownMenuItem onClick={() => onEspacioFilter(null)}>
-                Todos
+              <DropdownMenuItem onClick={() => onUnidadFilter(null)}>
+                Todas
               </DropdownMenuItem>
-              {espacios.map((espacio) => (
+              {unidades.map((unidad) => (
                 <DropdownMenuItem
-                  key={espacio.id}
-                  onClick={() => onEspacioFilter(espacio.id)}
+                  key={unidad.id}
+                  onClick={() => onUnidadFilter(unidad.id)}
                 >
-                  {espacio.nombre}
+                  {unidad.identificador}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Filtro por fecha desde */}
-          <div className="flex-1 min-w-[180px]">
+          {/* Filtro por período */}
+          <div className="min-w-[140px]">
             <Input
-              type="datetime-local"
-              placeholder="Fecha desde"
-              value={filters.fechaDesde || ""}
-              onChange={(e) => onFechaDesdeChange(e.target.value)}
+              type="month"
+              placeholder="Período (YYYY-MM)"
+              value={periodoInput}
+              onChange={(e) => handlePeriodoChange(e.target.value)}
               className="w-full"
             />
           </div>
 
-          {/* Filtro por fecha hasta */}
+          {/* Filtro por fecha vencimiento desde */}
           <div className="flex-1 min-w-[180px]">
             <Input
-              type="datetime-local"
-              placeholder="Fecha hasta"
-              value={filters.fechaHasta || ""}
-              onChange={(e) => onFechaHastaChange(e.target.value)}
+              type="date"
+              placeholder="Fecha vencimiento desde"
+              value={filters.fechaVencimientoDesde || ""}
+              onChange={(e) => onFechaVencimientoDesdeChange(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {/* Filtro por fecha vencimiento hasta */}
+          <div className="flex-1 min-w-[180px]">
+            <Input
+              type="date"
+              placeholder="Fecha vencimiento hasta"
+              value={filters.fechaVencimientoHasta || ""}
+              onChange={(e) => onFechaVencimientoHastaChange(e.target.value)}
               className="w-full"
             />
           </div>
@@ -190,4 +220,5 @@ export function ReservasFiltersComponent({
     </Card>
   );
 }
+
 

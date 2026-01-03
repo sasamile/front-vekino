@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
 /**
  * Configuración dinámica de axios basada en subdomain
@@ -11,8 +11,43 @@ export function createAxiosInstance(subdomain: string | null): AxiosInstance {
     headers: {
       'Content-Type': 'application/json',
     },
-    withCredentials: true,
+    withCredentials: true, // IMPORTANTE: Envía cookies automáticamente
   });
+
+  // Interceptor de request: Asegurar que las cookies se envíen siempre
+  instance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+      // Asegurar que withCredentials esté siempre activo
+      config.withCredentials = true;
+      
+      // En el navegador, las cookies se envían automáticamente con withCredentials: true
+      // No necesitamos agregar manualmente el header Cookie
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
+  // Interceptor de response: Manejar errores de autenticación
+  instance.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error: AxiosError) => {
+      // Si recibimos un 401 (Unauthorized) o 403 (Forbidden), redirigir al login
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        // Solo redirigir si estamos en el navegador
+        if (typeof window !== 'undefined') {
+          // Evitar redirección infinita si ya estamos en login
+          if (!window.location.pathname.includes('/auth/login')) {
+            window.location.href = '/auth/login';
+          }
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
 
   return instance;
 }

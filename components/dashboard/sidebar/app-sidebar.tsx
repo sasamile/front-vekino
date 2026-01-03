@@ -18,6 +18,9 @@ import {
   IconCalendar,
   type Icon,
   IconBuildingCommunity,
+  IconCoin,
+  IconFile,
+  IconUser,
 } from "@tabler/icons-react";
 
 import Logo from "@/components/common/logo";
@@ -123,7 +126,16 @@ const getNavConfig = (
             url: `/reservas`,
             icon: IconCalendar,
           },
-        
+          {
+            title: "Finanzas",
+            url: `/finanzas`,
+            icon: IconCoin,
+          },
+          {
+            title: "Comunidad",
+            url: `/comunidad`,
+            icon: IconUser,
+          },
         ],
         navSecondary: [
           {
@@ -132,9 +144,9 @@ const getNavConfig = (
             icon: IconSettings,
           },
           {
-            title: "Ayuda",
-            url: `${basePath}/help`,
-            icon: IconHelp,
+            title: "Reportes",
+            url: `/reportes`,
+            icon: IconFile,
           },
           {
             title: "Buscar",

@@ -9,6 +9,7 @@ import type { Reserva, ReservaEstado, EspacioComun } from "@/types/types";
 import { ReservasTable } from "@/components/dashboard/admin/reservas/reservas-table";
 import { ReservasFiltersComponent, type ReservasFilters } from "@/components/dashboard/admin/reservas/reservas-filters";
 import { CreateReservaDialog } from "@/components/dashboard/admin/reservas/create-reserva-dialog";
+import { ViewReservaDialog } from "@/components/dashboard/admin/reservas/view-reserva-dialog";
 import { Button } from "@/components/ui/button";
 import { IconCirclePlusFilled } from "@tabler/icons-react";
 
@@ -16,6 +17,8 @@ function ReservasPage() {
   const { subdomain } = useSubdomain();
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [filters, setFilters] = useState<ReservasFilters>({
     page: 1,
     limit: 10,
@@ -137,29 +140,6 @@ function ReservasPage() {
     },
   });
 
-  // Mutación para rechazar reserva
-  const rechazarMutation = useMutation({
-    mutationFn: async (reservaId: string) => {
-      const axiosInstance = getAxiosInstance(subdomain);
-      await axiosInstance.post(`/reservas/${reservaId}/rechazar`);
-    },
-    onSuccess: () => {
-      toast.success("Reserva rechazada exitosamente", {
-        duration: 2000,
-      });
-      queryClient.invalidateQueries({ queryKey: ["reservas"] });
-    },
-    onError: (error: any) => {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error al rechazar la reserva";
-      toast.error(errorMessage, {
-        duration: 3000,
-      });
-    },
-  });
-
   // Mutación para cancelar reserva
   const cancelarMutation = useMutation({
     mutationFn: async (reservaId: string) => {
@@ -183,55 +163,18 @@ function ReservasPage() {
     },
   });
 
-  // Mutación para eliminar reserva
-  const deleteMutation = useMutation({
-    mutationFn: async (reservaId: string) => {
-      const axiosInstance = getAxiosInstance(subdomain);
-      await axiosInstance.delete(`/reservas/${reservaId}`);
-    },
-    onSuccess: () => {
-      toast.success("Reserva eliminada exitosamente", {
-        duration: 2000,
-      });
-      queryClient.invalidateQueries({ queryKey: ["reservas"] });
-    },
-    onError: (error: any) => {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error al eliminar la reserva";
-      toast.error(errorMessage, {
-        duration: 3000,
-      });
-    },
-  });
 
   const handleAprobar = (reserva: Reserva) => {
-    if (window.confirm(`¿Estás seguro de que deseas aprobar la reserva?`)) {
-      aprobarMutation.mutate(reserva.id);
-    }
+    aprobarMutation.mutate(reserva.id);
   };
 
-  const handleRechazar = (reserva: Reserva) => {
-    if (window.confirm(`¿Estás seguro de que deseas rechazar la reserva?`)) {
-      rechazarMutation.mutate(reserva.id);
-    }
+  const handleView = (reserva: Reserva) => {
+    setSelectedReserva(reserva);
+    setViewDialogOpen(true);
   };
 
   const handleCancelar = (reserva: Reserva) => {
-    if (window.confirm(`¿Estás seguro de que deseas cancelar la reserva?`)) {
-      cancelarMutation.mutate(reserva.id);
-    }
-  };
-
-  const handleDelete = (reserva: Reserva) => {
-    if (
-      window.confirm(
-        `¿Estás seguro de que deseas eliminar la reserva?`
-      )
-    ) {
-      deleteMutation.mutate(reserva.id);
-    }
+    cancelarMutation.mutate(reserva.id);
   };
 
   const handleEstadoFilter = (estado: ReservaEstado | null) => {
@@ -320,10 +263,9 @@ function ReservasPage() {
         reservas={reservas}
         isLoading={isLoading}
         error={error}
+        onView={handleView}
         onAprobar={handleAprobar}
-        onRechazar={handleRechazar}
         onCancelar={handleCancelar}
-        onDelete={handleDelete}
         isAdmin={true}
         total={total}
         currentPage={currentPage}
@@ -336,6 +278,17 @@ function ReservasPage() {
       <CreateReservaDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+      />
+
+      <ViewReservaDialog
+        open={viewDialogOpen}
+        onOpenChange={(open) => {
+          setViewDialogOpen(open);
+          if (!open) {
+            setSelectedReserva(null);
+          }
+        }}
+        reserva={selectedReserva}
       />
     </div>
   );

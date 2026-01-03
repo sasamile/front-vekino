@@ -25,7 +25,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
-import type { EspacioComunTipo, UnidadTiempo, CreateEspacioComunRequest, HorarioDisponibilidad } from "@/types/types";
+import type { EspacioComunTipo, CreateEspacioComunRequest, HorarioDisponibilidad } from "@/types/types";
 
 const espacioSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
@@ -44,9 +44,7 @@ const espacioSchema = z.object({
   }),
   capacidad: z.number().min(1, "La capacidad debe ser mayor a 0"),
   descripcion: z.string().optional(),
-  unidadTiempo: z.enum(["HORAS", "DIAS", "MESES"], {
-    message: "La unidad de tiempo es requerida",
-  }),
+  unidadTiempo: z.literal("HORAS"),
   precioPorUnidad: z.number().min(0, "El precio debe ser mayor o igual a 0"),
   activo: z.boolean(),
   requiereAprobacion: z.boolean(),
@@ -71,11 +69,7 @@ const TIPO_OPTIONS: { value: EspacioComunTipo; label: string }[] = [
   { value: "OTRO", label: "Otro" },
 ];
 
-const UNIDAD_TIEMPO_OPTIONS: { value: UnidadTiempo; label: string }[] = [
-  { value: "HORAS", label: "Horas" },
-  { value: "DIAS", label: "Días" },
-  { value: "MESES", label: "Meses" },
-];
+// Unidad de tiempo fija en HORAS
 
 const DIAS_SEMANA = [
   { value: 0, label: "Domingo" },
@@ -177,7 +171,7 @@ export function CreateEspacioDialog({
         tipo: data.tipo,
         capacidad: data.capacidad,
         descripcion: data.descripcion || undefined,
-        unidadTiempo: data.unidadTiempo,
+        unidadTiempo: "HORAS", // Siempre HORAS
         precioPorUnidad: data.precioPorUnidad,
         activo: data.activo,
         requiereAprobacion: data.requiereAprobacion,
@@ -276,7 +270,7 @@ export function CreateEspacioDialog({
               )}
             </Field>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Field>
                 <FieldLabel>Capacidad (personas) *</FieldLabel>
                 <Input
@@ -292,25 +286,7 @@ export function CreateEspacioDialog({
               </Field>
 
               <Field>
-                <FieldLabel>Unidad de Tiempo *</FieldLabel>
-                <select
-                  {...register("unidadTiempo")}
-                  disabled={loading}
-                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {UNIDAD_TIEMPO_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.unidadTiempo && (
-                  <FieldError>{errors.unidadTiempo.message}</FieldError>
-                )}
-              </Field>
-
-              <Field>
-                <FieldLabel>Precio por Unidad *</FieldLabel>
+                <FieldLabel>Precio por Hora *</FieldLabel>
                 <Input
                   type="number"
                   step="1000"

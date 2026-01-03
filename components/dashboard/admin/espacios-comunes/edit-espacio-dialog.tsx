@@ -25,7 +25,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
-import type { EspacioComun, EspacioComunTipo, UnidadTiempo, UpdateEspacioComunRequest, HorarioDisponibilidad } from "@/types/types";
+import type { EspacioComun, EspacioComunTipo, UpdateEspacioComunRequest, HorarioDisponibilidad } from "@/types/types";
 
 const espacioUpdateSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido").optional().or(z.literal("")),
@@ -42,7 +42,7 @@ const espacioUpdateSchema = z.object({
   ]).optional(),
   capacidad: z.number().min(1, "La capacidad debe ser mayor a 0").optional().or(z.nan()),
   descripcion: z.string().optional(),
-  unidadTiempo: z.enum(["HORAS", "DIAS", "MESES"]).optional(),
+  unidadTiempo: z.literal("HORAS").optional(),
   precioPorUnidad: z.number().min(0, "El precio debe ser mayor o igual a 0").optional().or(z.nan()),
   activo: z.boolean().optional(),
   requiereAprobacion: z.boolean().optional(),
@@ -69,11 +69,7 @@ const TIPO_OPTIONS: { value: EspacioComunTipo; label: string }[] = [
   { value: "OTRO", label: "Otro" },
 ];
 
-const UNIDAD_TIEMPO_OPTIONS: { value: UnidadTiempo; label: string }[] = [
-  { value: "HORAS", label: "Horas" },
-  { value: "DIAS", label: "Días" },
-  { value: "MESES", label: "Meses" },
-];
+// Unidad de tiempo fija en HORAS
 
 const DIAS_SEMANA = [
   { value: 0, label: "Domingo" },
@@ -183,7 +179,7 @@ export function EditEspacioDialog({
         tipo: espacio.tipo,
         capacidad: espacio.capacidad,
         descripcion: espacio.descripcion || "",
-        unidadTiempo: espacio.unidadTiempo,
+        unidadTiempo: "HORAS",
         precioPorUnidad: espacio.precioPorUnidad,
         activo: espacio.activo,
         requiereAprobacion: espacio.requiereAprobacion,
@@ -224,8 +220,9 @@ export function EditEspacioDialog({
       if (data.descripcion !== undefined && data.descripcion !== (espacio.descripcion || "")) {
         updateData.descripcion = data.descripcion;
       }
-      if (data.unidadTiempo !== undefined && data.unidadTiempo !== espacio.unidadTiempo) {
-        updateData.unidadTiempo = data.unidadTiempo;
+      // Siempre usar HORAS como unidad de tiempo
+      if (espacio.unidadTiempo !== "HORAS") {
+        updateData.unidadTiempo = "HORAS";
       }
       if (data.precioPorUnidad !== undefined && !isNaN(data.precioPorUnidad) && data.precioPorUnidad !== espacio.precioPorUnidad) {
         updateData.precioPorUnidad = data.precioPorUnidad;
@@ -340,7 +337,7 @@ export function EditEspacioDialog({
               )}
             </Field>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <Field>
                 <FieldLabel>Capacidad (personas)</FieldLabel>
                 <Input
@@ -356,25 +353,7 @@ export function EditEspacioDialog({
               </Field>
 
               <Field>
-                <FieldLabel>Unidad de Tiempo</FieldLabel>
-                <select
-                  {...register("unidadTiempo")}
-                  disabled={loading}
-                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {UNIDAD_TIEMPO_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.unidadTiempo && (
-                  <FieldError>{errors.unidadTiempo.message}</FieldError>
-                )}
-              </Field>
-
-              <Field>
-                <FieldLabel>Precio por Unidad</FieldLabel>
+                <FieldLabel>Precio por Hora</FieldLabel>
                 <Input
                   type="number"
                   step="1000"

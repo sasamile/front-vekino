@@ -10,11 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   IconBuilding,
   IconCheck,
   IconX,
   IconEye,
   IconEdit,
+  IconTrash,
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
@@ -27,6 +39,7 @@ interface CondominiosTableProps {
   error: Error | null;
   onView: (condominio: Condominio) => void;
   onEdit: (condominio: Condominio) => void;
+  onDelete: (condominio: Condominio) => void;
   total?: number;
   currentPage?: number;
   totalPages?: number;
@@ -41,6 +54,7 @@ export function CondominiosTable({
   error,
   onView,
   onEdit,
+  onDelete,
   total = 0,
   currentPage = 1,
   totalPages = 0,
@@ -253,7 +267,6 @@ export function CondominiosTable({
                             onClick={() => onView(condominio)}
                           >
                             <IconEye className="size-4" />
-                            Ver
                           </Button>
                           <Button
                             variant="ghost"
@@ -262,8 +275,40 @@ export function CondominiosTable({
                             onClick={() => onEdit(condominio)}
                           >
                             <IconEdit className="size-4" />
-                            Editar
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <IconTrash className="size-4" />
+                                Eliminar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  ¿Estás absolutamente seguro?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción no se puede deshacer. Esto eliminará
+                                  permanentemente el condominio "{condominio.name}" y
+                                  todos sus datos asociados de nuestros servidores.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => onDelete(condominio)}
+                                  className="bg-destructive px-4 py-2 rounded-md text-white hover:bg-destructive/90"
+                                >
+                                  Eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </td>
                     </tr>

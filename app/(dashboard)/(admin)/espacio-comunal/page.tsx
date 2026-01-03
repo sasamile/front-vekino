@@ -107,13 +107,7 @@ function EspacioComunalPage() {
   };
 
   const handleDelete = (espacio: EspacioComun) => {
-    if (
-      window.confirm(
-        `¿Estás seguro de que deseas eliminar el espacio común "${espacio.nombre}"?`
-      )
-    ) {
-      deleteMutation.mutate(espacio.id);
-    }
+    deleteMutation.mutate(espacio.id);
   };
 
   const handleTipoFilter = (tipo: EspacioComunTipo | null) => {
