@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useSubdomain } from "@/app/providers/subdomain-provider";
@@ -34,7 +34,7 @@ interface PagoEstado {
   };
 }
 
-function PagoExitosoPage() {
+function PagoExitosoContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { subdomain } = useSubdomain();
@@ -304,6 +304,14 @@ function PagoExitosoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function PagoExitosoPage() {
+  return (
+    <Suspense fallback={null}>
+      <PagoExitosoContent />
+    </Suspense>
   );
 }
 
