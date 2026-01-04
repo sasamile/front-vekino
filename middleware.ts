@@ -109,6 +109,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(homeUrl);
   }
   
+  // Permitir acceso a /pago-exitoso sin autenticación estricta (Wompi redirige ahí)
+  if (pathname === '/pago-exitoso') {
+    return NextResponse.next();
+  }
+  
   // Para otras rutas, verificar autenticación completa
   // Si no hay cookie, redirigir a login inmediatamente
   if (!cookie) {

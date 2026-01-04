@@ -53,15 +53,15 @@ const getNavConfig = (
   navSecondary: NavItem[];
 } => {
   const basePath =
-    role === "USER" ? "/user" : role === "ADMIN" ? "/admin" : "/superadmin";
+    role === "PROPIETARIO" ? "/propietario" : role === "ADMIN" ? "/admin" : "/superadmin";
 
   switch (role) {
-    case "USER":
+    case "PROPIETARIO":
       return {
         navMain: [
           {
             title: "Dashboard",
-            url: `${basePath}/dashboard`,
+            url: `/dashboard`,
             icon: IconDashboard,
           },
           {
@@ -71,12 +71,12 @@ const getNavConfig = (
           },
           {
             title: "Reservas",
-            url: `${basePath}/reservations`,
+            url: `/reservations`,
             icon: IconCalendar,
           },
           {
             title: "Pagos",
-            url: `${basePath}/payments`,
+            url: `/pagos`,
             icon: IconCreditCard,
           },
         ],
@@ -220,7 +220,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   userAvatar?: string;
 }
 
-export function AppSidebar({
+export function  AppSidebar({
   userRole,
   userName = "Usuario",
   userEmail = "",

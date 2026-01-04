@@ -17,7 +17,7 @@ async function DashboardPage() {
       return <SuperAdminDashboard />
     case "ADMIN":
       return <AdminDashboard />
-    case "USER":
+    case "PROPIETARIO":
       return <UserDashboard />
     default:
       return <UserDashboard />

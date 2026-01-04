@@ -11,7 +11,6 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
-  const { condominio } = useCondominio();
 
   return (
     <div className="min-h-screen w-screen flex">

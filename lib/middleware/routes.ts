@@ -11,7 +11,7 @@ export function isAuthRoute(pathname: string): boolean {
  * Verifica si una ruta es pública (no requiere autenticación)
  */
 export function isPublicRoute(pathname: string): boolean {
-  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api');
+  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname === '/pago-exitoso';
 }
 
 /**
@@ -30,14 +30,16 @@ const SUPERADMIN_ROUTES = [
 const ADMIN_ROUTES = [
   '/unidades',
   '/residentes',
+  "/comunidad"
 ];
 
 /**
- * Lista de rutas exclusivas para USER
+ * Lista de rutas exclusivas para USER (PROPIETARIO)
  */
-// const USER_ROUTES = [
-//   // Agregar rutas de user aquí si es necesario
-// ];
+const USER_ROUTES = [
+ "/pagos",
+ "/reservations"
+];
 
 /**
  * Verifica si un usuario puede acceder a una ruta según su rol
@@ -60,9 +62,9 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
     return userRole === 'ADMIN';
   }
   
-  // if (USER_ROUTES.some(route => pathname.startsWith(route))) {
-  //   return userRole === 'USER';
-  // }
+  if (USER_ROUTES.some(route => pathname.startsWith(route))) {
+    return userRole === 'PROPIETARIO';
+  }
 
   // Rutas protegidas por prefijo de pathname
   if (pathname.startsWith('/admin')) {
@@ -74,7 +76,7 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
   }
   
   if (pathname.startsWith('/user')) {
-    return userRole === 'USER';
+    return userRole === 'PROPIETARIO';
   }
 
   // Para otras rutas (como /), permitir acceso si está autenticado

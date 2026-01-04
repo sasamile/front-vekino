@@ -1,5 +1,5 @@
 // Tipos para la respuesta de autenticación
-export type UserRole = 'USER' | 'ADMIN' | 'SUPERADMIN';
+export type UserRole = 'PROPIETARIO' | 'ADMIN' | 'SUPERADMIN';
 
 export interface AuthUser {
   id: string;
