@@ -139,31 +139,31 @@ export function FacturasTable({
               <tbody>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <tr key={index} className="border-b">
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-28" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-24" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-32" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-4 w-24" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24" />
                     </td>
-                    <td className="p-4">
-                      <Skeleton className="h-6 w-24 rounded-full" />
+                    <td className="p-2">
+                      <Skeleton className="h-2 w-24 rounded-full" />
                     </td>
-                    <td className="p-4">
+                    <td className="p-2">
                       <div className="flex gap-2">
-                        <Skeleton className="h-8 w-16" />
-                        <Skeleton className="h-8 w-16" />
+                        <Skeleton className="h-2 w-16" />
+                        <Skeleton className="h-2 w-16" />
                       </div>
                     </td>
                   </tr>

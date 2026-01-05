@@ -395,6 +395,26 @@ export interface UpdateReservaRequest {
   estado?: ReservaEstado;
 }
 
+export interface DisponibilidadCompletaResponse {
+  espacioComunId: string;
+  espacioComun: {
+    id: string;
+    nombre: string;
+    activo: boolean;
+  };
+  horariosDisponibilidad: HorarioDisponibilidad[];
+  diasDisponibles: number[]; // 0-6 (0=Domingo)
+  diasNoDisponibles: number[]; // 0-6 (0=Domingo)
+  horasOcupadasPorDia: {
+    [fecha: string]: Array<{
+      horaInicio: string; // "HH:mm"
+      horaFin: string; // "HH:mm"
+    }>;
+  };
+  fechaDesde: string;
+  fechaHasta: string;
+}
+
 // Finanzas - Facturas
 export type FacturaEstado = "PENDIENTE" | "ENVIADA" | "PAGADA" | "VENCIDA" | "CANCELADA";
 

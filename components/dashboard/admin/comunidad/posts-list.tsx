@@ -933,9 +933,7 @@ function PostCard({
 
               {/* Formulario de comentario */}
               <form onSubmit={handleSubmit(onSubmitComentario)} className="flex gap-3">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-muted text-xs">T</AvatarFallback>
-                </Avatar>
+            
                 <div className="flex-1 flex gap-2">
                   <Input
                     {...register("contenido")}

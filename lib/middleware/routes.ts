@@ -30,7 +30,6 @@ const SUPERADMIN_ROUTES = [
 const ADMIN_ROUTES = [
   '/unidades',
   '/residentes',
-  "/comunidad"
 ];
 
 /**
@@ -38,7 +37,8 @@ const ADMIN_ROUTES = [
  */
 const USER_ROUTES = [
  "/pagos",
- "/reservations"
+ "/reservations",
+
 ];
 
 /**

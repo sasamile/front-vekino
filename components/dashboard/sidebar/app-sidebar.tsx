@@ -61,7 +61,7 @@ const getNavConfig = (
         navMain: [
           {
             title: "Dashboard",
-            url: `/dashboard`,
+            url: `/`,
             icon: IconDashboard,
           },
           {
@@ -78,6 +78,11 @@ const getNavConfig = (
             title: "Pagos",
             url: `/pagos`,
             icon: IconCreditCard,
+          },
+          {
+            title: "Comunidad",
+            url: `/comunidad`,
+            icon: IconBuildingCommunity,
           },
         ],
         navSecondary: [
