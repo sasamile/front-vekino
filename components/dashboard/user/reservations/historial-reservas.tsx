@@ -23,7 +23,7 @@ interface HistorialReservasProps {
   isLoading: boolean;
   page: number;
   onPageChange: (page: number) => void;
-  getEstadoBadge: (estado: ReservaEstado) => JSX.Element;
+  getEstadoBadge: (estado: ReservaEstado) => React.ReactNode;
 }
 
 export function HistorialReservas({

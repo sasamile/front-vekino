@@ -24,8 +24,9 @@ import {
   IconRefresh,
 } from "@tabler/icons-react";
 import type { Unidad } from "@/types/types";
-import type { TipoReporte, FormatoReporte, ReporteFilters } from "./constants";
+import type { TipoReporte } from "./constants";
 import { TIPO_REPORTE_OPTIONS, getEstadosOptions } from "./constants";
+import { ReporteFilters } from "./generar-reporte";
 
 interface FiltrosReporteProps {
   filters: ReporteFilters;
