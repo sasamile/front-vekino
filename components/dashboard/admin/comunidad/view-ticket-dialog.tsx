@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { Ticket, TicketComentario, CreateTicketComentarioRequest } from "@/types/types";
 import { IconSend, IconLock } from "@tabler/icons-react";
 

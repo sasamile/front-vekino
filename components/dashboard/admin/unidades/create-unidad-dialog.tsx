@@ -23,7 +23,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { UnidadTipo, UnidadEstado, CreateUnidadRequest } from "@/types/types";
 
 const unidadSchema = z.object({

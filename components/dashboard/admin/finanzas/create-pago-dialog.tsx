@@ -22,7 +22,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { CreatePagoRequest, MetodoPago, Factura } from "@/types/types";
 
 const pagoSchema = z.object({

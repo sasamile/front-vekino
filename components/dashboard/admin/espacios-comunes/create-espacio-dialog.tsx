@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { EspacioComunTipo, CreateEspacioComunRequest, HorarioDisponibilidad } from "@/types/types";
 
 const espacioSchema = z.object({

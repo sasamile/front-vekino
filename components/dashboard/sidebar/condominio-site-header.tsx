@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useCondominio } from "@/app/providers/condominio-provider"
+import { useCondominio } from "@/components/providers/condominio-provider"
 import type { UserRole } from "@/lib/middleware/types"
 
 interface CondominioSiteHeaderProps {

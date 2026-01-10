@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useQuery } from "@tanstack/react-query";
 import type { Unidad } from "@/types/types";

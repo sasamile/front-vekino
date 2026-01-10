@@ -12,11 +12,11 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { AuthLayout } from "./auth-layout";
 import { useRouter } from "next/navigation";
-import { useCondominio } from "@/app/providers/condominio-provider";
+import { useCondominio } from "@/components/providers/condominio-provider";
 
 const loginSchema = z.object({
   email: z

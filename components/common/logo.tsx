@@ -1,6 +1,6 @@
 "use client";
 
-import { useCondominio } from "@/app/providers/condominio-provider";
+import { useCondominio } from "@/components/providers/condominio-provider";
 
 interface LogoProps {
   showTitle?: boolean;

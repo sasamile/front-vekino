@@ -1,6 +1,6 @@
 "use client";
 
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import toast from "react-hot-toast";
 import type { TipoReporte, FormatoReporte } from "./constants";

@@ -23,7 +23,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { ResidenteRole, TipoDocumento, Residente, Unidad } from "@/types/types";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";

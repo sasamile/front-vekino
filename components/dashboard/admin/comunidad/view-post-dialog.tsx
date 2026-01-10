@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { Post, PostComentario, CreatePostComentarioRequest } from "@/types/types";
 import { IconSend, IconHeart, IconHeartFilled, IconTrash, IconDots, IconUser } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

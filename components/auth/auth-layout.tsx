@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import Logo from "../common/logo";
-import { useCondominio } from "@/app/providers/condominio-provider";
+import { useCondominio } from "@/components/providers/condominio-provider";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -11,14 +11,14 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
-
   return (
     <div className="min-h-screen w-screen flex">
       {/* Left Panel - Login Form (55%) */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center bg-white dark:bg-zinc-50 p-8 lg:p-12">
-        <div className="w-full max-w-md space-y-6">
+      <div className="w-full  flex flex-col gap-8 items-center justify-center bg-linear-to-b to-primary/50 from-70% from-white p-8 lg:p-12">
+        <Logo />
+
+        <div className="w-full max-w-md space-y-6 bg-muted/90 backdrop-blur-sm rounded-2xl p-8">
           {/* Logo */}
-          <Logo />
 
           {/* Title */}
           {title && (
@@ -37,15 +37,6 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
           {/* Form Content */}
           {children}
         </div>
-      </div>
-
-      {/* Right Panel - Image (45%) */}
-      <div className="hidden lg:flex lg:w-[45%] relative h-screen">
-        <img
-          src="/img/auth.png"
-          alt="Auth"
-          className="absolute inset-0 w-full h-full object-cover rounded-bl-[7rem]"
-        />
       </div>
     </div>
   );

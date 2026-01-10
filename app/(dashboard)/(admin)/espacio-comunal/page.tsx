@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import toast from "react-hot-toast";
 import type { EspacioComun, EspacioComunTipo } from "@/types/types";

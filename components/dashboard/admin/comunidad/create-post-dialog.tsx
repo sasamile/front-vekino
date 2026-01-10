@@ -18,7 +18,7 @@ import {
   FieldError,
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
-import { useSubdomain } from "@/app/providers/subdomain-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import type { Unidad } from "@/types/types";
 import { IconPhoto, IconX, IconSend, IconFile, IconVideo, IconMusic } from "@tabler/icons-react";
 

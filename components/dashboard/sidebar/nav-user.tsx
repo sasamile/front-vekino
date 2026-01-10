@@ -9,7 +9,7 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { useSubdomain } from "@/app/providers/subdomain-provider"
+import { useSubdomain } from "@/components/providers/subdomain-provider"
 import { getAxiosInstance } from "@/lib/axios-config"
 import toast from "react-hot-toast"
 

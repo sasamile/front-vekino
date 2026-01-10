@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { QueryProvider } from "./providers/query-provider";
-import { SubdomainProvider } from "./providers/subdomain-provider";
-import { CondominioProvider } from "./providers/condominio-provider";
+import { QueryProvider } from "../components/providers/query-provider";
+import { SubdomainProvider } from "../components/providers/subdomain-provider";
+import { CondominioProvider } from "../components/providers/condominio-provider";
 import { Toaster } from "react-hot-toast";
 
 const geistMono = Geist_Mono({
