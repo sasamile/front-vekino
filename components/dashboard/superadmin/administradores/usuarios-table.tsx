@@ -380,6 +380,10 @@ export function UsuariosTable({
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
                               {translateRole(usuario.role)}
                             </span>
+                          ) : usuario.role === "PROPIETARIO" ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                              {translateRole(usuario.role)}
+                            </span>
                           ) : (
                             <span className="text-sm font-medium">
                               {translateRole(usuario.role)}

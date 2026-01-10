@@ -1,6 +1,9 @@
 "use client";
 
 import { useCondominio } from "@/components/providers/condominio-provider";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
+import { getCondominioFromStorage } from "@/lib/storage/condominio-storage";
+import { useEffect, useState } from "react";
 
 interface LogoProps {
   showTitle?: boolean;
@@ -8,28 +11,68 @@ interface LogoProps {
 
 function Logo({ showTitle = true }: LogoProps) {
   const { condominio } = useCondominio();
+  const { subdomain } = useSubdomain();
+  
+  // Estado para logo desde localStorage (para evitar flash)
+  const [storedLogo, setStoredLogo] = useState<string | null>(null);
+  const [storedName, setStoredName] = useState<string | null>(null);
 
-  // Si hay condominio con logo, usar el logo del condominio
-  if (condominio?.logo) {
-    return (
-      <div className="flex items-center justify-center gap-2">
-        <img
-          src={condominio.logo}
-          alt={condominio.name || "Logo"}
-          className="h-8 w-auto object-contain rounded-2xl"
-        />
-        {showTitle && condominio.name && (
-          <div>
-            <span className="text-xs uppercase font-bold">
-              {condominio.name}
-            </span>
-          </div>
-        )}
-      </div>
-    );
+  useEffect(() => {
+    if (subdomain && typeof window !== 'undefined') {
+      const stored = getCondominioFromStorage(subdomain);
+      if (stored) {
+        setStoredLogo(stored.logo);
+        setStoredName(stored.name);
+      }
+    }
+  }, [subdomain]);
+
+  // Prioridad: condominio de query > localStorage > default
+  const logo = condominio?.logo || storedLogo;
+  const name = condominio?.name || storedName;
+
+  // Si hay subdomain, NO mostrar logo de Vekino - solo mostrar si hay logo del condominio
+  if (subdomain) {
+    // Si hay logo (de query o localStorage), usar el logo del condominio
+    if (logo) {
+      return (
+        <div className="flex items-center justify-center gap-2">
+          <img
+            src={logo}
+            alt={name || "Logo"}
+            className="h-8 w-auto object-contain rounded-2xl"
+          />
+          {showTitle && name && (
+            <div>
+              <span className="text-xs uppercase font-bold">
+                {name}
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Si hay subdomain pero no hay logo aún, mostrar solo el nombre o nada
+    if (name) {
+      return (
+        <div className="flex items-center justify-center gap-2">
+          {showTitle && (
+            <div>
+              <span className="text-xs uppercase font-bold">
+                {name}
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Si no hay nada, no mostrar nada (evitar flash de Vekino)
+    return null;
   }
 
-  // Logo por defecto de Vekino
+  // Si NO hay subdomain, mostrar logo de Vekino por defecto
   return (
     <div className="flex items-center justify-center gap-2">
       <svg
@@ -58,7 +101,7 @@ function Logo({ showTitle = true }: LogoProps) {
       {showTitle && (
         <div>
           <span className="text-lg font-bold">
-            {condominio?.name || "Vekino"}
+            {name || condominio?.name || "Vekino"}
           </span>
         </div>
       )}

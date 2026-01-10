@@ -4,7 +4,9 @@ import "./globals.css";
 import { QueryProvider } from "../components/providers/query-provider";
 import { SubdomainProvider } from "../components/providers/subdomain-provider";
 import { CondominioProvider } from "../components/providers/condominio-provider";
+import { CondominioLoading } from "../components/providers/condominio-loading";
 import { Toaster } from "react-hot-toast";
+import { applyColorScript } from "@/lib/storage/apply-color-script";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -25,14 +27,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: applyColorScript,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body
         className={`${geistMono.variable} antialiased`}
@@ -41,7 +44,9 @@ export default function RootLayout({
         <QueryProvider>
           <SubdomainProvider>
             <CondominioProvider>
-              {children}
+              <CondominioLoading>
+                {children}
+              </CondominioLoading>
             </CondominioProvider>
             <Toaster
               position="top-center"

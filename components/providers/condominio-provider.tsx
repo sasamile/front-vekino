@@ -1,9 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useSubdomain } from './subdomain-provider';
 import axios from 'axios';
+import {
+  saveCondominioToStorage,
+  getCondominioFromStorage,
+  applyPrimaryColorFromStorage,
+} from '@/lib/storage/condominio-storage';
 
 export interface CondominioInfo {
   id: string;
@@ -43,6 +48,51 @@ export function useCondominio() {
 
 export function CondominioProvider({ children }: { children: ReactNode }) {
   const { subdomain } = useSubdomain();
+  
+  // Estado inicial desde localStorage para evitar flash
+  const [initialData, setInitialData] = useState<CondominioInfo | null>(null);
+
+  // Cargar datos iniciales desde localStorage cuando el subdomain esté disponible
+  useEffect(() => {
+    if (typeof window === 'undefined' || !subdomain) {
+      setInitialData(null);
+      return;
+    }
+    
+    const stored = getCondominioFromStorage(subdomain);
+    if (!stored) {
+      setInitialData(null);
+      return;
+    }
+    
+    // Crear un objeto CondominioInfo parcial desde localStorage
+    setInitialData({
+      id: '',
+      name: stored.name,
+      subdomain: stored.subdomain,
+      logo: stored.logo,
+      primaryColor: stored.primaryColor,
+      nit: null,
+      address: null,
+      city: null,
+      country: null,
+      timezone: null,
+      subscriptionPlan: null,
+      unitLimit: null,
+      planExpiresAt: null,
+      activeModules: [],
+      isActive: true,
+      createdAt: '',
+      updatedAt: '',
+    } as CondominioInfo);
+  }, [subdomain]);
+
+  // Aplicar color primario desde localStorage inmediatamente
+  useEffect(() => {
+    if (subdomain) {
+      applyPrimaryColorFromStorage(subdomain);
+    }
+  }, [subdomain]);
 
   const {
     data: condominio,
@@ -64,13 +114,26 @@ export function CondominioProvider({ children }: { children: ReactNode }) {
         withCredentials: false, // No enviar cookies para endpoint público
       });
       
-      return response.data;
+      const data = response.data;
+      
+      // Guardar en localStorage cuando se obtiene la data
+      if (data && subdomain) {
+        saveCondominioToStorage(subdomain, {
+          logo: data.logo,
+          primaryColor: data.primaryColor,
+          name: data.name,
+        });
+      }
+      
+      return data;
     },
     enabled: !!subdomain, // Solo hacer la query si hay subdomain
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 1,
     refetchOnWindowFocus: false,
+    // Usar datos iniciales de localStorage mientras carga
+    placeholderData: initialData,
   });
 
   // Aplicar CSS variables dinámicas para el color primario
@@ -94,6 +157,9 @@ export function CondominioProvider({ children }: { children: ReactNode }) {
       root.style.setProperty('--primary', '#3B82F6'); // Azul por defecto
       root.style.setProperty('--primary-foreground', '#ffffff');
       root.style.setProperty('--primary-rgb', '59, 130, 246');
+    } else {
+      // Si hay subdomain pero no hay condominio aún, intentar aplicar desde localStorage
+      applyPrimaryColorFromStorage(subdomain);
     }
   }, [condominio?.primaryColor, subdomain]);
 

@@ -123,7 +123,7 @@ function ComunidadPage() {
             selectedUserId={selectedUserId}
             selectedUserName={selectedUserName}
             selectedUserImage={selectedUserImage}
-            posts={posts}
+                    posts={posts}
             postsLoading={postsLoading}
             postsError={postsError}
             postsTotal={postsTotal}
@@ -135,14 +135,14 @@ function ComunidadPage() {
             onDeletePost={handleDeletePost}
             onLikePost={handleLikePost}
             onReactionPost={handleReactionPost}
-            isAdmin={isAdmin}
+                    isAdmin={isAdmin}
             isPostAuthor={isPostAuthor}
-            currentUser={currentUser}
-            onUserClick={(userId, userName, userImage) => {
-              setSelectedUserId(userId);
-              setSelectedUserName(userName);
-              setSelectedUserImage(userImage);
-            }}
+                    currentUser={currentUser}
+                    onUserClick={(userId, userName, userImage) => {
+                      setSelectedUserId(userId);
+                      setSelectedUserName(userName);
+                      setSelectedUserImage(userImage);
+                    }}
             onPostPageChange={handlePostPageChange}
             onPostLimitChange={handlePostLimitChange}
             onBackFromUserPosts={() => {
@@ -150,18 +150,18 @@ function ComunidadPage() {
               setSelectedUserName(null);
               setSelectedUserImage(null);
             }}
-          />
-        </div>
+                  />
+                </div>
       </main>
 
       <SidebarUsuarios
         usuarios={usuarios}
-        onUserClick={(userId, userName, userImage) => {
-          setSelectedUserId(userId);
-          setSelectedUserName(userName);
-          setSelectedUserImage(userImage);
-        }}
-      />
+                  onUserClick={(userId, userName, userImage) => {
+                    setSelectedUserId(userId);
+                    setSelectedUserName(userName);
+                    setSelectedUserImage(userImage);
+                  }}
+                />
 
       {/* Dialogs */}
       <CreatePostDialog
