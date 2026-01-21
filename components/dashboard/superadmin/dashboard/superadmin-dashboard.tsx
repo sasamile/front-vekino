@@ -250,13 +250,15 @@ export function SuperAdminDashboard() {
     ? transformCityDistribution(cityDistribution)
     : [];
 
-  // Get current time for greeting
+  // Get current time for greeting with matching emoji
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Buenos días";
-    if (hour < 18) return "Buenas tardes";
-    return "Buenas noches";
+    if (hour < 12) return { text: "Buenos días", emoji: "🌅" };
+    if (hour < 18) return { text: "Buenas tardes", emoji: "🌤️" };
+    return { text: "Buenas noches", emoji: "🌙" };
   };
+
+  const { text: greetingText, emoji: greetingEmoji } = getGreeting();
 
   return (
     <div className="space-y-8 p-6 animate-in fade-in-50 duration-500">
@@ -264,10 +266,10 @@ export function SuperAdminDashboard() {
       <div className="space-y-2 animate-in slide-in-from-top-2 duration-500">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight">
-              {getGreeting()} 👋
+            <h1 className="text-4xl max-sm:text-3xl font-bold tracking-tight">
+              {greetingText} <span role="img" aria-label="saludo">{greetingEmoji}</span>
             </h1>
-            <p className="text-muted-foreground mt-2 text-lg">
+            <p className="text-muted-foreground mt-2 text-lg max-sm:text-base">
               Panel de control empresarial - Vekino Platform
             </p>
           </div>
@@ -278,7 +280,7 @@ export function SuperAdminDashboard() {
       <div className="rounded-3xl bg-linear-to-r from-primary to-primary/80 text-white p-6 md:p-8 animate-in slide-in-from-bottom-2 duration-500">
         <div className="space-y-2">
           <p className="text-sm font-medium opacity-90">Panel de Administración</p>
-          <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+          <h2 className="text-3xl max-sm:text-2xl md:text-4xl font-bold leading-tight">
             Supervisión centralizada de condominios
           </h2>
           <p className="text-sm md:text-base opacity-90">

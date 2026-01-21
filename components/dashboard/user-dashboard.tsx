@@ -316,20 +316,56 @@ export function UserDashboard() {
     ? "border-red-200 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/10"
     : "border-orange-200 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-950/10"
 
+  // Get current time for greeting with matching emoji
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: "Buenos días", emoji: "🌅" };
+    if (hour < 18) return { text: "Buenas tardes", emoji: "🌤️" };
+    return { text: "Buenas noches", emoji: "🌙" };
+  };
+
+  const { text: greetingText, emoji: greetingEmoji } = getGreeting();
+  const firstName = usuarioInfo?.name?.split(" ")[0] || "Usuario";
+
   return (
-    <div className="space-y-6 p-6">
-      {/* Header con saludo */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {obtenerSaludo()}, {usuarioInfo?.name?.split(" ")[0] || "Usuario"} 👋
-        </h1>
-        <p className="text-muted-foreground">
-          {getUnidadIdentificador()}
-        </p>
+    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+      {/* Header con saludo mejorado */}
+      <div className="rounded-3xl bg-linear-to-r from-primary/70 via-primary/55 to-primary/20 text-white p-6 md:p-8 border border-white/10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/80">
+              Tu comunidad
+            </p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+              {greetingText}{" "}
+              <span role="img" aria-label="saludo">
+                {greetingEmoji}
+              </span>
+              , {firstName}
+            </h1>
+            <p className="text-white/80 text-sm md:text-base">
+              {getUnidadIdentificador()}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              className="bg-white text-primary hover:bg-white/90"
+              onClick={() => router.push("/pagos")}
+            >
+              Ver pagos
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Saludo y Estado de Facturas */}
-      <Card className={cn("border-2", estadoColor)}>
+      <Card
+        className={cn(
+          "border-2 rounded-2xl shadow-sm bg-card/80 backdrop-blur",
+          estadoColor,
+        )}
+      >
         <CardHeader>
           <CardTitle className={cn(
             "text-xl",
@@ -409,30 +445,30 @@ export function UserDashboard() {
       {/* Tarjetas de Resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Próximo Pago */}
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium ">
               Próximo Pago
             </CardTitle>
-            <IconCreditCard className="h-4 w-4 text-muted-foreground" />
+            <IconCreditCard className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             {proximoPago ? (
               <>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold ">
                   {formatCurrency(proximoPago.valor)}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs mt-1">
                   Vence: {formatDate(proximoPago.fechaVencimiento)}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs">
                   {proximoPago.numeroFactura}
                 </p>
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-muted-foreground">-</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="text-2xl font-bold /70">-</div>
+                <p className="text-xs /80 mt-1">
                   No hay pagos pendientes
                 </p>
               </>
@@ -441,18 +477,18 @@ export function UserDashboard() {
         </Card>
 
         {/* Reservas Activas */}
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-indigo-500/35 via-card to-card border-indigo-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Reservas Activas
             </CardTitle>
-            <IconCalendar className="h-4 w-4 text-muted-foreground" />
+            <IconCalendar className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {reservasActivas.length}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs mt-1">
               {reservasActivas.length === 1
                 ? "Reserva activa"
                 : "Reservas activas"}
@@ -461,22 +497,22 @@ export function UserDashboard() {
         </Card>
 
         {/* Tickets Abiertos */}
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Tickets Abiertos
             </CardTitle>
-            <IconTicket className="h-4 w-4 text-muted-foreground" />
+            <IconTicket className="h-4 w-4" />
           </CardHeader>
           <CardContent>
             {ticketsLoading ? (
-              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16 bg-white/40" />
             ) : (
               <>
                 <div className="text-2xl font-bold">
                   {ticketsAbiertos.length}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-slate-900/80 mt-1">
                   {ticketsAbiertos.length === 1
                     ? "Ticket abierto"
                     : "Tickets abiertos"}
@@ -488,51 +524,31 @@ export function UserDashboard() {
 
         {/* Facturas Pendientes */}
         <Card className={cn(
-          "hover:shadow-md transition-shadow",
+          "hover:shadow-lg transition-shadow border-none",
           tieneVencidas
-            ? "border-red-200 dark:border-red-900/30 bg-red-50/50 dark:bg-red-950/10"
+            ? "bg-linear-to-br from-red-500/35 via-card to-card border-red-300/35 shadow-lg"
             : tienePendientes
-            ? "border-orange-200 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-950/10"
-            : ""
+            ? "bg-linear-to-br from-orange-500/35 via-card to-card border-orange-300/35 shadow-lg"
+            : "bg-linear-to-br from-slate-600/35 via-card to-card border-slate-300/35 shadow-lg"
         )}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className={cn(
-              "text-sm font-medium",
-              tieneVencidas
-                ? "text-red-700 dark:text-red-400"
-                : tienePendientes
-                ? "text-orange-700 dark:text-orange-400"
-                : ""
+              "text-sm font-medium"
             )}>
               Facturas Pendientes
             </CardTitle>
             <IconReceipt className={cn(
-              "h-4 w-4",
-              tieneVencidas
-                ? "text-red-600 dark:text-red-400"
-                : tienePendientes
-                ? "text-orange-600 dark:text-orange-400"
-                : "text-muted-foreground"
+              "h-4 w-4"
             )} />
           </CardHeader>
           <CardContent>
             <div className={cn(
-              "text-2xl font-bold",
-              tieneVencidas
-                ? "text-red-700 dark:text-red-400"
-                : tienePendientes
-                ? "text-orange-700 dark:text-orange-400"
-                : ""
+              "text-2xl font-bold"
             )}>
               {misPagos?.resumen.pendientes.cantidad || 0}
             </div>
             <p className={cn(
-              "text-xs mt-1",
-              tieneVencidas
-                ? "text-red-600 dark:text-red-500"
-                : tienePendientes
-                ? "text-orange-600 dark:text-orange-500"
-                : "text-muted-foreground"
+              "text-xs mt-1"
             )}>
               Total: {formatCurrency(misPagos?.resumen.pendientes.valor || 0)}
             </p>

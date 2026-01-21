@@ -39,7 +39,7 @@ export function KPICards({ data, isLoading = false }: KPICardsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {/* Tenants Activos */}
-      <Card className="overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 via-card to-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg group">
+      <Card className="overflow-hidden rounded-xl border bg-linear-to-br from-primary/10 via-card to-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg group">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Tenants Activos

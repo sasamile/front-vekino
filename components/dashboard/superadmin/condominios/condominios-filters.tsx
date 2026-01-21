@@ -51,21 +51,21 @@ export function CondominiosFiltersComponent({
   return (
     <Card className="animate-in slide-in-from-bottom-2 duration-500">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-col sm:flex-row">
           <div>
             <CardTitle>Filtros de Búsqueda</CardTitle>
             <CardDescription>
               Busca y filtra condominios por nombre, estado, plan o ciudad
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-col sm:flex-row w-full sm:w-auto">
             {activeFiltersCount > 0 && (
               <Button variant="outline" size="sm" onClick={onClearFilters}>
                 Limpiar filtros ({activeFiltersCount})
               </Button>
             )}
             <Button
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear cursor-pointer"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear cursor-pointer w-full sm:w-auto mt-4 sm:mt-0"
               onClick={() => setCreateCondominioDialogOpen(true)}
             >
               <IconCirclePlusFilled />

@@ -67,7 +67,7 @@ function Logo({ showTitle = true }: LogoProps) {
 
   // Si NO hay subdomain, usar siempre el logo principal de Vekino, sin texto
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center justify-center gap-2 -mb-10">
       <img
         src="/logos/large-vekino-logo.png"
         alt="Vekino Platform"

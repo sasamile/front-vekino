@@ -197,8 +197,8 @@ function SuperAdminCondominiosPage() {
     <div className="space-y-6 p-4 animate-in fade-in-50 duration-500">
       <div className="flex items-center justify-between animate-in slide-in-from-top-2 duration-500">
         <div>
-          <h1 className="text-3xl font-bold">Condominios</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl max-sm:text-2xl font-bold">Condominios</h1>
+          <p className="text-muted-foreground mt-2 text-base max-sm:text-[14.5px]">
             Gestiona y administra todos los condominios de la plataforma
           </p>
         </div>

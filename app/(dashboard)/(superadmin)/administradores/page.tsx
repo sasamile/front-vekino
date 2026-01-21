@@ -94,8 +94,8 @@ function AdministradoresPage() {
       <div className="animate-in slide-in-from-top-2 duration-500">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Administradores</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl max-sm:text-2xl font-bold">Administradores</h1>
+            <p className="text-muted-foreground mt-2 text-base max-sm:text-[14.5px]">
               Gestiona los usuarios de cada condominio
             </p>
           </div>

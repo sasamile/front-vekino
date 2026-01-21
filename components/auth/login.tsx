@@ -33,7 +33,9 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
   const router = useRouter();
 
   // Obtener el color primario del condominio o usar el azul por defecto
@@ -63,7 +65,7 @@ export default function Login() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) {
       return;
     }
@@ -86,13 +88,13 @@ export default function Login() {
       toast.success("¡Login exitoso!", {
         duration: 2000,
       });
-      
+
       // Usar window.location para forzar una recarga completa y que el middleware detecte la cookie
       // Pequeño delay para asegurar que la cookie se guarde
       setTimeout(() => {
         window.location.href = "/";
       }, 100);
-      
+
       console.log("Login response:", response.data);
     } catch (err: any) {
       const errorMessage =
@@ -115,7 +117,10 @@ export default function Login() {
         <FieldGroup className="py-4">
           {/* Email Field */}
           <Field data-invalid={!!errors.email}>
-            <FieldLabel htmlFor="login-email" className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
+            <FieldLabel
+              htmlFor="login-email"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-700"
+            >
               Correo electrónico
             </FieldLabel>
             <div className="relative">
@@ -135,14 +140,15 @@ export default function Login() {
                 required
               />
             </div>
-            {errors.email && (
-              <FieldError>{errors.email}</FieldError>
-            )}
+            {errors.email && <FieldError>{errors.email}</FieldError>}
           </Field>
 
           {/* Password Field */}
           <Field data-invalid={!!errors.password}>
-            <FieldLabel htmlFor="login-password" className="text-sm font-medium text-zinc-700 dark:text-zinc-700">
+            <FieldLabel
+              htmlFor="login-password"
+              className="text-sm font-medium text-zinc-700 dark:text-zinc-700"
+            >
               Contraseña
             </FieldLabel>
             <div className="relative">
@@ -165,7 +171,9 @@ export default function Login() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -174,9 +182,7 @@ export default function Login() {
                 )}
               </button>
             </div>
-            {errors.password && (
-              <FieldError>{errors.password}</FieldError>
-            )}
+            {errors.password && <FieldError>{errors.password}</FieldError>}
           </Field>
 
           {/* Forgot Password */}

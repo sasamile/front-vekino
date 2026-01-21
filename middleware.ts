@@ -100,13 +100,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(homeUrl);
     }
     
-    // Si hay cookie pero la verificación falló por un error técnico (no por sesión inválida),
-    // redirigir de todas formas para evitar que el usuario se quede atascado después de un login exitoso
-    // El middleware de otras rutas verificará la sesión nuevamente y redirigirá a login si es necesario
-    const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = '/';
-    homeUrl.search = '';
-    return NextResponse.redirect(homeUrl);
+    // Si hay cookie pero la sesión no es válida, permitir login y limpiar cookie
+    const response = NextResponse.next();
+    response.cookies.delete('better-auth.session_token');
+    return response;
   }
   
   // Permitir acceso a /pago-exitoso sin autenticación estricta (Wompi redirige ahí)

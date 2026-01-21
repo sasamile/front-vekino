@@ -19,6 +19,7 @@ import {
 import type { UserRole } from "@/lib/middleware/types";
 import Logo from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import {
@@ -96,11 +97,11 @@ const getNavItems = (role: UserRole): NavItem[] => {
           url: "/reportes",
           icon: IconFile,
         },
-        {
-          title: "Planes",
-          url: "/planes",
-          icon: IconPackage,
-        },
+        // {
+        //   title: "Planes",
+        //   url: "/planes",
+        //   icon: IconPackage,
+        // },
       ];
 
     case "SUPERADMIN":
@@ -119,6 +120,11 @@ const getNavItems = (role: UserRole): NavItem[] => {
           title: "Administradores",
           url: "/administradores",
           icon: IconUserCog,
+        },
+        {
+          title: "Planes",
+          url: "/planes",
+          icon: IconPackage,
         },
       ];
 
@@ -170,7 +176,7 @@ export function TopNavigation({
   };
 
   return (
-    <div className="top-0 z-50 bg-background max-w-7xl mx-auto">
+    <div className="top-0 z-50 bg-background max-w-7xl mx-auto px-2 sm:px-6">
       {/* Header superior con logo y menú de usuario */}
       <div className="border-b pt-4 max-sm:px-4">
         <div className="flex h-16 items-center">
@@ -206,7 +212,7 @@ export function TopNavigation({
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <IconUser className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium">Admin</span>
+                  <span className="text-sm font-medium">{userName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -244,29 +250,32 @@ export function TopNavigation({
       </div>
 
       {/* Barra de navegación con tabs */}
-      <div className="py-4 max-sm:px-4 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-        <nav className="flex items-center gap-1 h-12 max-w-7xl mx-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.url);
+      <div className="py-4 max-sm:px-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <ScrollArea>
+          <nav className="flex items-center gap-1 h-12 max-w-7xl mx-auto px-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.url);
 
-            return (
-              <Link
-                key={item.url}
-                href={item.url}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.title}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.url}
+                  href={item.url}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.title}
+                </Link>
+              );
+            })}
+          </nav>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
     </div>
   );

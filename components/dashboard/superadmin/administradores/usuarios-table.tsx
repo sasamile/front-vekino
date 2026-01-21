@@ -6,13 +6,6 @@ import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -162,37 +155,37 @@ export function UsuariosTable({
 
   if (!condominioId) {
     return (
-      <Card className="h-[calc(100vh-20.2rem)] flex items-center justify-center shadow-sm">
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center justify-center items-center flex flex-col gap-3 max-w-md">
-            <Image
-              src={"/logos/isotipo-vekino-logo.png"}
-              width={120}
-              height={120}
-              alt="Selecciona un condominio"
-              className="opacity-90"
-            />
-            <div className="space-y-1">
-              <p className="text-lg font-semibold text-foreground">
-                Selecciona un condominio
-              </p>
-              <p className="text-muted-foreground text-sm">
-                Elige un condominio para ver y gestionar sus administradores.
-              </p>
-            </div>
+      <div className="h-[calc(100vh-20.2rem)] flex items-center justify-center shadow-sm border rounded-lg bg-card text-card-foreground">
+        <div className="flex items-center justify-center py-12 px-6 text-center flex-col gap-3 max-w-md">
+          <Image
+            src={"/logos/isotipo-vekino-logo.png"}
+            width={120}
+            height={120}
+            alt="Selecciona un condominio"
+            className="opacity-90"
+          />
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-foreground">
+              Selecciona un condominio
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Elige un condominio para ver y gestionar sus administradores.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full w-full max-w-full flex flex-col overflow-hidden shadow-sm border">
-      <CardHeader className="shrink-0 pb-4 border-b">
+    <div className="h-full w-full flex flex-col overflow-hidden shadow-sm border rounded-lg bg-card text-card-foreground">
+      <div className="shrink-0 pb-4 border-b p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex-1">
-            <CardTitle className="py-2 text-xl">Usuarios del Condominio</CardTitle>
-            <CardDescription className="text-sm">
+            <h2 className="py-2 text-xl font-semibold leading-none tracking-tight">
+              Usuarios del Condominio
+            </h2>
+            <p className="text-sm text-muted-foreground">
               {isLoading
                 ? "Cargando..."
                 : total > 0
@@ -200,7 +193,7 @@ export function UsuariosTable({
                     total !== 1 ? "s" : ""
                   } - Página ${currentPage} de ${totalPages}`
                 : "No se encontraron usuarios"}
-            </CardDescription>
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {activeFiltersCount > 0 && (
@@ -209,7 +202,7 @@ export function UsuariosTable({
               </Button>
             )}
             {condominioId && onCreate && (
-              <Button onClick={onCreate} className="gap-2">
+              <Button onClick={onCreate} className="gap-2 w-full sm:w-auto mt-4 sm:mt-0">
                 <IconCirclePlusFilled className="size-4" />
                 Crear Usuario
               </Button>
@@ -332,9 +325,9 @@ export function UsuariosTable({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex-1 overflow-hidden flex flex-col min-h-0 w-full max-w-full">
+      <div className="flex-1 overflow-hidden flex flex-col w-full max-w-full p-6 pt-4">
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
             Error al cargar los usuarios. Por favor, intenta nuevamente.
@@ -364,8 +357,8 @@ export function UsuariosTable({
             </p>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col min-h-0 w-full max-w-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto overflow-x-auto min-h-0 w-full max-w-full">
+          <div className="flex-1 flex flex-col w-full max-w-full overflow-hidden">
+            <div className="flex-1 overflow-y-auto overflow-x-auto h-full w-full max-w-full">
               <div className="w-full overflow-x-auto">
                 <table className="w-full min-w-[800px]">
                   <thead>
@@ -557,7 +550,7 @@ export function UsuariosTable({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

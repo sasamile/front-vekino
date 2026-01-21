@@ -27,7 +27,7 @@ export function DashboardLayoutWrapper({
         userEmail={userEmail}
         condominioName={condominio?.name}
       />
-      <main className="container mx-auto max-w-7xl pb-6">{children}</main>
+      <main className="container mx-auto max-w-7xl pb-6 px-6 max-sm:px-2">{children}</main>
     </div>
   );
 }
