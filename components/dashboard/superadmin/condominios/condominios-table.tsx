@@ -63,7 +63,7 @@ export function CondominiosTable({
   onLimitChange,
 }: CondominiosTableProps) {
   return (
-    <Card>
+    <Card className="animate-in slide-in-from-bottom-2 duration-500">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

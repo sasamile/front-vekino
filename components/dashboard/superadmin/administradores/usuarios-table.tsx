@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useDebounce } from "@/hooks/use-debounce";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -161,18 +162,24 @@ export function UsuariosTable({
 
   if (!condominioId) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12 h-[calc(100vh-20.2rem)] ">
-          <div className="text-center justify-center items-center flex flex-col">
+      <Card className="h-[calc(100vh-20.2rem)] flex items-center justify-center shadow-sm">
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="text-center justify-center items-center flex flex-col gap-3 max-w-md">
             <Image
-              src={"/img/condominio.png"}
-              width={200}
-              height={100}
-              alt="condominios"
+              src={"/logos/isotipo-vekino-logo.png"}
+              width={120}
+              height={120}
+              alt="Selecciona un condominio"
+              className="opacity-90"
             />
-            <p className="text-muted-foreground">
-              Selecciona un condominio para ver sus usuarios
-            </p>
+            <div className="space-y-1">
+              <p className="text-lg font-semibold text-foreground">
+                Selecciona un condominio
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Elige un condominio para ver y gestionar sus administradores.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -180,114 +187,153 @@ export function UsuariosTable({
   }
 
   return (
-    <Card className="h-full w-full max-w-full flex flex-col overflow-hidden">
-      <CardHeader className="shrink-0">
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="py-2">Usuarios del Condominio</CardTitle>
-              <CardDescription>
-                {isLoading
-                  ? "Cargando..."
-                  : total > 0
-                  ? `${total} usuario${total !== 1 ? "s" : ""} encontrado${
-                      total !== 1 ? "s" : ""
-                    } - Página ${currentPage} de ${totalPages}`
-                  : "No se encontraron usuarios"}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {activeFiltersCount > 0 && (
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Limpiar filtros ({activeFiltersCount})
-                </Button>
-              )}
-              {condominioId && onCreate && (
-                <Button onClick={onCreate} className="gap-2">
-                  <IconCirclePlusFilled className="size-4" />
-                  Crear Usuario
-                </Button>
-              )}
-            </div>
+    <Card className="h-full w-full max-w-full flex flex-col overflow-hidden shadow-sm border">
+      <CardHeader className="shrink-0 pb-4 border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1">
+            <CardTitle className="py-2 text-xl">Usuarios del Condominio</CardTitle>
+            <CardDescription className="text-sm">
+              {isLoading
+                ? "Cargando..."
+                : total > 0
+                ? `${total} usuario${total !== 1 ? "s" : ""} encontrado${
+                    total !== 1 ? "s" : ""
+                  } - Página ${currentPage} de ${totalPages}`
+                : "No se encontraron usuarios"}
+            </CardDescription>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {activeFiltersCount > 0 && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                Limpiar filtros ({activeFiltersCount})
+              </Button>
+            )}
+            {condominioId && onCreate && (
+              <Button onClick={onCreate} className="gap-2">
+                <IconCirclePlusFilled className="size-4" />
+                Crear Usuario
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[220px]">
+            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
+            <Input
+              placeholder="Buscar por nombre, email o documento..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
           </div>
 
-          {condominioId && (
-            <div className="flex flex-wrap gap-3">
-              <div className="relative flex-1 min-w-[200px]">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
-                <Input
-                  placeholder="Buscar por nombre, email o número de documento..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2 w-full sm:w-auto">
+                <IconFilter className="size-4" />
+                Rol
+                {filters.role && (
+                  <span className="ml-1 rounded-full bg-primary text-primary-foreground size-5 flex items-center justify-center text-xs">
+                    ✓
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => handleRoleFilter(null)}
+                className={cn(filters.role === undefined && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-muted-foreground/60" />
+                  Todos
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleRoleFilter("ADMIN")}
+                className={cn(filters.role === "ADMIN" && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-purple-500" />
+                  Administrador
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleRoleFilter("PROPIETARIO")}
+                className={cn(filters.role === "PROPIETARIO" && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-blue-500" />
+                  Propietario
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleRoleFilter("ARRENDATARIO")}
+                className={cn(filters.role === "ARRENDATARIO" && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-500" />
+                  Arrendatario
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleRoleFilter("RESIDENTE")}
+                className={cn(filters.role === "RESIDENTE" && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-amber-500" />
+                  Residente
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2 w-full sm:w-auto">
-                    <IconFilter className="size-4" />
-                    Rol
-                    {filters.role && (
-                      <span className="ml-1 rounded-full bg-primary text-primary-foreground size-5 flex items-center justify-center text-xs">
-                        ✓
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleRoleFilter(null)}>
-                    Todos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleRoleFilter("ADMIN")}>
-                    Administrador
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleRoleFilter("PROPIETARIO")}
-                  >
-                    Propietario
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleRoleFilter("ARRENDATARIO")}
-                  >
-                    Arrendatario
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleRoleFilter("RESIDENTE")}
-                  >
-                    Residente
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2 w-full sm:w-auto">
-                    <IconFilter className="size-4" />
-                    Estado
-                    {filters.active !== undefined && (
-                      <span className="ml-1 rounded-full bg-primary text-primary-foreground size-5 flex items-center justify-center text-xs">
-                        {filters.active ? "✓" : "✗"}
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleActiveFilter(null)}>
-                    Todos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleActiveFilter(true)}>
-                    Activos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleActiveFilter(false)}>
-                    Inactivos
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2 w-full sm:w-auto">
+                <IconFilter className="size-4" />
+                Estado
+                {filters.active !== undefined && (
+                  <span className="ml-1 rounded-full bg-primary text-primary-foreground size-5 flex items-center justify-center text-xs">
+                    {filters.active ? "✓" : "✗"}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => handleActiveFilter(null)}
+                className={cn(filters.active === undefined && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-muted-foreground/60" />
+                  Todos
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleActiveFilter(true)}
+                className={cn(filters.active === true && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-green-500" />
+                  Activos
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleActiveFilter(false)}
+                className={cn(filters.active === false && "bg-accent text-foreground")}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-red-500" />
+                  Inactivos
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
+
       <CardContent className="flex-1 overflow-hidden flex flex-col min-h-0 w-full max-w-full">
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">

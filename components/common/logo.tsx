@@ -31,7 +31,7 @@ function Logo({ showTitle = true }: LogoProps) {
   const logo = condominio?.logo || storedLogo;
   const name = condominio?.name || storedName;
 
-  // Si hay subdomain, NO mostrar logo de Vekino - solo mostrar si hay logo del condominio
+  // Si hay subdomain, priorizar logo del condominio; si no, usar logo general
   if (subdomain) {
     // Si hay logo (de query o localStorage), usar el logo del condominio
     if (logo) {
@@ -52,59 +52,27 @@ function Logo({ showTitle = true }: LogoProps) {
         </div>
       );
     }
-    
-    // Si hay subdomain pero no hay logo aún, mostrar solo el nombre o nada
-    if (name) {
-      return (
-        <div className="flex items-center justify-center gap-2">
-          {showTitle && (
-            <div>
-              <span className="text-xs uppercase font-bold">
-                {name}
-              </span>
-            </div>
-          )}
-        </div>
-      );
-    }
-    
-    // Si no hay nada, no mostrar nada (evitar flash de Vekino)
-    return null;
+
+    // Si hay subdomain pero no hay logo, usar el logo principal de Vekino (sin texto para evitar parpadeo)
+    return (
+      <div className="flex items-center justify-center gap-2">
+        <img
+          src="/logos/large-vekino-logo.png"
+          alt="Vekino Platform"
+          className="h-8 w-auto object-contain"
+        />
+      </div>
+    );
   }
 
-  // Si NO hay subdomain, mostrar logo de Vekino por defecto
+  // Si NO hay subdomain, usar siempre el logo principal de Vekino, sin texto
   return (
     <div className="flex items-center justify-center gap-2">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-6 h-6"
-      >
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M25.5557 11.6853C23.9112 10.5865 21.9778 10 20 10V0C23.9556 0 27.8224 1.17298 31.1114 3.37061C34.4004 5.56823 36.9638 8.69181 38.4776 12.3463C39.9913 16.0008 40.3874 20.0222 39.6157 23.9018C38.844 27.7814 36.9392 31.3451 34.1421 34.1421C31.3451 36.9392 27.7814 38.844 23.9018 39.6157C20.0222 40.3874 16.0008 39.9913 12.3463 38.4776C8.69181 36.9638 5.56823 34.4004 3.37061 31.1114C1.17298 27.8224 0 23.9556 0 20H10C10 21.9778 10.5865 23.9112 11.6853 25.5557C12.7841 27.2002 14.3459 28.4819 16.1732 29.2388C18.0004 29.9957 20.0111 30.1937 21.9509 29.8078C23.8907 29.422 25.6725 28.4696 27.0711 27.0711C28.4696 25.6725 29.422 23.8907 29.8078 21.9509C30.1937 20.0111 29.9957 18.0004 29.2388 16.1732C28.4819 14.3459 27.2002 12.7841 25.5557 11.6853Z"
-          fill="currentColor"
-          className="text-primary"
-        />
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M10 5.16562e-07C10 1.31322 9.74135 2.61358 9.2388 3.82683C8.73625 5.04009 7.99966 6.14248 7.07107 7.07107C6.14249 7.99966 5.0401 8.73625 3.82684 9.2388C2.61358 9.74134 1.31322 10 5.4439e-06 10L5.00679e-06 20C2.62644 20 5.22716 19.4827 7.65368 18.4776C10.0802 17.4725 12.285 15.9993 14.1421 14.1421C15.9993 12.285 17.4725 10.0802 18.4776 7.65367C19.4827 5.22715 20 2.62643 20 -3.81469e-06L10 5.16562e-07Z"
-          fill="currentColor"
-          className="text-primary"
-        />
-      </svg>
-      {showTitle && (
-        <div>
-          <span className="text-lg font-bold">
-            {name || condominio?.name || "Vekino"}
-          </span>
-        </div>
-      )}
+      <img
+        src="/logos/large-vekino-logo.png"
+        alt="Vekino Platform"
+        className="h-auto w-36 object-contain"
+      />
     </div>
   );
 }

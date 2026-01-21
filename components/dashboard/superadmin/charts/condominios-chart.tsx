@@ -39,6 +39,7 @@ export function CondominiosChart({ data, isLoading = false }: CondominiosChartPr
             }))}
             title="Condominios Creados por Mes"
             description="Últimos 6 meses"
+            hideHeader
           />
         )}
       </CardContent>

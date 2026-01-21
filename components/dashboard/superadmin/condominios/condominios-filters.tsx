@@ -49,7 +49,7 @@ export function CondominiosFiltersComponent({
     useState(false);
     
   return (
-    <Card>
+    <Card className="animate-in slide-in-from-bottom-2 duration-500">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

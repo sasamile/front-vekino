@@ -194,8 +194,8 @@ function SuperAdminCondominiosPage() {
   };
 
   return (
-    <div className="space-y-6 p-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 animate-in fade-in-50 duration-500">
+      <div className="flex items-center justify-between animate-in slide-in-from-top-2 duration-500">
         <div>
           <h1 className="text-3xl font-bold">Condominios</h1>
           <p className="text-muted-foreground mt-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
@@ -41,6 +41,15 @@ export function CondominiosSidebar({
     condominio.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Seleccionar por defecto el primer condominio disponible si no hay uno seleccionado
+  useEffect(() => {
+    if (!isLoading && !selectedCondominioId && filteredCondominios.length > 0) {
+      onSelectCondominio(filteredCondominios[0].id);
+    }
+  }, [isLoading, selectedCondominioId, filteredCondominios, onSelectCondominio]);
+
+  const total = filteredCondominios.length;
+
   const listContent = (
     <>
       {isLoading ? (
@@ -65,14 +74,16 @@ export function CondominiosSidebar({
           </p>
         </div>
       ) : (
-        <div className="divide-y">
+        <div className="space-y-2 pt-2">
           {filteredCondominios.map((condominio) => (
             <button
               key={condominio.id}
               onClick={() => onSelectCondominio(condominio.id)}
               className={cn(
-                "w-full p-4 text-left hover:bg-accent transition-colors",
-                selectedCondominioId === condominio.id && "bg-accent"
+                "w-full p-4 text-left transition-all",
+                selectedCondominioId === condominio.id
+                  ? "bg-primary/10 ring-2 ring-primary/40 rounded-xl shadow-sm"
+                  : "hover:bg-accent rounded-xl"
               )}
             >
               <div className="flex items-center gap-2">
@@ -117,8 +128,9 @@ export function CondominiosSidebar({
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{condominio.name}</div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {condominio.city}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                    <span>{condominio.city}</span>
+                    {condominio.country && <span className="opacity-70">• {condominio.country}</span>}
                   </div>
                 </div>
               </div>
@@ -133,6 +145,12 @@ export function CondominiosSidebar({
     return (
       <div className="h-full flex flex-col">
         <div className="pb-3 px-4 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">Condominios</h3>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+              {isLoading ? "Cargando..." : `${total} en lista`}
+            </span>
+          </div>
           <div className="relative mt-2">
             <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
             <Input
@@ -151,10 +169,15 @@ export function CondominiosSidebar({
   }
 
   return (
-    <Card className="h-full flex flex-col max-h-[calc(100vh-12rem)]">
+    <Card className="h-full flex flex-col max-h-[calc(100vh-12rem)] border shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle>Condominios</CardTitle>
-        <div className="relative mt-2">
+        <div className="flex items-center justify-between">
+          <CardTitle>Condominios</CardTitle>
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+            {isLoading ? "Cargando..." : `${total} en lista`}
+          </span>
+        </div>
+        <div className="relative mt-3">
           <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
           <Input
             placeholder="Buscar condominio..."
@@ -164,7 +187,7 @@ export function CondominiosSidebar({
           />
         </div>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto p-0">
+      <CardContent className="flex-1 overflow-y-auto p-0 px-2 pb-3">
         {listContent}
       </CardContent>
     </Card>
