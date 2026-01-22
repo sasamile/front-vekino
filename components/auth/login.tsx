@@ -39,7 +39,7 @@ export default function Login() {
   const router = useRouter();
 
   // Obtener el color primario del condominio o usar el azul por defecto
-  const primaryColor = condominio?.primaryColor || "#3B82F6";
+  const primaryColor = condominio?.primaryColor || "#042046";
 
   const validate = (): boolean => {
     try {

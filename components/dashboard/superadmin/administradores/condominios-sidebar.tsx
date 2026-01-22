@@ -91,7 +91,7 @@ export function CondominiosSidebar({
                   <div
                     className="size-10 rounded-lg overflow-hidden border-2 shadow-sm shrink-0"
                     style={{
-                      borderColor: condominio.primaryColor || "#3B82F6",
+                      borderColor: condominio.primaryColor || "#042046",
                     }}
                   >
                     <img
@@ -104,7 +104,7 @@ export function CondominiosSidebar({
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                              <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: ${condominio.primaryColor || "#3B82F6"}">
+                              <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: ${condominio.primaryColor || "#042046"}">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                             </div>
@@ -117,12 +117,12 @@ export function CondominiosSidebar({
                   <div
                     className="size-10 rounded-lg overflow-hidden border-2 shadow-sm bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center shrink-0"
                     style={{
-                      borderColor: condominio.primaryColor || "#3B82F6",
+                      borderColor: condominio.primaryColor || "#042046",
                     }}
                   >
                     <IconBuilding
                       className="size-5"
-                      style={{ color: condominio.primaryColor || "#3B82F6" }}
+                      style={{ color: condominio.primaryColor || "#042046" }}
                     />
                   </div>
                 )}

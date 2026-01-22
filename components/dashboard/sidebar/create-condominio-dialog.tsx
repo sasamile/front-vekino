@@ -114,7 +114,7 @@ export function CreateCondominioDialog({
     resolver: zodResolver(condominioSchema),
     defaultValues: {
       subscriptionPlan: "BASICO",
-      primaryColor: "#238af0",
+      primaryColor: "#042046",
       activeModules: [],
       unitLimit: 100,
     },
@@ -464,7 +464,7 @@ export function CreateCondominioDialog({
                     <Input
                       disabled={loading}
                       type="color"
-                      value={primaryColorValue || "#238af0"}
+                      value={primaryColorValue || "#042046"}
                       onChange={(e) => {
                         setValue("primaryColor", e.target.value, { shouldValidate: true })
                       }}
@@ -472,11 +472,11 @@ export function CreateCondominioDialog({
                     />
                     <Input  
                       disabled={loading}
-                      value={primaryColorValue || "#238af0"}
+                      value={primaryColorValue || "#042046"}
                       onChange={(e) => {
                         setValue("primaryColor", e.target.value, { shouldValidate: true })
                       }}
-                      placeholder="#238af0"
+                      placeholder="#042046"
                       className="flex-1"
                     />
                   </div>

@@ -22,6 +22,8 @@ export const applyColorScript = `
       }
     }
     
+    const root = document.documentElement;
+    
     if (subdomain) {
       const storageKey = 'vekino_condominio_' + subdomain;
       const stored = localStorage.getItem(storageKey);
@@ -30,7 +32,6 @@ export const applyColorScript = `
         try {
           const data = JSON.parse(stored);
           if (data.primaryColor) {
-            const root = document.documentElement;
             const hex = data.primaryColor.replace('#', '');
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
@@ -39,12 +40,18 @@ export const applyColorScript = `
             root.style.setProperty('--primary', data.primaryColor);
             root.style.setProperty('--primary-foreground', '#ffffff');
             root.style.setProperty('--primary-rgb', r + ', ' + g + ', ' + b);
+            return;
           }
         } catch (e) {
           // Ignorar errores de parsing
         }
       }
     }
+    
+    // Aplicar color por defecto si no hay subdomain o no hay color almacenado
+    root.style.setProperty('--primary', '#042046');
+    root.style.setProperty('--primary-foreground', '#ffffff');
+    root.style.setProperty('--primary-rgb', '4, 32, 70');
   } catch (e) {
     // Ignorar errores
   }

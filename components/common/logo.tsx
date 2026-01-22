@@ -3,13 +3,15 @@
 import { useCondominio } from "@/components/providers/condominio-provider";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getCondominioFromStorage } from "@/lib/storage/condominio-storage";
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 interface LogoProps {
   showTitle?: boolean;
+  className?: string;
 }
 
-function Logo({ showTitle = true }: LogoProps) {
+function Logo({ showTitle = true, className }: LogoProps) {
   const { condominio } = useCondominio();
   const { subdomain } = useSubdomain();
   
@@ -57,7 +59,7 @@ function Logo({ showTitle = true }: LogoProps) {
     return (
       <div className="flex items-center justify-center gap-2">
         <img
-          src="/logos/large-vekino-logo.png"
+          src="/logos/logo-vekino.svg"
           alt="Vekino Platform"
           className="h-8 w-auto object-contain"
         />
@@ -67,11 +69,11 @@ function Logo({ showTitle = true }: LogoProps) {
 
   // Si NO hay subdomain, usar siempre el logo principal de Vekino, sin texto
   return (
-    <div className="flex items-center justify-center gap-2 -mb-10">
+    <div className="flex items-center justify-center gap-2">
       <img
-        src="/logos/large-vekino-logo.png"
+        src="/logos/logo-vekino.svg"
         alt="Vekino Platform"
-        className="h-auto w-36 object-contain"
+        className={cn("h-auto w-36 object-contain", className)}
       />
     </div>
   );

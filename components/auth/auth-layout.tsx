@@ -2,7 +2,6 @@
 
 import { ReactNode } from "react";
 import Logo from "../common/logo";
-import { useCondominio } from "@/components/providers/condominio-provider";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -15,7 +14,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
     <div className="min-h-screen w-full flex overflow-x-hidden">
       {/* Left Panel - Login Form (55%) */}
       <div className="w-full  flex flex-col gap-8 items-center justify-center bg-linear-to-b to-primary/50 from-70% from-white p-8 lg:p-12">
-        <Logo />
+        <Logo className="w-44" />
 
         <div className="w-full max-w-md space-y-6 bg-white backdrop-blur-sm rounded-2xl p-8">
           {/* Logo */}

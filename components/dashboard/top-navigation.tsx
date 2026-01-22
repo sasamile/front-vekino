@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { IconBell, IconUser, IconLogout } from "@tabler/icons-react";
 import toast from "react-hot-toast";
+import { getAdditionalNavItemsForUser } from "./mobile-bottom-nav";
 
 interface NavItem {
   title: string;
@@ -97,11 +98,6 @@ const getNavItems = (role: UserRole): NavItem[] => {
           url: "/reportes",
           icon: IconFile,
         },
-        // {
-        //   title: "Planes",
-        //   url: "/planes",
-        //   icon: IconPackage,
-        // },
       ];
 
     case "SUPERADMIN":
@@ -151,6 +147,7 @@ export function TopNavigation({
   const { subdomain } = useSubdomain();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navItems = getNavItems(userRole);
+  const additionalNavItems = getAdditionalNavItemsForUser(userRole);
 
   const isActive = (url: string) => {
     if (url === "/") {
@@ -190,14 +187,14 @@ export function TopNavigation({
 
           {/* Right side - Condominio name and user menu */}
           <div className="flex items-center gap-4">
-            {condominioName && userRole !== "SUPERADMIN" && (
+            {/* {condominioName && userRole !== "SUPERADMIN" && (
               <div className="text-sm text-muted-foreground border-r pr-4">
                 Vista:{" "}
                 <span className="font-semibold text-foreground">
                   {condominioName}
                 </span>
               </div>
-            )}
+            )} */}
 
             {/* Notifications */}
             {/* <Button variant="ghost" size="icon" className="relative">
@@ -212,7 +209,7 @@ export function TopNavigation({
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <IconUser className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium">{userName}</span>
+                  <span className="text-sm font-medium hidden md:inline">{userName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -227,6 +224,51 @@ export function TopNavigation({
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {/* Enlaces adicionales solo en móviles */}
+                {additionalNavItems.length > 0 && (
+                  <>
+                    <div className="md:hidden">
+                      {additionalNavItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <DropdownMenuItem key={item.url} asChild>
+                            <Link href={item.url} className="flex items-center">
+                              <Icon className="mr-2 h-4 w-4" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </div>
+                    <DropdownMenuSeparator className="md:hidden" />
+                  </>
+                )}
+                {/* Enlaces adicionales solo en desktop para ADMIN */}
+                {userRole === "ADMIN" && (
+                  <>
+                    <div className="hidden md:block">
+                      <DropdownMenuItem asChild>
+                        <Link href="/unidades" className="flex items-center">
+                          <IconBuilding className="mr-2 h-4 w-4" />
+                          <span>Unidades</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/espacio-comunal" className="flex items-center">
+                          <IconBuildingCommunity className="mr-2 h-4 w-4" />
+                          <span>Espacio Comunal</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/tickets" className="flex items-center">
+                          <IconTicket className="mr-2 h-4 w-4" />
+                          <span>Tickets</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </div>
+                    <DropdownMenuSeparator className="hidden md:block" />
+                  </>
+                )}
                 <DropdownMenuItem>
                   <IconUser className="mr-2 h-4 w-4" />
                   <span>Perfil</span>
@@ -249,8 +291,8 @@ export function TopNavigation({
         </div>
       </div>
 
-      {/* Barra de navegación con tabs */}
-      <div className="py-4 max-sm:px-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+      {/* Barra de navegación con tabs - Ocultar en móviles */}
+      <div className="py-4 max-sm:px-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 hidden md:block">
         <ScrollArea>
           <nav className="flex items-center gap-1 h-12 max-w-7xl mx-auto px-4">
             {navItems.map((item) => {

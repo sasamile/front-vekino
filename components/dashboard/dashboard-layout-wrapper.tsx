@@ -1,6 +1,7 @@
 "use client";
 
 import { TopNavigation } from "@/components/dashboard/top-navigation";
+import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 import type { UserRole } from "@/lib/middleware/types";
 import { useCondominio } from "@/components/providers/condominio-provider";
 
@@ -27,7 +28,10 @@ export function DashboardLayoutWrapper({
         userEmail={userEmail}
         condominioName={condominio?.name}
       />
-      <main className="container mx-auto max-w-7xl pb-6 px-6 max-sm:px-2">{children}</main>
+      <main className="container mx-auto max-w-7xl px-6 max-sm:px-2 pb-20 md:pb-6 pt-6">
+        {children}
+      </main>
+      <MobileBottomNav userRole={userRole} />
     </div>
   );
 }
