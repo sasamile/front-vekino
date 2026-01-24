@@ -167,7 +167,7 @@ function UnidadesPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-y-2">
         <div>
           <h1 className="text-3xl font-bold">Unidades</h1>
           <p className="text-muted-foreground mt-2">
@@ -177,7 +177,7 @@ function UnidadesPage() {
 
         <Button
           onClick={() => setCreateDialogOpen(true)}
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
         >
           <IconCirclePlusFilled className="size-4" />
           Crear Unidad

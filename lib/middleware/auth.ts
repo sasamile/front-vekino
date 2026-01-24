@@ -22,26 +22,18 @@ export async function verifySession(
     
     const hostname = request.headers.get('host') || '';
     const isLocal = isLocalhost(hostname);
-    const protocol = isLocal ? 'http' : 'https';
     
     if (subdomain) {
       // Si hay subdominio, usar el endpoint de condominios
-      if (isLocal) {
-        baseUrl = `${protocol}://${hostname}/api`;
-        endpoint = '/condominios/me';
-      } else {
-        baseUrl = `https://${subdomain}.vekino.site/api`;
-        endpoint = '/condominios/me';
-      }
+      // En local NO llamar a localhost (evita recursión en middleware)
+      baseUrl = isLocal
+        ? `https://${subdomain}.vekino.site/api`
+        : `https://${subdomain}.vekino.site/api`;
+      endpoint = '/condominios/me';
     } else {
       // Si no hay subdominio, usar el endpoint de superadmin
-      if (isLocal) {
-        baseUrl = `${protocol}://${hostname}/api`;
-        endpoint = '/superadmin/me';
-      } else {
-        baseUrl = 'https://vekino.site/api';
-        endpoint = '/superadmin/me';
-      }
+      baseUrl = 'https://vekino.site/api';
+      endpoint = '/superadmin/me';
     }
 
     const url = `${baseUrl}${endpoint}`;

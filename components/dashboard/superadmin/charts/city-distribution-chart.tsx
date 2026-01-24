@@ -16,11 +16,11 @@ interface CityDistributionChartProps {
 }
 
 const colors = [
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-yellow-500",
-  "bg-purple-500",
-  "bg-pink-500",
+  "bg-primary",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-indigo-500",
+  "bg-rose-500",
 ];
 
 export function CityDistributionChart({
@@ -30,10 +30,17 @@ export function CityDistributionChart({
   const total = data.reduce((sum, item) => sum + item.cantidad, 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Distribución por Ciudad</CardTitle>
-        <CardDescription>Condominios activos por ubicación</CardDescription>
+    <Card className="border bg-card/80 shadow-sm backdrop-blur">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <CardTitle>Distribución por Ciudad</CardTitle>
+            <CardDescription>Condominios activos por ubicación</CardDescription>
+          </div>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary">
+            Total: {total}
+          </span>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -56,12 +63,17 @@ export function CityDistributionChart({
               return (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{item.ciudad}</span>
-                    <span className="text-muted-foreground">
-                      {item.cantidad} ({percentage.toFixed(1)}%)
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`size-2.5 rounded-full ${colors[index % colors.length]}`}
+                      />
+                      <span className="font-medium">{item.ciudad}</span>
+                    </div>
+                    <span className="text-muted-foreground font-medium">
+                      {item.cantidad} • {percentage.toFixed(1)}%
                     </span>
                   </div>
-                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                  <div className="w-full h-3 rounded-full overflow-hidden bg-muted/60">
                     <div
                       className={`h-full ${colors[index % colors.length]} transition-all`}
                       style={{ width: `${percentage}%` }}

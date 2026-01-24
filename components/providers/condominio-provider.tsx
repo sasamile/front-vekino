@@ -154,9 +154,9 @@ export function CondominioProvider({ children }: { children: ReactNode }) {
       root.style.setProperty('--primary-rgb', `${r}, ${g}, ${b}`);
     } else if (!subdomain) {
       // Si no hay subdomain, resetear a valores por defecto (azul)
-      root.style.setProperty('--primary', '#3B82F6'); // Azul por defecto
+      root.style.setProperty('--primary', '#042046'); // Azul por defecto
       root.style.setProperty('--primary-foreground', '#ffffff');
-      root.style.setProperty('--primary-rgb', '59, 130, 246');
+      root.style.setProperty('--primary-rgb', '4, 32, 70');
     } else {
       // Si hay subdomain pero no hay condominio aún, intentar aplicar desde localStorage
       applyPrimaryColorFromStorage(subdomain);

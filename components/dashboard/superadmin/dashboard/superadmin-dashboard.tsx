@@ -27,7 +27,7 @@ import type {
 
 // Helper function to transform API data to component format
 function transformOverviewToKPIData(
-  overview: Awaited<ReturnType<typeof getMetricsOverview>>
+  overview: Awaited<ReturnType<typeof getMetricsOverview>>,
 ): KPIData {
   return {
     tenantsActivos: overview.activeTenants,
@@ -39,7 +39,7 @@ function transformOverviewToKPIData(
 }
 
 function transformTenantsToComponentFormat(
-  tenants: Awaited<ReturnType<typeof getMetricsTenants>>
+  tenants: Awaited<ReturnType<typeof getMetricsTenants>>,
 ): (Tenant & { planExpiresAtISO: string })[] {
   return tenants.data.map((tenant) => ({
     id: tenant.id,
@@ -64,30 +64,35 @@ function transformTenantsToComponentFormat(
 }
 
 function transformAlertsToComponentFormat(
-  alerts: Awaited<ReturnType<typeof getAlerts>>
+  alerts: Awaited<ReturnType<typeof getAlerts>>,
 ): Alerta[] {
   return alerts.alerts.map((alert, index) => ({
     id: `${alert.type}-${index}`,
     tipo: alert.type,
     mensaje: alert.title,
     severidad:
-      alert.type === "expiring_plan" ? "alta" : ("media" as "alta" | "media" | "baja"),
+      alert.type === "expiring_plan"
+        ? "alta"
+        : ("media" as "alta" | "media" | "baja"),
     tenants: alert.tenants,
   }));
 }
 
 function transformCondominiosByMonth(
-  data: Awaited<ReturnType<typeof getCondominiosByMonth>>
+  data: Awaited<ReturnType<typeof getCondominiosByMonth>>,
 ): CondominioPorMes[] {
   // Group by month and sum counts for duplicate months
-  const grouped = data.data.reduce((acc, item) => {
-    if (acc[item.month]) {
-      acc[item.month] += item.count;
-    } else {
-      acc[item.month] = item.count;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const grouped = data.data.reduce(
+    (acc, item) => {
+      if (acc[item.month]) {
+        acc[item.month] += item.count;
+      } else {
+        acc[item.month] = item.count;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const monthNames = [
     "Ene",
@@ -120,7 +125,7 @@ function transformCondominiosByMonth(
 }
 
 function transformPlanDistribution(
-  data: Awaited<ReturnType<typeof getPlanDistribution>>
+  data: Awaited<ReturnType<typeof getPlanDistribution>>,
 ): TenantPorPlan[] {
   return data.distribution.map((item) => ({
     plan: item.plan,
@@ -129,17 +134,20 @@ function transformPlanDistribution(
 }
 
 function transformMRRGrowth(
-  data: Awaited<ReturnType<typeof getMRRGrowth>>
+  data: Awaited<ReturnType<typeof getMRRGrowth>>,
 ): CrecimientoIngresos[] {
   // Group by month and sum MRR for duplicate months
-  const grouped = data.data.reduce((acc, item) => {
-    if (acc[item.month]) {
-      acc[item.month] += item.mrr;
-    } else {
-      acc[item.month] = item.mrr;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const grouped = data.data.reduce(
+    (acc, item) => {
+      if (acc[item.month]) {
+        acc[item.month] += item.mrr;
+      } else {
+        acc[item.month] = item.mrr;
+      }
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const monthNames = [
     "Ene",
@@ -172,7 +180,7 @@ function transformMRRGrowth(
 }
 
 function transformCityDistribution(
-  data: Awaited<ReturnType<typeof getCityDistribution>>
+  data: Awaited<ReturnType<typeof getCityDistribution>>,
 ): TenantPorCiudad[] {
   return data.distribution.map((item) => ({
     ciudad: item.city,
@@ -242,25 +250,77 @@ export function SuperAdminDashboard() {
     ? transformCityDistribution(cityDistribution)
     : [];
 
+  // Get current time for greeting with matching emoji
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: "Buenos días", emoji: "🌅" };
+    if (hour < 18) return { text: "Buenas tardes", emoji: "🌤️" };
+    return { text: "Buenas noches", emoji: "🌙" };
+  };
+
+  const { text: greetingText, emoji: greetingEmoji } = getGreeting();
+
   return (
-    <div className="space-y-6">
-      <KPICards data={kpiData} isLoading={isLoadingOverview} />
-      <AlertsSection alertas={alertsData} isLoading={isLoadingAlerts} />
-      <TenantsTable tenants={tenantsData} isLoading={isLoadingTenants} />
-      <ChartsSection
-        graficas={{
-          condominiosPorMes: condominiosData,
-          tenantsPorPlan: plansData,
-          crecimientoIngresos: mrrData,
-          tenantsPorCiudad: citiesData,
-        }}
-        isLoading={
-          isLoadingCondominios ||
-          isLoadingPlans ||
-          isLoadingMRR ||
-          isLoadingCities
-        }
-      />
+    <div className="space-y-8 p-6 animate-in fade-in-50 duration-500">
+      {/* Professional Header */}
+      <div className="space-y-2 animate-in slide-in-from-top-2 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl max-sm:text-3xl font-bold tracking-tight">
+              {greetingText} <span role="img" aria-label="saludo">{greetingEmoji}</span>
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg max-sm:text-base">
+              Panel de control empresarial - Vekino Platform
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero banner */}
+      <div className="rounded-3xl bg-linear-to-r from-primary to-primary/80 text-white p-6 md:p-8 animate-in slide-in-from-bottom-2 duration-500">
+        <div className="space-y-2">
+          <p className="text-sm font-medium opacity-90">Panel de Administración</p>
+          <h2 className="text-3xl max-sm:text-2xl md:text-4xl font-bold leading-tight">
+            Supervisión centralizada de condominios
+          </h2>
+          <p className="text-sm md:text-base opacity-90">
+            Métricas clave, alertas y crecimiento en un solo lugar para tomar decisiones rápidas.
+          </p>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="animate-in slide-in-from-bottom-2 duration-500">
+        <KPICards data={kpiData} isLoading={isLoadingOverview} />
+      </div>
+
+      {/* Alerts Section */}
+      <div className="animate-in slide-in-from-bottom-2 duration-500">
+        <AlertsSection alertas={alertsData} isLoading={isLoadingAlerts} />
+      </div>
+
+      {/* Tenants Table */}
+      <div className="animate-in slide-in-from-bottom-2 duration-500">
+        <TenantsTable tenants={tenantsData} isLoading={isLoadingTenants} />
+      </div>
+
+      {/* Charts Section */}
+      <div className="animate-in slide-in-from-bottom-2 duration-500">
+        <ChartsSection
+          graficas={{
+            condominiosPorMes: condominiosData,
+            tenantsPorPlan: plansData,
+            crecimientoIngresos: mrrData,
+            tenantsPorCiudad: citiesData,
+          }}
+          isLoading={
+            isLoadingCondominios ||
+            isLoadingPlans ||
+            isLoadingMRR ||
+            isLoadingCities
+          }
+        />
+      </div>
     </div>
   );
 }

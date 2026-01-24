@@ -101,16 +101,16 @@ function PlanesPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestión de Precios de Planes</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl max-sm:text-2xl font-bold">Gestión de Precios de Planes</h1>
+          <p className="text-muted-foreground mt-2 text-base max-sm:text-[14.5px]">
             Configura y gestiona los precios de los planes de suscripción.{" "}
-            <br /> Los precios configurados se utilizan automáticamente para
+            <br className="max-sm:hidden" /> Los precios configurados se utilizan automáticamente para
             calcular el MRR.
           </p>
         </div>
-        <Button onClick={handleCreate} className="gap-2">
+        <Button onClick={handleCreate} className="gap-2 w-full sm:w-auto mt-4 sm:mt-0">
           <IconCirclePlusFilled className="size-4" />
           Crear Precio de Plan
         </Button>

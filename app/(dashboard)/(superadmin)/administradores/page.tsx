@@ -90,12 +90,12 @@ function AdministradoresPage() {
   };
 
   return (
-    <div className="space-y-6 ">
-      <div className="p-6">
+    <div className="space-y-6 p-4 animate-in fade-in-50 duration-500">
+      <div className="animate-in slide-in-from-top-2 duration-500">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Administradores</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl max-sm:text-2xl font-bold">Administradores</h1>
+            <p className="text-muted-foreground mt-2 text-base max-sm:text-[14.5px]">
               Gestiona los usuarios de cada condominio
             </p>
           </div>
@@ -128,10 +128,10 @@ function AdministradoresPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-17rem)] overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-17rem)] overflow-hidden animate-in slide-in-from-bottom-2 duration-500">
         {/* Sidebar izquierdo con condominios - Solo visible en desktop */}
         {!isMobile && (
-          <div className="w-full lg:w-70 shrink-0 overflow-hidden">
+          <div className="w-full lg:w-70 shrink-0 overflow-hidden animate-in slide-in-from-left-4 duration-500">
             <CondominiosSidebar
               selectedCondominioId={selectedCondominioId}
               onSelectCondominio={setSelectedCondominioId}
@@ -140,7 +140,7 @@ function AdministradoresPage() {
         )}
 
         {/* Contenido principal con usuarios */}
-        <div className="flex-1 min-w-0 w-full max-w-full overflow-hidden">
+        <div className="flex-1 min-w-0 w-full max-w-full overflow-hidden animate-in slide-in-from-bottom-2 duration-500">
           <UsuariosTable 
             condominioId={selectedCondominioId}
             onView={handleViewUsuario}

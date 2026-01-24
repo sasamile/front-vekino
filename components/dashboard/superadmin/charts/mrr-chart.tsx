@@ -42,6 +42,7 @@ export function MRRChart({ data, isLoading = false }: MRRChartProps) {
             title="Crecimiento de Ingresos (MRR)"
             description="Evolución mensual de ingresos recurrentes"
             valueFormatter={(value) => `$${value.toLocaleString("en-US")}`}
+            hideHeader
           />
         )}
       </CardContent>

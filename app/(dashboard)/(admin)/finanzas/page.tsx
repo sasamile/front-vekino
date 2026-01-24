@@ -243,7 +243,7 @@ function FinanzasPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-y-2">
         <div>
           <h1 className="text-3xl font-bold">Finanzas</h1>
           <p className="text-muted-foreground mt-2">
@@ -251,7 +251,7 @@ function FinanzasPage() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
             onClick={() => setCreateBulkDialogOpen(true)}
             variant="outline"
