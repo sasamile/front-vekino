@@ -189,10 +189,10 @@ export function UsuariosTable({
               {isLoading
                 ? "Cargando..."
                 : total > 0
-                ? `${total} usuario${total !== 1 ? "s" : ""} encontrado${
-                    total !== 1 ? "s" : ""
-                  } - Página ${currentPage} de ${totalPages}`
-                : "No se encontraron usuarios"}
+                  ? `${total} usuario${total !== 1 ? "s" : ""} encontrado${
+                      total !== 1 ? "s" : ""
+                    } - Página ${currentPage} de ${totalPages}`
+                  : "No se encontraron usuarios"}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -202,7 +202,10 @@ export function UsuariosTable({
               </Button>
             )}
             {condominioId && onCreate && (
-              <Button onClick={onCreate} className="gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+              <Button
+                onClick={onCreate}
+                className="gap-2 w-full sm:w-auto mt-4 sm:mt-0"
+              >
                 <IconCirclePlusFilled className="size-4" />
                 Crear Usuario
               </Button>
@@ -236,7 +239,9 @@ export function UsuariosTable({
             <DropdownMenuContent>
               <DropdownMenuItem
                 onClick={() => handleRoleFilter(null)}
-                className={cn(filters.role === undefined && "bg-accent text-foreground")}
+                className={cn(
+                  filters.role === undefined && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-muted-foreground/60" />
@@ -245,7 +250,9 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleRoleFilter("ADMIN")}
-                className={cn(filters.role === "ADMIN" && "bg-accent text-foreground")}
+                className={cn(
+                  filters.role === "ADMIN" && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-purple-500" />
@@ -254,7 +261,9 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleRoleFilter("PROPIETARIO")}
-                className={cn(filters.role === "PROPIETARIO" && "bg-accent text-foreground")}
+                className={cn(
+                  filters.role === "PROPIETARIO" && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-blue-500" />
@@ -263,7 +272,10 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleRoleFilter("ARRENDATARIO")}
-                className={cn(filters.role === "ARRENDATARIO" && "bg-accent text-foreground")}
+                className={cn(
+                  filters.role === "ARRENDATARIO" &&
+                    "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-emerald-500" />
@@ -272,7 +284,9 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleRoleFilter("RESIDENTE")}
-                className={cn(filters.role === "RESIDENTE" && "bg-accent text-foreground")}
+                className={cn(
+                  filters.role === "RESIDENTE" && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-amber-500" />
@@ -297,7 +311,9 @@ export function UsuariosTable({
             <DropdownMenuContent>
               <DropdownMenuItem
                 onClick={() => handleActiveFilter(null)}
-                className={cn(filters.active === undefined && "bg-accent text-foreground")}
+                className={cn(
+                  filters.active === undefined && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-muted-foreground/60" />
@@ -306,7 +322,9 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleActiveFilter(true)}
-                className={cn(filters.active === true && "bg-accent text-foreground")}
+                className={cn(
+                  filters.active === true && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-green-500" />
@@ -315,7 +333,9 @@ export function UsuariosTable({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleActiveFilter(false)}
-                className={cn(filters.active === false && "bg-accent text-foreground")}
+                className={cn(
+                  filters.active === false && "bg-accent text-foreground",
+                )}
               >
                 <div className="flex items-center gap-2">
                   <span className="size-2 rounded-full bg-red-500" />

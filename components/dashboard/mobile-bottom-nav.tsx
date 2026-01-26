@@ -14,6 +14,7 @@ import {
   IconBuilding,
   IconUserCog,
   IconTicket,
+  IconMessageReport,
   IconHome,
   IconCreditCard,
   IconPackage,
@@ -33,7 +34,11 @@ interface NavItem {
 // Obtener los primeros 5 enlaces principales según el rol
 const getMainNavItems = (role: UserRole): NavItem[] => {
   const basePath =
-    role === "PROPIETARIO" ? "/propietario" : role === "ADMIN" ? "/admin" : "/superadmin";
+    role === "PROPIETARIO"
+      ? "/propietario"
+      : role === "ADMIN"
+        ? "/admin"
+        : "/superadmin";
 
   switch (role) {
     case "PROPIETARIO":
@@ -151,9 +156,9 @@ const getAdditionalNavItems = (role: UserRole): NavItem[] => {
           icon: IconBuildingCommunity,
         },
         {
-          title: "Tickets",
+          title: "PQRS",
           url: `/tickets`,
-          icon: IconTicket,
+          icon: IconMessageReport,
         },
         {
           title: "Reportes",
@@ -201,10 +206,12 @@ export function MobileBottomNav({ userRole }: MobileBottomNavProps) {
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-[90%] min-w-0 transition-all",
                 active
                   ? "bg-primary text-primary-foreground rounded-md mx-1"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className={cn("h-4 w-4", active && "text-primary-foreground")} />
+              <Icon
+                className={cn("h-4 w-4", active && "text-primary-foreground")}
+              />
               <span className="text-[9px] font-medium truncate w-full text-center leading-tight">
                 {item.title}
               </span>

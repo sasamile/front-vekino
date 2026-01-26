@@ -236,7 +236,11 @@ export interface CreateUnidadRequest {
   estado: UnidadEstado;
 }
 
-export type ResidenteRole = "ADMIN" | "PROPIETARIO" | "ARRENDATARIO" | "RESIDENTE";
+export type ResidenteRole =
+  | "ADMIN"
+  | "PROPIETARIO"
+  | "ARRENDATARIO"
+  | "RESIDENTE";
 export type TipoDocumento = "CC" | "CE" | "NIT" | "PASAPORTE" | "OTRO";
 
 export interface Residente {
@@ -250,6 +254,7 @@ export interface Residente {
   numeroDocumento: string;
   telefono: string;
   unidadId: string;
+  temporaryPassword?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -286,7 +291,7 @@ export interface UpdateResidenteRequest {
 }
 
 // Espacios Comunes
-export type EspacioComunTipo = 
+export type EspacioComunTipo =
   | "SALON_SOCIAL"
   | "ZONA_BBQ"
   | "SAUNA"
@@ -346,7 +351,11 @@ export interface UpdateEspacioComunRequest {
 }
 
 // Reservas
-export type ReservaEstado = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
+export type ReservaEstado =
+  | "PENDIENTE"
+  | "CONFIRMADA"
+  | "CANCELADA"
+  | "COMPLETADA";
 
 export interface Reserva {
   id: string;
@@ -416,7 +425,12 @@ export interface DisponibilidadCompletaResponse {
 }
 
 // Finanzas - Facturas
-export type FacturaEstado = "PENDIENTE" | "ENVIADA" | "PAGADA" | "VENCIDA" | "CANCELADA";
+export type FacturaEstado =
+  | "PENDIENTE"
+  | "ENVIADA"
+  | "PAGADA"
+  | "VENCIDA"
+  | "CANCELADA";
 
 export interface Factura {
   id: string;
@@ -470,7 +484,12 @@ export interface FacturasBulkResponse {
 }
 
 // Finanzas - Pagos
-export type PagoEstado = "PENDIENTE" | "PROCESANDO" | "APROBADO" | "RECHAZADO" | "CANCELADO";
+export type PagoEstado =
+  | "PENDIENTE"
+  | "PROCESANDO"
+  | "APROBADO"
+  | "RECHAZADO"
+  | "CANCELADO";
 export type MetodoPago = "WOMPI" | "EFECTIVO";
 
 export interface Pago {
@@ -705,4 +724,3 @@ export interface PostsResponse {
   limit: number;
   totalPages: number;
 }
-

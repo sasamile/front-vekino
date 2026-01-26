@@ -66,7 +66,7 @@ export function TicketsFiltersComponent({
               Filtros
             </CardTitle>
             <CardDescription>
-              Filtra los tickets según tus necesidades
+              Filtra las solicitudes de PQRS según tus necesidades
             </CardDescription>
           </div>
           {activeFiltersCount > 0 && (
@@ -90,7 +90,7 @@ export function TicketsFiltersComponent({
               value={filters.estado || ""}
               onChange={(e) =>
                 onEstadoFilter(
-                  e.target.value ? (e.target.value as TicketEstado) : null
+                  e.target.value ? (e.target.value as TicketEstado) : null,
                 )
               }
               className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -108,9 +108,7 @@ export function TicketsFiltersComponent({
             <label className="text-sm font-medium mb-2 block">Categoría</label>
             <select
               value={filters.categoria || ""}
-              onChange={(e) =>
-                onCategoriaFilter(e.target.value || null)
-              }
+              onChange={(e) => onCategoriaFilter(e.target.value || null)}
               className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <option value="">Todas las categorías</option>
@@ -142,4 +140,3 @@ export function TicketsFiltersComponent({
     </Card>
   );
 }
-

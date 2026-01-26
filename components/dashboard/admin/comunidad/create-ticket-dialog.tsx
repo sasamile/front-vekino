@@ -24,7 +24,11 @@ import {
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
-import type { CreateTicketRequest, Unidad, TicketPrioridad } from "@/types/types";
+import type {
+  CreateTicketRequest,
+  Unidad,
+  TicketPrioridad,
+} from "@/types/types";
 
 const ticketSchema = z.object({
   titulo: z.string().min(1, "El título es requerido"),
@@ -73,7 +77,7 @@ export function CreateTicketDialog({
       const axiosInstance = getAxiosInstance(subdomain);
       const response = await axiosInstance.get("/unidades");
       const data = response.data;
-      return Array.isArray(data) ? data : (data?.data || []);
+      return Array.isArray(data) ? data : data?.data || [];
     },
     enabled: open,
   });
@@ -99,7 +103,7 @@ export function CreateTicketDialog({
 
     try {
       const axiosInstance = getAxiosInstance(subdomain);
-      
+
       const requestData: CreateTicketRequest = {
         titulo: data.titulo,
         descripcion: data.descripcion,
@@ -110,7 +114,7 @@ export function CreateTicketDialog({
 
       await axiosInstance.post("/comunicacion/tickets", requestData);
 
-      toast.success("Ticket creado exitosamente", {
+      toast.success("PQRS creada exitosamente", {
         duration: 2000,
       });
 
@@ -122,7 +126,7 @@ export function CreateTicketDialog({
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Error al crear el ticket";
+        "Error al crear la solicitud de PQRS";
 
       toast.error(errorMessage, {
         duration: 3000,
@@ -143,9 +147,10 @@ export function CreateTicketDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Ticket</DialogTitle>
+          <DialogTitle>Crear Nueva PQRS</DialogTitle>
           <DialogDescription>
-            Completa el formulario para crear un nuevo ticket de administración
+            Completa el formulario para crear una nueva solicitud de PQRS de
+            administración
           </DialogDescription>
         </DialogHeader>
 
@@ -223,7 +228,9 @@ export function CreateTicketDialog({
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">
-                  {unidades.length === 0 ? "Cargando unidades..." : "Selecciona una unidad"}
+                  {unidades.length === 0
+                    ? "Cargando unidades..."
+                    : "Selecciona una unidad"}
                 </option>
                 {unidades.map((unidad) => (
                   <option key={unidad.id} value={unidad.id}>
@@ -247,7 +254,7 @@ export function CreateTicketDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Creando..." : "Crear Ticket"}
+              {loading ? "Creando..." : "Crear PQRS"}
             </Button>
           </DialogFooter>
         </form>
@@ -255,4 +262,3 @@ export function CreateTicketDialog({
     </Dialog>
   );
 }
-

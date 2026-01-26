@@ -24,7 +24,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
-import type { Ticket, TicketComentario, CreateTicketComentarioRequest } from "@/types/types";
+import type {
+  Ticket,
+  TicketComentario,
+  CreateTicketComentarioRequest,
+} from "@/types/types";
 import { IconSend, IconLock } from "@tabler/icons-react";
 
 const comentarioSchema = z.object({
@@ -50,8 +54,10 @@ const ESTADO_LABELS: Record<string, string> = {
 
 const ESTADO_COLORS: Record<string, string> = {
   ABIERTO: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-  EN_PROGRESO: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
-  RESUELTO: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  EN_PROGRESO:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+  RESUELTO:
+    "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
   CERRADO: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
@@ -80,12 +86,16 @@ export function ViewTicketDialog({
   const [loading, setLoading] = useState(false);
 
   // Obtener comentarios del ticket
-  const { data: comentarios = [], refetch: refetchComentarios } = useQuery<TicketComentario[]>({
+  const { data: comentarios = [], refetch: refetchComentarios } = useQuery<
+    TicketComentario[]
+  >({
     queryKey: ["ticket-comentarios", ticket?.id],
     queryFn: async () => {
       if (!ticket?.id) return [];
       const axiosInstance = getAxiosInstance(subdomain);
-      const response = await axiosInstance.get(`/comunicacion/tickets/${ticket.id}/comentarios`);
+      const response = await axiosInstance.get(
+        `/comunicacion/tickets/${ticket.id}/comentarios`,
+      );
       return response.data;
     },
     enabled: open && !!ticket?.id,
@@ -111,7 +121,10 @@ export function ViewTicketDialog({
   const crearComentarioMutation = useMutation({
     mutationFn: async (data: CreateTicketComentarioRequest) => {
       const axiosInstance = getAxiosInstance(subdomain);
-      await axiosInstance.post(`/comunicacion/tickets/${ticket?.id}/comentarios`, data);
+      await axiosInstance.post(
+        `/comunicacion/tickets/${ticket?.id}/comentarios`,
+        data,
+      );
     },
     onSuccess: () => {
       toast.success("Comentario agregado exitosamente", {
@@ -125,7 +138,7 @@ export function ViewTicketDialog({
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Error al agregar el comentario";
+        "Error al agregar el comentario a la PQRS";
       toast.error(errorMessage, {
         duration: 3000,
       });
@@ -173,7 +186,7 @@ export function ViewTicketDialog({
         <DialogHeader>
           <DialogTitle>{ticket.titulo}</DialogTitle>
           <DialogDescription>
-            Detalles del ticket y comentarios
+            Detalles de la solicitud (PQRS) y comentarios
           </DialogDescription>
         </DialogHeader>
 
@@ -289,7 +302,10 @@ export function ViewTicketDialog({
             </div>
 
             {/* Formulario para agregar comentario */}
-            <form onSubmit={handleSubmit(onSubmitComentario)} className="space-y-3">
+            <form
+              onSubmit={handleSubmit(onSubmitComentario)}
+              className="space-y-3"
+            >
               <FieldGroup>
                 <Field>
                   <FieldLabel>Agregar comentario</FieldLabel>
@@ -334,4 +350,3 @@ export function ViewTicketDialog({
     </Dialog>
   );
 }
-

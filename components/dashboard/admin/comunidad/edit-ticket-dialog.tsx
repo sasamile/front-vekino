@@ -24,7 +24,12 @@ import {
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
-import type { UpdateTicketRequest, Unidad, TicketEstado, TicketPrioridad } from "@/types/types";
+import type {
+  UpdateTicketRequest,
+  Unidad,
+  TicketEstado,
+  TicketPrioridad,
+} from "@/types/types";
 
 const ticketSchema = z.object({
   titulo: z.string().min(1, "El título es requerido"),
@@ -41,7 +46,16 @@ type TicketFormData = z.infer<typeof ticketSchema>;
 interface EditTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ticket: { id: string; titulo: string; descripcion: string; categoria: string | null; prioridad: TicketPrioridad; unidadId: string | null; estado: TicketEstado; asignadoA: string | null } | null;
+  ticket: {
+    id: string;
+    titulo: string;
+    descripcion: string;
+    categoria: string | null;
+    prioridad: TicketPrioridad;
+    unidadId: string | null;
+    estado: TicketEstado;
+    asignadoA: string | null;
+  } | null;
   isAdmin?: boolean;
 }
 
@@ -86,7 +100,7 @@ export function EditTicketDialog({
       const axiosInstance = getAxiosInstance(subdomain);
       const response = await axiosInstance.get("/unidades");
       const data = response.data;
-      return Array.isArray(data) ? data : (data?.data || []);
+      return Array.isArray(data) ? data : data?.data || [];
     },
     enabled: open,
   });
@@ -99,7 +113,7 @@ export function EditTicketDialog({
       const axiosInstance = getAxiosInstance(subdomain);
       const response = await axiosInstance.get("/residentes?role=ADMIN");
       const data = response.data;
-      return Array.isArray(data) ? data : (data?.data || []);
+      return Array.isArray(data) ? data : data?.data || [];
     },
     enabled: open && isAdmin,
   });
@@ -144,7 +158,7 @@ export function EditTicketDialog({
 
     try {
       const axiosInstance = getAxiosInstance(subdomain);
-      
+
       const requestData: UpdateTicketRequest = {
         titulo: data.titulo,
         descripcion: data.descripcion,
@@ -152,12 +166,15 @@ export function EditTicketDialog({
         prioridad: data.prioridad || undefined,
         unidadId: data.unidadId || undefined,
         estado: isAdmin ? data.estado : undefined,
-        asignadoA: isAdmin ? (data.asignadoA || undefined) : undefined,
+        asignadoA: isAdmin ? data.asignadoA || undefined : undefined,
       };
 
-      await axiosInstance.put(`/comunicacion/tickets/${ticket.id}`, requestData);
+      await axiosInstance.put(
+        `/comunicacion/tickets/${ticket.id}`,
+        requestData,
+      );
 
-      toast.success("Ticket actualizado exitosamente", {
+      toast.success("PQRS actualizada exitosamente", {
         duration: 2000,
       });
 
@@ -168,7 +185,7 @@ export function EditTicketDialog({
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Error al actualizar el ticket";
+        "Error al actualizar la PQRS";
 
       toast.error(errorMessage, {
         duration: 3000,
@@ -191,9 +208,9 @@ export function EditTicketDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Ticket</DialogTitle>
+          <DialogTitle>Editar PQRS</DialogTitle>
           <DialogDescription>
-            Actualiza la información del ticket
+            Actualiza la información de la solicitud (PQRS)
           </DialogDescription>
         </DialogHeader>
 
@@ -271,7 +288,9 @@ export function EditTicketDialog({
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">
-                  {unidades.length === 0 ? "Cargando unidades..." : "Selecciona una unidad"}
+                  {unidades.length === 0
+                    ? "Cargando unidades..."
+                    : "Selecciona una unidad"}
                 </option>
                 {unidades.map((unidad) => (
                   <option key={unidad.id} value={unidad.id}>
@@ -313,7 +332,9 @@ export function EditTicketDialog({
                       className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">
-                        {usuariosAdmin.length === 0 ? "No hay administradores disponibles" : "Sin asignar"}
+                        {usuariosAdmin.length === 0
+                          ? "No hay administradores disponibles"
+                          : "Sin asignar"}
                       </option>
                       {usuariosAdmin.map((usuario: any) => (
                         <option key={usuario.id} value={usuario.id}>
@@ -340,7 +361,7 @@ export function EditTicketDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Actualizando..." : "Actualizar Ticket"}
+              {loading ? "Actualizando..." : "Actualizar PQRS"}
             </Button>
           </DialogFooter>
         </form>
@@ -348,4 +369,3 @@ export function EditTicketDialog({
     </Dialog>
   );
 }
-

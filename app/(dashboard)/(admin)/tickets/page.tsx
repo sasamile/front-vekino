@@ -5,11 +5,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import toast from "react-hot-toast";
-import type {
-  Ticket,
-  Unidad,
-  TicketEstado,
-} from "@/types/types";
+import type { Ticket, Unidad, TicketEstado } from "@/types/types";
 import type { TicketsFilters } from "@/components/dashboard/admin/comunidad/tickets-filters";
 import { TicketsTable } from "@/components/dashboard/admin/comunidad/tickets-table";
 import { TicketsFiltersComponent } from "@/components/dashboard/admin/comunidad/tickets-filters";
@@ -40,7 +36,7 @@ function TicketsPage() {
       const axiosInstance = getAxiosInstance(subdomain);
       const response = await axiosInstance.get("/unidades");
       const data = response.data;
-      return Array.isArray(data) ? data : (data?.data || []);
+      return Array.isArray(data) ? data : data?.data || [];
     },
   });
 
@@ -58,10 +54,14 @@ function TicketsPage() {
 
   // Construir query params para tickets
   const ticketQueryParams = new URLSearchParams();
-  if (ticketFilters.estado) ticketQueryParams.append("estado", ticketFilters.estado);
-  if (ticketFilters.categoria) ticketQueryParams.append("categoria", ticketFilters.categoria);
-  if (ticketFilters.unidadId) ticketQueryParams.append("unidadId", ticketFilters.unidadId);
-  if (ticketFilters.userId) ticketQueryParams.append("userId", ticketFilters.userId);
+  if (ticketFilters.estado)
+    ticketQueryParams.append("estado", ticketFilters.estado);
+  if (ticketFilters.categoria)
+    ticketQueryParams.append("categoria", ticketFilters.categoria);
+  if (ticketFilters.unidadId)
+    ticketQueryParams.append("unidadId", ticketFilters.unidadId);
+  if (ticketFilters.userId)
+    ticketQueryParams.append("userId", ticketFilters.userId);
   ticketQueryParams.append("page", String(ticketFilters.page));
   ticketQueryParams.append("limit", String(ticketFilters.limit));
 
@@ -74,13 +74,14 @@ function TicketsPage() {
     isLoading: ticketsLoading,
     error: ticketsError,
   } = useQuery<
-    Ticket[] | {
-      data: Ticket[];
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-    }
+    | Ticket[]
+    | {
+        data: Ticket[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }
   >({
     queryKey: ["tickets", ticketFilters],
     queryFn: async () => {
@@ -106,7 +107,8 @@ function TicketsPage() {
       tickets = ticketsResponse.data;
       ticketsTotal = ticketsResponse.total ?? ticketsResponse.data.length;
       ticketsCurrentPage = ticketsResponse.page ?? ticketFilters.page;
-      ticketsTotalPages = ticketsResponse.totalPages ?? Math.ceil(ticketsTotal / ticketsLimit);
+      ticketsTotalPages =
+        ticketsResponse.totalPages ?? Math.ceil(ticketsTotal / ticketsLimit);
       ticketsLimit = ticketsResponse.limit ?? ticketFilters.limit;
     }
   }
@@ -136,7 +138,13 @@ function TicketsPage() {
 
   // Mutación para cambiar estado del ticket
   const cambiarEstadoTicketMutation = useMutation({
-    mutationFn: async ({ ticketId, nuevoEstado }: { ticketId: string; nuevoEstado: TicketEstado }) => {
+    mutationFn: async ({
+      ticketId,
+      nuevoEstado,
+    }: {
+      ticketId: string;
+      nuevoEstado: TicketEstado;
+    }) => {
       const axiosInstance = getAxiosInstance(subdomain);
       await axiosInstance.put(`/comunicacion/tickets/${ticketId}`, {
         estado: nuevoEstado,
@@ -149,9 +157,12 @@ function TicketsPage() {
         RESUELTO: "Resuelto",
         CERRADO: "Cerrado",
       };
-      toast.success(`Ticket cambiado a "${estadoLabels[variables.nuevoEstado]}"`, {
-        duration: 2000,
-      });
+      toast.success(
+        `Ticket cambiado a "${estadoLabels[variables.nuevoEstado]}"`,
+        {
+          duration: 2000,
+        },
+      );
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
     onError: (error: any) => {
@@ -220,7 +231,11 @@ function TicketsPage() {
   };
 
   const handleTicketLimitChange = (newLimit: number) => {
-    setTicketFilters((prev: TicketsFilters) => ({ ...prev, limit: newLimit, page: 1 }));
+    setTicketFilters((prev: TicketsFilters) => ({
+      ...prev,
+      limit: newLimit,
+      page: 1,
+    }));
   };
 
   const activeTicketFiltersCount = [
@@ -234,9 +249,9 @@ function TicketsPage() {
     <div className="space-y-6 p-4">
       <div className="flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-y-2">
         <div>
-          <h1 className="text-3xl font-bold">Tickets</h1>
+          <h1 className="text-3xl font-bold">PQRS</h1>
           <p className="text-muted-foreground mt-2">
-            Gestiona los tickets de administración del condominio
+            Gestiona las solicitudes de PQRS del condominio
           </p>
         </div>
         <Button
@@ -244,7 +259,7 @@ function TicketsPage() {
           className="gap-2 w-full sm:w-auto"
         >
           <IconCirclePlusFilled className="size-4" />
-          Crear Ticket
+          Crear PQRS
         </Button>
       </div>
 
