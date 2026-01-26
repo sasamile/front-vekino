@@ -33,18 +33,12 @@ const usuarioSchema = z.object({
   telefono: z.string().optional(),
   tipoDocumento: z.string().optional(),
   numeroDocumento: z.string().optional(),
-  role: z.enum(["ADMIN", "PROPIETARIO", "ARRENDATARIO", "RESIDENTE"]),
-  active: z.string(),
+  role: z.enum(["ADMIN"]),
 });
 
 type UsuarioFormData = z.infer<typeof usuarioSchema>;
 
-const ROLES = [
-  { value: "ADMIN", label: "Administrador" },
-  { value: "PROPIETARIO", label: "Propietario" },
-  { value: "ARRENDATARIO", label: "Arrendatario" },
-  { value: "RESIDENTE", label: "Residente" },
-];
+const ROLES = [{ value: "ADMIN", label: "Administrador" }];
 
 const TIPO_DOCUMENTO = [
   { value: "CC", label: "Cédula de Ciudadanía" },
@@ -75,8 +69,7 @@ export function CreateUsuarioDialog({
   } = useForm({
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
-      role: "RESIDENTE",
-      active: "true",
+      role: "ADMIN",
     },
   });
 
@@ -92,6 +85,7 @@ export function CreateUsuarioDialog({
       const axiosInstance = getAxiosInstance(null);
 
       const payload = {
+        name: `${data.firstName} ${data.lastName || ""}`.trim(),
         firstName: data.firstName,
         lastName: data.lastName || null,
         email: data.email,
@@ -100,7 +94,6 @@ export function CreateUsuarioDialog({
         tipoDocumento: data.tipoDocumento || null,
         numeroDocumento: data.numeroDocumento || null,
         role: data.role,
-        active: data.active === "true",
       };
 
       await axiosInstance.post(`/condominios/${condominioId}/users`, payload);
@@ -120,6 +113,7 @@ export function CreateUsuarioDialog({
       const errorMessage =
         err.response?.data?.message || err.message || "Error al crear usuario";
 
+      console.log("ERROR:", err);
       toast.error(errorMessage, {
         duration: 4000,
       });
@@ -173,7 +167,9 @@ export function CreateUsuarioDialog({
                   placeholder="usuario@ejemplo.com"
                   disabled={loading}
                 />
-                {errors.email && <FieldError>{errors.email.message}</FieldError>}
+                {errors.email && (
+                  <FieldError>{errors.email.message}</FieldError>
+                )}
               </Field>
 
               <Field data-invalid={!!errors.password}>
@@ -249,39 +245,6 @@ export function CreateUsuarioDialog({
                 {errors.role && <FieldError>{errors.role.message}</FieldError>}
               </Field>
             </div>
-
-            <FieldSet>
-              <FieldLabel>Estado *</FieldLabel>
-              <FieldGroup className="flex flex-col gap-2">
-                <Field orientation="horizontal">
-                  <input
-                    type="radio"
-                    id="active-true"
-                    {...register("active")}
-                    value="true"
-                    defaultChecked={true}
-                    className="size-4"
-                    disabled={loading}
-                  />
-                  <FieldLabel htmlFor="active-true" className="font-normal">
-                    Activo
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <input
-                    type="radio"
-                    id="active-false"
-                    {...register("active")}
-                    value="false"
-                    className="size-4"
-                    disabled={loading}
-                  />
-                  <FieldLabel htmlFor="active-false" className="font-normal">
-                    Inactivo
-                  </FieldLabel>
-                </Field>
-              </FieldGroup>
-            </FieldSet>
           </FieldGroup>
 
           <DialogFooter className="mt-6">
@@ -305,4 +268,3 @@ export function CreateUsuarioDialog({
     </Dialog>
   );
 }
-

@@ -168,18 +168,15 @@ function SuperAdminCondominiosPage() {
 
     try {
       const axiosInstance = getAxiosInstance(subdomain);
-      const baseURL = axiosInstance.defaults.baseURL || "/api";
 
-      // Crear una instancia temporal de axios sin Content-Type por defecto para FormData
-      const formDataAxiosInstance = axios.create({
-        baseURL,
-        withCredentials: true,
-        // No establecer Content-Type aquí, axios lo establecerá automáticamente para FormData
-      });
-
-      await formDataAxiosInstance.put(
+      await axiosInstance.put(
         `/condominios/${selectedCondominio.id}`,
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
       );
 
       // Invalidar y revalidar las queries para refrescar los datos
@@ -189,7 +186,7 @@ function SuperAdminCondominiosPage() {
       setSelectedCondominio(null);
     } catch (error) {
       console.error("Error al guardar:", error);
-      // TODO: Show error message
+      throw error; // Re-lanzar para que el diálogo maneje el error
     }
   };
 
@@ -202,8 +199,6 @@ function SuperAdminCondominiosPage() {
             Gestiona y administra todos los condominios de la plataforma
           </p>
         </div>
-
-      
       </div>
 
       <CondominiosFiltersComponent
@@ -244,8 +239,6 @@ function SuperAdminCondominiosPage() {
         condominio={selectedCondominio}
         onSave={handleSave}
       />
-
-     
     </div>
   );
 }
