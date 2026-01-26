@@ -170,7 +170,7 @@ export function BulkUploadUsers() {
           {isUploading ? "Procesando Usuarios..." : "Comenzar Carga Masiva"}
         </Button>
         <Button variant="outline" className="gap-2 h-12 text-base px-8" asChild>
-          <a href="/templates/Plantilla_Carga_Masiva_Usuarios.xlsx" download>
+          <a href="/Plantilla_Carga_Masiva_Usuarios.xlsx" download>
             <IconFileSpreadsheet className="size-5" />
             Descargar Plantilla
           </a>

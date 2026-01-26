@@ -30,7 +30,7 @@ interface EditCondominioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   condominio: Condominio | null;
-  onSave: (formData: FormData) => void;
+  onSave: (formData: FormData) => Promise<void>;
 }
 
 export function EditCondominioDialog({
@@ -43,6 +43,7 @@ export function EditCondominioDialog({
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Obtener planes disponibles
@@ -74,6 +75,16 @@ export function EditCondominioDialog({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validar tipos de archivo permitidos
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(
+          "Formato de imagen no permitido. Solo se aceptan JPG, JPEG, PNG y WEBP.",
+        );
+        e.target.value = "";
+        return;
+      }
+
       setLogoFile(file);
       setRemoveLogo(false);
       // Crear preview
@@ -100,8 +111,9 @@ export function EditCondominioDialog({
 
   if (!condominio) return null;
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
 
     // Si hay un nuevo archivo de logo, agregarlo
@@ -110,24 +122,27 @@ export function EditCondominioDialog({
     }
 
     // Si se quiere remover el logo, agregar un flag especial
-    // El backend debería manejar esto, pero por ahora solo no enviamos el logo
     if (removeLogo && !logoFile) {
-      // Opcional: puedes agregar un campo para indicar que se debe borrar
-      // formData.append("removeLogo", "true");
+      formData.append("removeLogo", "true");
     }
 
     // Convertir los valores booleanos a strings
     const isActiveValue = formData.get("isActive");
     formData.set("isActive", isActiveValue === "true" ? "true" : "false");
 
-    onSave(formData);
-
-    setTimeout(() => {
-      toast.success("Condominio actualizado correctamente", {
-        duration: 1000,
-      });
-    }, 1500);
-
+    try {
+      await onSave(formData);
+      toast.success("Condominio actualizado correctamente");
+    } catch (error: any) {
+      console.error("Error al guardar:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al actualizar el condominio";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -300,7 +315,7 @@ export function EditCondominioDialog({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -315,12 +330,12 @@ export function EditCondominioDialog({
                     Haz clic para subir un logo
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    o arrastra y suelta un archivo aquí
+                    Formatos aceptados: JPG, PNG, WEBP
                   </p>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -370,7 +385,9 @@ export function EditCondominioDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
