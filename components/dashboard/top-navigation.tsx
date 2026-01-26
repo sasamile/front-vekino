@@ -14,6 +14,7 @@ import {
   IconBuilding,
   IconUserCog,
   IconTicket,
+  IconMessageReport,
   IconPackage,
 } from "@tabler/icons-react";
 import type { UserRole } from "@/lib/middleware/types";
@@ -166,7 +167,9 @@ export function TopNavigation({
       router.push("/auth/login");
     } catch (error: any) {
       const errorMessage =
-        error?.response?.data?.message || error?.message || "Error al cerrar sesión";
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al cerrar sesión";
       toast.error(errorMessage);
       setIsLoggingOut(false);
     }
@@ -209,7 +212,9 @@ export function TopNavigation({
                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <IconUser className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-medium hidden md:inline">{userName}</span>
+                  <span className="text-sm font-medium hidden md:inline">
+                    {userName}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -254,15 +259,18 @@ export function TopNavigation({
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/espacio-comunal" className="flex items-center">
+                        <Link
+                          href="/espacio-comunal"
+                          className="flex items-center"
+                        >
                           <IconBuildingCommunity className="mr-2 h-4 w-4" />
                           <span>Espacio Comunal</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/tickets" className="flex items-center">
-                          <IconTicket className="mr-2 h-4 w-4" />
-                          <span>Tickets</span>
+                          <IconMessageReport className="mr-2 h-4 w-4" />
+                          <span>PQRS</span>
                         </Link>
                       </DropdownMenuItem>
                     </div>

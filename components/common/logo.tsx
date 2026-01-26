@@ -14,13 +14,13 @@ interface LogoProps {
 function Logo({ showTitle = true, className }: LogoProps) {
   const { condominio } = useCondominio();
   const { subdomain } = useSubdomain();
-  
+
   // Estado para logo desde localStorage (para evitar flash)
   const [storedLogo, setStoredLogo] = useState<string | null>(null);
   const [storedName, setStoredName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (subdomain && typeof window !== 'undefined') {
+    if (subdomain && typeof window !== "undefined") {
       const stored = getCondominioFromStorage(subdomain);
       if (stored) {
         setStoredLogo(stored.logo);
@@ -46,9 +46,7 @@ function Logo({ showTitle = true, className }: LogoProps) {
           />
           {showTitle && name && (
             <div>
-              <span className="text-xs uppercase font-bold">
-                {name}
-              </span>
+              <span className="text-xs uppercase font-bold">{name}</span>
             </div>
           )}
         </div>

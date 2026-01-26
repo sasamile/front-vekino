@@ -22,6 +22,7 @@ import {
   IconFile,
   IconUser,
   IconTicket,
+  IconMessageReport,
 } from "@tabler/icons-react";
 
 import Logo from "@/components/common/logo";
@@ -47,13 +48,17 @@ interface NavItem {
 
 // Configuración de navegación por rol
 const getNavConfig = (
-  role: UserRole
+  role: UserRole,
 ): {
   navMain: NavItem[];
   navSecondary: NavItem[];
 } => {
   const basePath =
-    role === "PROPIETARIO" ? "/propietario" : role === "ADMIN" ? "/admin" : "/superadmin";
+    role === "PROPIETARIO"
+      ? "/propietario"
+      : role === "ADMIN"
+        ? "/admin"
+        : "/superadmin";
 
   switch (role) {
     case "PROPIETARIO":
@@ -123,6 +128,11 @@ const getNavConfig = (
             icon: IconUsers,
           },
           {
+            title: "Carga Masiva",
+            url: `/residentes/carga-masiva`,
+            icon: IconFileText,
+          },
+          {
             title: "Espacio Comunal",
             url: `/espacio-comunal`,
             icon: IconBuildingCommunity,
@@ -143,9 +153,9 @@ const getNavConfig = (
             icon: IconUser,
           },
           {
-            title: "Tickets",
+            title: "PQRS",
             url: `/tickets`,
-            icon: IconTicket,
+            icon: IconMessageReport,
           },
         ],
         navSecondary: [
@@ -225,7 +235,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   userAvatar?: string;
 }
 
-export function  AppSidebar({
+export function AppSidebar({
   userRole,
   userName = "Usuario",
   userEmail = "",

@@ -44,9 +44,12 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN: "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
-  PROPIETARIO: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-  ARRENDATARIO: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  ADMIN:
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+  PROPIETARIO:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  ARRENDATARIO:
+    "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
   RESIDENTE: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
@@ -75,7 +78,8 @@ export function ResidentesTable({
 }: ResidentesTableProps) {
   // Asegurar que residentes sea siempre un array
   const residentesArray = Array.isArray(residentes) ? residentes : [];
-  
+  console.log("RESIDENTES: ", residentesArray);
+
   // Función para obtener el identificador de la unidad
   const getUnidadIdentificador = (unidadId: string | undefined) => {
     if (!unidadId) return "No asignada";
@@ -111,9 +115,13 @@ export function ResidentesTable({
                   <th className="text-left p-4 text-sm font-medium">Nombre</th>
                   <th className="text-left p-4 text-sm font-medium">Email</th>
                   <th className="text-left p-4 text-sm font-medium">Rol</th>
-                  <th className="text-left p-4 text-sm font-medium">Documento</th>
+                  <th className="text-left p-4 text-sm font-medium">
+                    Documento
+                  </th>
                   <th className="text-left p-4 text-sm font-medium">Unidad</th>
-                  <th className="text-left p-4 text-sm font-medium">Acciones</th>
+                  <th className="text-left p-4 text-sm font-medium">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -160,13 +168,23 @@ export function ResidentesTable({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-4 text-sm font-medium">Avatar</th>
-                    <th className="text-left p-4 text-sm font-medium">Nombre</th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Avatar
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Nombre
+                    </th>
                     <th className="text-left p-4 text-sm font-medium">Email</th>
                     <th className="text-left p-4 text-sm font-medium">Rol</th>
-                    <th className="text-left p-4 text-sm font-medium">Documento</th>
-                    <th className="text-left p-4 text-sm font-medium">Unidad</th>
-                    <th className="text-left p-4 text-sm font-medium">Acciones</th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Documento
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Unidad
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,8 +199,9 @@ export function ResidentesTable({
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="font-medium text-xs">{residente.name}</div>
-                       
+                        <div className="font-medium text-xs">
+                          {residente.name}
+                        </div>
                       </td>
                       <td className="p-4">
                         <span className="text-xs">{residente.email}</span>
@@ -198,8 +217,13 @@ export function ResidentesTable({
                       </td>
                       <td className="p-4">
                         <div className="text-xs">
-                          <div>{DOCUMENTO_LABELS[residente.tipoDocumento] || residente.tipoDocumento}</div>
-                          <div className="text-muted-foreground">{residente.numeroDocumento}</div>
+                          <div>
+                            {DOCUMENTO_LABELS[residente.tipoDocumento] ||
+                              residente.tipoDocumento}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {residente.numeroDocumento}
+                          </div>
                         </div>
                       </td>
                       <td className="p-4">
@@ -260,7 +284,8 @@ export function ResidentesTable({
                   {total > 0 && (
                     <div className="text-sm text-muted-foreground">
                       Mostrando {(currentPage - 1) * limit + 1} -{" "}
-                      {Math.min(currentPage * limit, total)} de {total} residentes
+                      {Math.min(currentPage * limit, total)} de {total}{" "}
+                      residentes
                       {totalPages > 1 &&
                         ` - Página ${currentPage} de ${totalPages}`}
                     </div>
@@ -324,7 +349,7 @@ export function ResidentesTable({
                               {pageNum}
                             </Button>
                           );
-                        }
+                        },
                       )}
                     </div>
                     <Button
@@ -346,4 +371,3 @@ export function ResidentesTable({
     </Card>
   );
 }
-

@@ -66,8 +66,10 @@ const ESTADO_LABELS: Record<string, string> = {
 
 const ESTADO_COLORS: Record<string, string> = {
   ABIERTO: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
-  EN_PROGRESO: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
-  RESUELTO: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  EN_PROGRESO:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
+  RESUELTO:
+    "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
   CERRADO: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
@@ -120,9 +122,9 @@ export function TicketsTable({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Listado de Tickets</CardTitle>
+            <CardTitle>Listado de solicitudes (PQRS)</CardTitle>
             <CardDescription className="py-2">
-              Gestiona los tickets de administración del condominio
+              Gestiona las solicitudes de PQRS de administración del condominio
             </CardDescription>
           </div>
         </div>
@@ -130,7 +132,8 @@ export function TicketsTable({
       <CardContent>
         {error && (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-            Error al cargar los tickets. Por favor, intenta nuevamente.
+            Error al cargar las solicitudes de PQRS. Por favor, intenta
+            nuevamente.
           </div>
         )}
 
@@ -142,11 +145,17 @@ export function TicketsTable({
                   <th className="text-left p-3 text-sm font-medium">Título</th>
                   <th className="text-left p-3 text-sm font-medium">Usuario</th>
                   <th className="text-left p-3 text-sm font-medium">Unidad</th>
-                  <th className="text-left p-3 text-sm font-medium">Categoría</th>
-                  <th className="text-left p-3 text-sm font-medium">Prioridad</th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    Categoría
+                  </th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    Prioridad
+                  </th>
                   <th className="text-left p-4 text-sm font-medium">Estado</th>
                   <th className="text-left p-3 text-sm font-medium">Fecha</th>
-                  <th className="text-left p-3 text-sm font-medium">Acciones</th>
+                  <th className="text-left p-3 text-sm font-medium">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +164,7 @@ export function TicketsTable({
                     <td className="p-2">
                       <Skeleton className="h-2 w-20" />
                     </td>
-                    <td className="p-2">  
+                    <td className="p-2">
                       <Skeleton className="h-2  w-20" />
                     </td>
                     <td className="p-2">
@@ -164,7 +173,7 @@ export function TicketsTable({
                     <td className="p-2">
                       <Skeleton className="h-2 w-20" />
                     </td>
-                    <td className="p-2">  
+                    <td className="p-2">
                       <Skeleton className="h-4 w-20 rounded-full" />
                     </td>
                     <td className="p-2">
@@ -173,8 +182,8 @@ export function TicketsTable({
                     <td className="p-4">
                       <Skeleton className="h-2 w-20" />
                     </td>
-                  
-                    <td className="p-2">  
+
+                    <td className="p-2">
                       <div className="flex gap-2">
                         <Skeleton className="h-4 w-12" />
                       </div>
@@ -186,7 +195,7 @@ export function TicketsTable({
           </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <p>No hay tickets registrados</p>
+            <p>No hay PQRS registradas</p>
           </div>
         ) : (
           <>
@@ -194,14 +203,28 @@ export function TicketsTable({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-4 text-sm font-medium">Título</th>
-                    <th className="text-left p-4 text-sm font-medium">Usuario</th>
-                    <th className="text-left p-4 text-sm font-medium">Unidad</th>
-                    <th className="text-left p-4 text-sm font-medium">Categoría</th>
-                    <th className="text-left p-4 text-sm font-medium">Prioridad</th>
-                    <th className="text-left p-4 text-sm font-medium">Estado</th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Título
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Usuario
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Unidad
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Categoría
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Prioridad
+                    </th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Estado
+                    </th>
                     <th className="text-left p-4 text-sm font-medium">Fecha</th>
-                    <th className="text-left p-4 text-sm font-medium">Acciones</th>
+                    <th className="text-left p-4 text-sm font-medium">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,25 +261,30 @@ export function TicketsTable({
                       <td className="p-4">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                            PRIORIDAD_COLORS[ticket.prioridad] || PRIORIDAD_COLORS.MEDIA
+                            PRIORIDAD_COLORS[ticket.prioridad] ||
+                            PRIORIDAD_COLORS.MEDIA
                           }`}
                         >
-                          {PRIORIDAD_LABELS[ticket.prioridad] || ticket.prioridad}
+                          {PRIORIDAD_LABELS[ticket.prioridad] ||
+                            ticket.prioridad}
                         </span>
                       </td>
                       <td className="p-4">
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                            ESTADO_COLORS[ticket.estado] || ESTADO_COLORS.ABIERTO
+                            ESTADO_COLORS[ticket.estado] ||
+                            ESTADO_COLORS.ABIERTO
                           }`}
                         >
                           {ESTADO_LABELS[ticket.estado] || ticket.estado}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-xs">{formatDate(ticket.createdAt)}</span>
+                        <span className="text-xs">
+                          {formatDate(ticket.createdAt)}
+                        </span>
                       </td>
-                    
+
                       <td className="p-4">
                         <div className="flex gap-1 ">
                           {onView && (
@@ -265,7 +293,7 @@ export function TicketsTable({
                               size="sm"
                               className="gap-1.5 h-8 px-2 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
                               onClick={() => onView(ticket)}
-                              title="Ver ticket"
+                              title="Ver PQRS"
                             >
                               <IconEye className="size-4" />
                             </Button>
@@ -286,7 +314,9 @@ export function TicketsTable({
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={() => onEstadoChange(ticket, "ABIERTO")}
+                                  onClick={() =>
+                                    onEstadoChange(ticket, "ABIERTO")
+                                  }
                                   disabled={ticket.estado === "ABIERTO"}
                                 >
                                   <div className="flex items-center gap-2">
@@ -295,7 +325,9 @@ export function TicketsTable({
                                   </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => onEstadoChange(ticket, "EN_PROGRESO")}
+                                  onClick={() =>
+                                    onEstadoChange(ticket, "EN_PROGRESO")
+                                  }
                                   disabled={ticket.estado === "EN_PROGRESO"}
                                 >
                                   <div className="flex items-center gap-2">
@@ -304,7 +336,9 @@ export function TicketsTable({
                                   </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => onEstadoChange(ticket, "RESUELTO")}
+                                  onClick={() =>
+                                    onEstadoChange(ticket, "RESUELTO")
+                                  }
                                   disabled={ticket.estado === "RESUELTO"}
                                 >
                                   <div className="flex items-center gap-2">
@@ -313,7 +347,9 @@ export function TicketsTable({
                                   </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => onEstadoChange(ticket, "CERRADO")}
+                                  onClick={() =>
+                                    onEstadoChange(ticket, "CERRADO")
+                                  }
                                   disabled={ticket.estado === "CERRADO"}
                                 >
                                   <div className="flex items-center gap-2">
@@ -330,7 +366,7 @@ export function TicketsTable({
                               size="sm"
                               className="gap-1.5 h-8 px-2 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
                               onClick={() => onEdit(ticket)}
-                              title="Editar ticket"
+                              title="Editar PQRS"
                             >
                               <IconEdit className="size-4" />
                             </Button>
@@ -342,7 +378,7 @@ export function TicketsTable({
                                   variant="ghost"
                                   size="sm"
                                   className="gap-1.5 h-8 px-2 hover:bg-destructive/10 hover:text-destructive"
-                                  title="Eliminar ticket"
+                                  title="Eliminar PQRS"
                                 >
                                   <IconTrash className="size-4" />
                                 </Button>
@@ -353,12 +389,15 @@ export function TicketsTable({
                                     ¿Estás absolutamente seguro?
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto eliminará
-                                    permanentemente el ticket "{ticket.titulo}".
+                                    Esta acción no se puede deshacer. Esto
+                                    eliminará permanentemente la solicitud "
+                                    {ticket.titulo}".
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel>
+                                    Cancelar
+                                  </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => onDelete(ticket)}
                                     className="bg-destructive px-4 py-2 rounded-md text-white hover:bg-destructive/90"
@@ -384,7 +423,7 @@ export function TicketsTable({
                   {total > 0 && (
                     <div className="text-sm text-muted-foreground">
                       Mostrando {(currentPage - 1) * limit + 1} -{" "}
-                      {Math.min(currentPage * limit, total)} de {total} tickets
+                      {Math.min(currentPage * limit, total)} de {total} PQRS
                       {totalPages > 1 &&
                         ` - Página ${currentPage} de ${totalPages}`}
                     </div>
@@ -448,7 +487,7 @@ export function TicketsTable({
                               {pageNum}
                             </Button>
                           );
-                        }
+                        },
                       )}
                     </div>
                     <Button
@@ -470,4 +509,3 @@ export function TicketsTable({
     </Card>
   );
 }
-

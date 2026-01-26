@@ -8,7 +8,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Residente, Unidad } from "@/types/types";
-import { IconUser, IconBuilding, IconMail, IconPhone, IconId, IconShield } from "@tabler/icons-react";
+import {
+  IconUser,
+  IconBuilding,
+  IconMail,
+  IconPhone,
+  IconId,
+  IconShield,
+  IconKey,
+  IconCopy,
+} from "@tabler/icons-react";
+import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 
 interface ViewResidenteDialogProps {
   open: boolean;
@@ -41,10 +52,11 @@ export function ViewResidenteDialog({
   if (!residente) return null;
 
   const unidad = unidades.find((u) => u.id === residente.unidadId);
+  console.log(residente);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Información del Residente</DialogTitle>
           <DialogDescription>
@@ -70,7 +82,9 @@ export function ViewResidenteDialog({
                 <label className="text-sm font-medium text-muted-foreground">
                   Primer Nombre
                 </label>
-                <p className="text-sm font-medium mt-1">{residente.firstName}</p>
+                <p className="text-sm font-medium mt-1">
+                  {residente.firstName}
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">
@@ -125,14 +139,17 @@ export function ViewResidenteDialog({
                   Tipo de Documento
                 </label>
                 <p className="text-sm font-medium mt-1">
-                  {DOCUMENTO_LABELS[residente.tipoDocumento] || residente.tipoDocumento}
+                  {DOCUMENTO_LABELS[residente.tipoDocumento] ||
+                    residente.tipoDocumento}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">
                   Número de Documento
                 </label>
-                <p className="text-sm font-medium mt-1">{residente.numeroDocumento}</p>
+                <p className="text-sm font-medium mt-1">
+                  {residente.numeroDocumento}
+                </p>
               </div>
             </div>
           </div>
@@ -148,18 +165,47 @@ export function ViewResidenteDialog({
                 Unidad
               </label>
               <p className="text-sm font-medium mt-1">
-                {unidad ? `${unidad.identificador} - ${unidad.tipo}` : "No asignada"}
+                {unidad
+                  ? `${unidad.identificador} - ${unidad.tipo}`
+                  : "No asignada"}
               </p>
             </div>
           </div>
 
-          {/* Fechas */}
+          {/* Información del Sistema */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <IconShield className="size-5" />
               Información del Sistema
             </h3>
             <div className="grid grid-cols-2 gap-4">
+              {residente.temporaryPassword && (
+                <div className="col-span-2 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg">
+                  <label className="text-sm font-medium text-amber-800 dark:text-amber-400 flex items-center gap-2">
+                    <IconKey className="size-4" />
+                    Contraseña Temporal
+                  </label>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-sm font-mono font-bold text-amber-900 dark:text-amber-300">
+                      {residente.temporaryPassword}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-2 text-amber-800 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          residente.temporaryPassword!,
+                        );
+                        toast.success("Contraseña copiada al portapapeles");
+                      }}
+                    >
+                      <IconCopy className="size-4" />
+                      Copiar
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-muted-foreground">
                   Fecha de Creación
@@ -191,4 +237,3 @@ export function ViewResidenteDialog({
     </Dialog>
   );
 }
-

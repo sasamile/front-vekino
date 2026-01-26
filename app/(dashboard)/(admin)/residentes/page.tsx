@@ -1,19 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hooks/use-debounce";
-import type { Residente, Unidad, UnidadWithResidentesResponse } from "@/types/types";
+import type {
+  Residente,
+  Unidad,
+  UnidadWithResidentesResponse,
+} from "@/types/types";
 import { ResidentesTable } from "@/components/dashboard/admin/residentes/residentes-table";
-import { ResidentesFiltersComponent, type ResidentesFilters } from "@/components/dashboard/admin/residentes/residentes-filters";
+import {
+  ResidentesFiltersComponent,
+  type ResidentesFilters,
+} from "@/components/dashboard/admin/residentes/residentes-filters";
 import { CreateResidenteDialog } from "@/components/dashboard/admin/residentes/create-residente-dialog";
 import { ViewResidenteDialog } from "@/components/dashboard/admin/residentes/view-residente-dialog";
 import { EditResidenteDialog } from "@/components/dashboard/admin/residentes/edit-residente-dialog";
 import { Button } from "@/components/ui/button";
-import { IconCirclePlusFilled } from "@tabler/icons-react";
+import { IconCirclePlusFilled, IconFileText } from "@tabler/icons-react";
 
 function ResidentesPage() {
   const { subdomain } = useSubdomain();
@@ -21,7 +29,9 @@ function ResidentesPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedResidente, setSelectedResidente] = useState<Residente | null>(null);
+  const [selectedResidente, setSelectedResidente] = useState<Residente | null>(
+    null,
+  );
   const [filters, setFilters] = useState<ResidentesFilters>({
     page: 1,
     limit: 10,
@@ -70,13 +80,14 @@ function ResidentesPage() {
 
   // Extraer todos los residentes de todas las unidades y aplicar filtros adicionales
   let allResidentes: Residente[] = [];
-  
+  console.log(unidadesData);
+
   if (unidadesData && Array.isArray(unidadesData)) {
-    allResidentes = unidadesData.flatMap((unidad) => 
+    allResidentes = unidadesData.flatMap((unidad) =>
       (unidad.usuarios || []).map((usuario: Residente) => ({
         ...usuario,
         unidadId: unidad.id,
-      }))
+      })),
     );
 
     if (filters.role) {
@@ -84,7 +95,9 @@ function ResidentesPage() {
     }
 
     if (filters.unidadId) {
-      allResidentes = allResidentes.filter((r) => r.unidadId === filters.unidadId);
+      allResidentes = allResidentes.filter(
+        (r) => r.unidadId === filters.unidadId,
+      );
     }
   }
 
@@ -146,7 +159,7 @@ function ResidentesPage() {
   const handleDelete = (residente: Residente) => {
     if (
       window.confirm(
-        `¿Estás seguro de que deseas eliminar al residente "${residente.name}"?`
+        `¿Estás seguro de que deseas eliminar al residente "${residente.name}"?`,
       )
     ) {
       deleteMutation.mutate(residente.id);
@@ -199,13 +212,25 @@ function ResidentesPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          className="gap-2 w-full sm:w-auto"
-        >
-          <IconCirclePlusFilled className="size-4" />
-          Crear Residente
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            className="gap-2 flex-1 sm:flex-none"
+            asChild
+          >
+            <Link href="/residentes/carga-masiva">
+              <IconFileText className="size-4" />
+              Carga Masiva
+            </Link>
+          </Button>
+          <Button
+            onClick={() => setCreateDialogOpen(true)}
+            className="gap-2 flex-1 sm:flex-none"
+          >
+            <IconCirclePlusFilled className="size-4" />
+            Crear Residente
+          </Button>
+        </div>
       </div>
 
       <ResidentesFiltersComponent

@@ -11,7 +11,7 @@ import {
   FieldLabel,
   FieldError,
 } from "@/components/ui/field";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { AuthLayout } from "./auth-layout";
@@ -19,10 +19,7 @@ import { useRouter } from "next/navigation";
 import { useCondominio } from "@/components/providers/condominio-provider";
 
 const loginSchema = z.object({
-  email: z
-    .string()
-    .email("Correo electrónico inválido")
-    .min(1, "El correo es requerido"),
+  identifier: z.string().min(1, "El usuario o correo es requerido"),
   password: z.string().min(1, "La contraseña es requerida"),
 });
 
@@ -30,12 +27,13 @@ export default function Login() {
   const { subdomain } = useSubdomain();
   const { condominio } = useCondominio();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {},
-  );
+  const [errors, setErrors] = useState<{
+    identifier?: string;
+    password?: string;
+  }>({});
   const router = useRouter();
 
   // Obtener el color primario del condominio o usar el azul por defecto
@@ -43,15 +41,15 @@ export default function Login() {
 
   const validate = (): boolean => {
     try {
-      loginSchema.parse({ email, password });
+      loginSchema.parse({ identifier, password });
       setErrors({});
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const fieldErrors: { email?: string; password?: string } = {};
+        const fieldErrors: { identifier?: string; password?: string } = {};
         error.issues.forEach((issue) => {
-          if (issue.path[0] === "email") {
-            fieldErrors.email = issue.message;
+          if (issue.path[0] === "identifier") {
+            fieldErrors.identifier = issue.message;
           }
           if (issue.path[0] === "password") {
             fieldErrors.password = issue.message;
@@ -81,7 +79,7 @@ export default function Login() {
       const endpoint = !subdomain ? "/superadmin/login" : "/condominios/login";
 
       const response = await axiosInstance.post(endpoint, {
-        email,
+        email: identifier,
         password,
       });
 
@@ -112,35 +110,36 @@ export default function Login() {
     <AuthLayout
       title="Inicia sesión en tu cuenta"
       subtitle="Ingresa tus datos para iniciar sesión"
+      showBranding={!!subdomain}
     >
       <form onSubmit={onSubmit}>
         <FieldGroup className="py-4">
-          {/* Email Field */}
-          <Field data-invalid={!!errors.email}>
+          {/* Identifier Field */}
+          <Field data-invalid={!!errors.identifier}>
             <FieldLabel
-              htmlFor="login-email"
+              htmlFor="login-identifier"
               className="text-sm font-medium text-zinc-700 dark:text-zinc-700"
             >
-              Correo electrónico
+              Usuario o Correo electrónico
             </FieldLabel>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
               <Input
-                id="login-email"
-                type="email"
-                placeholder="Ingresa tu correo electrónico"
+                id="login-identifier"
+                type="text"
+                placeholder="Ingresa tu usuario o correo electrónico"
                 className="pl-10 py-6"
-                value={email}
+                value={identifier}
                 onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) {
-                    setErrors({ ...errors, email: undefined });
+                  setIdentifier(e.target.value);
+                  if (errors.identifier) {
+                    setErrors({ ...errors, identifier: undefined });
                   }
                 }}
                 required
               />
             </div>
-            {errors.email && <FieldError>{errors.email}</FieldError>}
+            {errors.identifier && <FieldError>{errors.identifier}</FieldError>}
           </Field>
 
           {/* Password Field */}
