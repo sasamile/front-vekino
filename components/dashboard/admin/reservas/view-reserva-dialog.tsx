@@ -61,7 +61,7 @@ export function ViewReservaDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Información de la Reserva</DialogTitle>
           <DialogDescription>
@@ -76,9 +76,8 @@ export function ViewReservaDialog({
               Estado
             </span>
             <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                ESTADO_COLORS[reserva.estado] || ESTADO_COLORS.PENDIENTE
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${ESTADO_COLORS[reserva.estado] || ESTADO_COLORS.PENDIENTE
+                }`}
             >
               {ESTADO_LABELS[reserva.estado] || reserva.estado}
             </span>
@@ -221,6 +220,71 @@ export function ViewReservaDialog({
                     Observaciones
                   </label>
                   <p className="text-sm mt-1">{reserva.observaciones}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Información de Pago */}
+          {(reserva.modoPago || reserva.estadoPago || reserva.archivoRecibo) && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <IconCurrencyDollar className="size-5" />
+                Información de Pago
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {reserva.modoPago && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Modo de Pago
+                    </label>
+                    <p className="text-sm mt-1 capitalize">{reserva.modoPago.toLowerCase()}</p>
+                  </div>
+                )}
+                {reserva.estadoPago && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Estado del Pago
+                    </label>
+                    <p className="text-sm mt-1 capitalize">{reserva.estadoPago.toLowerCase()}</p>
+                  </div>
+                )}
+              </div>
+
+              {reserva.archivoRecibo && (
+                <div className="mt-4">
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">
+                    Comprobante de Pago
+                  </label>
+                  <div className="rounded-md border bg-muted/30 overflow-hidden">
+                    {reserva.archivoRecibo.toLowerCase().match(/\.(jpg|jpeg|png|webp|gif|bmp|svg)$/) ? (
+                      <div className="relative w-full">
+                        <img
+                          src={reserva.archivoRecibo}
+                          alt="Comprobante de pago"
+                          className="w-full h-auto max-h-[400px] object-contain mx-auto"
+                        />
+                        <a
+                          href={reserva.archivoRecibo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white text-xs px-2 py-1 rounded transition-colors"
+                        >
+                          Abrir original
+                        </a>
+                      </div>
+                    ) : (
+                      <a
+                        href={reserva.archivoRecibo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-6 text-primary hover:underline justify-center hover:bg-muted/50 transition-colors"
+                      >
+                        <IconFileText className="size-6" />
+                        <span className="font-medium">Ver Documento del Comprobante</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

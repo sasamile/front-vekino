@@ -379,6 +379,13 @@ export interface Reserva {
   motivo: string | null;
   observaciones: string | null;
   precioTotal: number;
+  // Campos adicionales
+  modoPago?: string | null;
+  estadoPago?: string | null;
+  archivoRecibo?: string | null;
+  nombre?: string | null;
+  correo?: string | null;
+  casa?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -391,6 +398,14 @@ export interface CreateReservaRequest {
   cantidadPersonas?: number;
   motivo?: string;
   observaciones?: string;
+  // Campos opcionales para reserva manual
+  nombre?: string;
+  correo?: string;
+  casa?: string;
+  modoPago?: string;
+  estadoPago?: string;
+  // El recibo se envía como archivo en el multipart/form-data, no en el JSON body normal
+  // pero lo definimos aquí para tener la referencia completa de opciones posibles
 }
 
 export interface UpdateReservaRequest {
@@ -481,6 +496,35 @@ export interface CreateFacturasBulkRequest {
 export interface FacturasBulkResponse {
   total: number;
   facturas: Factura[];
+}
+
+export interface AporteVoluntario {
+  id: string;
+  nombre: string;
+  unidadId: string;
+  unidad?: {
+    id: string;
+    identificador: string;
+    tipo: UnidadTipo;
+  };
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  valor: number;
+  descripcion: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAporteVoluntarioRequest {
+  nombre: string;
+  unidadId: string;
+  userId?: string;
+  valor: number;
+  descripcion: string;
 }
 
 // Finanzas - Pagos

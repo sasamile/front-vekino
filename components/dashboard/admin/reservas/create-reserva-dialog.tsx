@@ -24,8 +24,22 @@ import {
 } from "@/components/ui/field";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
-import type { CreateReservaRequest, EspacioComun, HorarioDisponibilidad, DisponibilidadCompletaResponse } from "@/types/types";
 import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import type { CreateReservaRequest, EspacioComun, HorarioDisponibilidad, DisponibilidadCompletaResponse, Unidad } from "@/types/types";
 
 const reservaSchema = z.object({
   espacioComunId: z.string().min(1, "El espacio común es requerido"),
@@ -33,6 +47,13 @@ const reservaSchema = z.object({
   fechaInicio: z.string().min(1, "La fecha de inicio es requerida"),
   fechaFin: z.string().min(1, "La fecha de fin es requerida"),
   motivo: z.string().optional(),
+  // Campos opcionales
+  nombre: z.string().optional(),
+  correo: z.string().email("Correo inválido").optional().or(z.literal("")),
+  casa: z.string().optional(),
+  modoPago: z.enum(["EFECTIVO", "DATAFONO", "TRANSFERENCIA"]).optional(),
+  estadoPago: z.enum(["PENDIENTE", "APROBADO", "RECHAZADO"]).optional(),
+  recibo: z.any().optional(), // FileList
 }).refine((data) => new Date(data.fechaFin) > new Date(data.fechaInicio), {
   message: "La fecha de fin debe ser posterior a la fecha de inicio",
   path: ["fechaFin"],
@@ -65,6 +86,18 @@ export function CreateReservaDialog({
     enabled: open,
   });
 
+  // Obtener unidades para el selector
+  const { data: unidades = [] } = useQuery<Unidad[]>({
+    queryKey: ["unidades"],
+    queryFn: async () => {
+      const axiosInstance = getAxiosInstance(subdomain);
+      const response = await axiosInstance.get("/unidades");
+      const data = response.data;
+      return Array.isArray(data) ? data : [];
+    },
+    enabled: open,
+  });
+
   const {
     register,
     handleSubmit,
@@ -82,12 +115,21 @@ export function CreateReservaDialog({
       fechaInicio: "",
       fechaFin: "",
       motivo: "",
+      nombre: "",
+      correo: "",
+      casa: "",
+      modoPago: undefined,
+      estadoPago: "PENDIENTE",
     },
   });
 
   const espacioComunId = watch("espacioComunId");
   const fechaInicio = watch("fechaInicio");
   const fechaFin = watch("fechaFin");
+  const modoPago = watch("modoPago");
+  const selectedUnidadId = watch("unidadId");
+
+  const [unidadComboboxOpen, setUnidadComboboxOpen] = useState(false);
 
   // Estado para el calendario visual (declarar antes de los useEffect que los usan)
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>("");
@@ -126,29 +168,29 @@ export function CreateReservaDialog({
   // Función auxiliar para parsear fecha datetime-local sin conversión de timezone
   const parsearFechaLocal = (fechaLocal: string): { fechaStr: string; horaMinuto: string; diaSemana: number } | null => {
     if (!fechaLocal) return null;
-    
+
     // datetime-local viene como "YYYY-MM-DDTHH:mm"
     const match = fechaLocal.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
     if (!match) return null;
-    
+
     const [, año, mes, dia, hora, minuto] = match;
     const fechaStr = `${año}-${mes}-${dia}`;
     const horaMinuto = `${hora}:${minuto}`;
-    
+
     // Crear fecha en hora local para obtener el día de la semana
     const fechaObj = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
     const diaSemana = fechaObj.getDay();
-    
+
     return { fechaStr, horaMinuto, diaSemana };
   };
 
   // Función para verificar si un día está disponible
   const esDiaDisponible = (fecha: string): boolean => {
     if (!fecha || !disponibilidad) return true;
-    
+
     const parsed = parsearFechaLocal(fecha);
     if (!parsed) return true;
-    
+
     // Verificar si el día está en la lista de días no disponibles
     return !disponibilidad.diasNoDisponibles.includes(parsed.diaSemana);
   };
@@ -200,7 +242,7 @@ export function CreateReservaDialog({
 
     const parsedInicio = parsearFechaLocal(fechaInicio);
     const parsedFin = parsearFechaLocal(fechaFin);
-    
+
     if (!parsedInicio || !parsedFin) return true;
 
     // Si las fechas son diferentes, verificar cada día
@@ -246,7 +288,7 @@ export function CreateReservaDialog({
         });
         return;
       }
-      
+
       // Verificar si la hora está disponible
       if (!esHoraDisponible(fechaInicio)) {
         setError("fechaInicio", {
@@ -275,7 +317,7 @@ export function CreateReservaDialog({
         });
         return;
       }
-      
+
       // Verificar si la hora está disponible
       if (!esHoraDisponible(fechaFin)) {
         setError("fechaFin", {
@@ -316,7 +358,7 @@ export function CreateReservaDialog({
     // Encontrar la hora mínima y máxima de todos los horarios
     const horasInicio = horariosDisponibilidad.map((h) => h.horaInicio).sort();
     const horasFin = horariosDisponibilidad.map((h) => h.horaFin).sort();
-    
+
     return {
       minHora: horasInicio[0],
       maxHora: horasFin[horasFin.length - 1],
@@ -345,13 +387,13 @@ export function CreateReservaDialog({
     const primerDia = new Date(año, mes, 1);
     const ultimoDia = new Date(año, mes + 1, 0);
     const dias: Array<{ fecha: Date | null; diaSemana: number | null; fechaStr: string | null }> = [];
-    
+
     // Agregar espacios en blanco para alinear el primer día del mes con el día de la semana correcto
     const diaSemanaPrimerDia = primerDia.getDay(); // 0=Domingo, 1=Lunes, etc.
     for (let i = 0; i < diaSemanaPrimerDia; i++) {
       dias.push({ fecha: null, diaSemana: null, fechaStr: null });
     }
-    
+
     // Agregar los días del mes
     for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
       const fecha = new Date(año, mes, dia);
@@ -362,19 +404,19 @@ export function CreateReservaDialog({
         fechaStr,
       });
     }
-    
+
     return dias;
   }, [mesActual]);
 
   // Verificar si un día está disponible según el día de la semana
   const esDiaDisponibleCalendario = (diaSemana: number, fechaStr: string): boolean => {
     if (!disponibilidad) return true;
-    
+
     // Verificar día de la semana
     if (disponibilidad.diasNoDisponibles.includes(diaSemana)) {
       return false;
     }
-    
+
     return true;
   };
 
@@ -389,34 +431,34 @@ export function CreateReservaDialog({
     if (!disponibilidad || !horariosDisponibilidad) {
       return [];
     }
-    
+
     // Usar la función auxiliar para obtener el día de la semana de manera consistente
     const diaSemana = obtenerDiaSemana(fechaStr);
-    
+
     // Verificar si el día está disponible
     if (disponibilidad.diasNoDisponibles.includes(diaSemana)) {
       return [];
     }
-    
+
     // Obtener horario del día
     const horarioDia = horariosDisponibilidad.find((h) => h.dia === diaSemana);
     if (!horarioDia) {
       return [];
     }
-    
+
     // Obtener fecha y hora actual
     const ahora = new Date();
     const hoyStr = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
     const horaActualMinutos = ahora.getHours() * 60 + ahora.getMinutes();
-    
+
     // Generar todas las horas
     const horas: Array<{ hora: string; ocupada: boolean; pasada: boolean }> = [];
     const [horaInicio, minutoInicio] = horarioDia.horaInicio.split(':').map(Number);
     const [horaFin, minutoFin] = horarioDia.horaFin.split(':').map(Number);
-    
+
     // Obtener horas ocupadas para esta fecha
     const horasOcupadas = disponibilidad.horasOcupadasPorDia[fechaStr] || [];
-    
+
     // Convertir horas ocupadas a minutos para comparación más fácil
     const rangosOcupados = horasOcupadas.map(ocupada => {
       const [ocupadaHoraInicio, ocupadaMinutoInicio] = ocupada.horaInicio.split(':').map(Number);
@@ -426,17 +468,17 @@ export function CreateReservaDialog({
         finMinutos: ocupadaHoraFin * 60 + ocupadaMinutoFin,
       };
     });
-    
+
     // Generar todas las horas posibles en intervalos de 30 minutos
     // Incluir desde horaInicio:minutoInicio hasta horaFin:minutoFin (inclusive)
     const horaInicioMinutos = horaInicio * 60 + minutoInicio;
     const horaFinMinutos = horaFin * 60 + minutoFin;
-    
+
     for (let minutosActuales = horaInicioMinutos; minutosActuales <= horaFinMinutos; minutosActuales += 30) {
       const hora = Math.floor(minutosActuales / 60);
       const minuto = minutosActuales % 60;
       const horaStr = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
-      
+
       // Verificar si esta hora está ocupada (verificar si está dentro de algún rango ocupado)
       const estaOcupada = rangosOcupados.some(rango => {
         // La hora está ocupada si está dentro del rango [inicio, fin]
@@ -445,13 +487,13 @@ export function CreateReservaDialog({
         // - Si termina a las 18:00, no podemos empezar otra reserva a las 18:00 (el espacio está ocupado hasta las 18:00)
         return minutosActuales >= rango.inicioMinutos && minutosActuales <= rango.finMinutos;
       });
-      
+
       // Verificar si la hora ya pasó (solo si es el mismo día)
       const esPasada = fechaStr === hoyStr && minutosActuales < horaActualMinutos;
-      
+
       horas.push({ hora: horaStr, ocupada: estaOcupada, pasada: esPasada });
     }
-    
+
     return horas;
   };
 
@@ -468,15 +510,15 @@ export function CreateReservaDialog({
       toast.error("Este día no está disponible para reservas", { duration: 2000 });
       return;
     }
-    
+
     setFechaSeleccionada(fechaStr);
     setHoraInicioSeleccionada("");
     setHoraFinSeleccionada("");
-    
+
     // Limpiar errores cuando se selecciona una fecha válida
     clearErrors("fechaInicio");
     clearErrors("fechaFin");
-    
+
     // Actualizar el formulario con valores por defecto (se actualizarán cuando se seleccione la hora)
     const fechaCompleta = `${fechaStr}T00:00`;
     setValue("fechaInicio", fechaCompleta);
@@ -489,14 +531,14 @@ export function CreateReservaDialog({
       toast.error("Primero selecciona una fecha", { duration: 2000 });
       return;
     }
-    
+
     setHoraInicioSeleccionada(hora);
     const fechaCompleta = `${fechaSeleccionada}T${hora}`;
     setValue("fechaInicio", fechaCompleta);
-    
+
     // Limpiar errores
     clearErrors("fechaInicio");
-    
+
     // Si ya hay hora fin seleccionada y es menor o igual que la hora inicio, limpiarla
     if (horaFinSeleccionada && horaFinSeleccionada <= hora) {
       setHoraFinSeleccionada("");
@@ -510,21 +552,21 @@ export function CreateReservaDialog({
       toast.error("Primero selecciona una fecha", { duration: 2000 });
       return;
     }
-    
+
     if (!horaInicioSeleccionada) {
       toast.error("Primero selecciona la hora de inicio", { duration: 2000 });
       return;
     }
-    
+
     if (hora <= horaInicioSeleccionada) {
       toast.error("La hora de fin debe ser posterior a la hora de inicio", { duration: 2000 });
       return;
     }
-    
+
     setHoraFinSeleccionada(hora);
     const fechaCompleta = `${fechaSeleccionada}T${hora}`;
     setValue("fechaFin", fechaCompleta);
-    
+
     // Limpiar errores
     clearErrors("fechaFin");
   };
@@ -588,7 +630,7 @@ export function CreateReservaDialog({
       }
 
       const axiosInstance = getAxiosInstance(subdomain);
-      
+
       // Convertir fechas de datetime-local a ISO string con timezone offset explícito
       // Según documentación: formato "2026-01-02T11:00:00-05:00" para 11:00 AM hora local (Colombia UTC-5)
       // datetime-local devuelve "YYYY-MM-DDTHH:mm" que es la hora LOCAL exacta del usuario
@@ -596,18 +638,18 @@ export function CreateReservaDialog({
       // Ejemplo: Usuario selecciona "2026-01-02T09:00" → Enviamos "2026-01-02T09:00:00-05:00"
       const convertirFechaLocal = (fechaLocal: string): string => {
         if (!fechaLocal) return "";
-        
+
         // Si ya tiene formato ISO completo con offset o Z, retornarlo tal cual
         if (fechaLocal.includes('Z') || fechaLocal.match(/[+-]\d{2}:\d{2}/)) {
           return fechaLocal;
         }
-        
+
         // Verificar formato datetime-local: "YYYY-MM-DDTHH:mm"
         if (!fechaLocal.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)) {
           console.warn("Formato de fecha no reconocido:", fechaLocal);
           return fechaLocal;
         }
-        
+
         // Obtener el offset de timezone del sistema
         // getTimezoneOffset() devuelve minutos: positivo = estamos detrás de UTC
         // Para Colombia UTC-5: getTimezoneOffset() = 300 → queremos "-05:00"
@@ -616,33 +658,48 @@ export function CreateReservaDialog({
         const offsetMins = Math.abs(offsetMinutes) % 60;
         const offsetSign = offsetMinutes >= 0 ? '-' : '+';
         const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
-        
+
         // Agregar segundos y el offset: "YYYY-MM-DDTHH:mm:00-05:00"
         // CRÍTICO: Mantenemos la hora exacta que el usuario ingresó, NO la convertimos
         const resultado = fechaLocal + `:00${offsetString}`;
         return resultado;
       };
-      
+
       const fechaInicioISO = convertirFechaLocal(data.fechaInicio);
       const fechaFinISO = convertirFechaLocal(data.fechaFin);
-      
+
       console.log("🔍 DEBUG FECHAS:");
       console.log("  Entrada inicio:", data.fechaInicio);
       console.log("  Salida inicio:", fechaInicioISO);
       console.log("  Entrada fin:", data.fechaFin);
       console.log("  Salida fin:", fechaFinISO);
-      
-      const requestData: CreateReservaRequest = {
-        espacioComunId: data.espacioComunId,
-        unidadId: data.unidadId || undefined,
-        fechaInicio: fechaInicioISO,
-        fechaFin: fechaFinISO,
-        motivo: data.motivo || undefined,
-      };
 
-      console.log("📤 Request completo:", JSON.stringify(requestData, null, 2));
+      const formData = new FormData();
+      formData.append("espacioComunId", data.espacioComunId);
+      if (data.unidadId) formData.append("unidadId", data.unidadId);
+      formData.append("fechaInicio", fechaInicioISO);
+      formData.append("fechaFin", fechaFinISO);
+      if (data.motivo) formData.append("motivo", data.motivo);
 
-      await axiosInstance.post("/reservas", requestData);
+      // Nuevos campos
+      if (data.nombre) formData.append("nombre", data.nombre);
+      if (data.correo) formData.append("correo", data.correo);
+      if (data.casa) formData.append("casa", data.casa); // "casa" se envía tal cual
+      if (data.modoPago) formData.append("modoPago", data.modoPago);
+      if (data.estadoPago) formData.append("estadoPago", data.estadoPago);
+
+      // Archivo de recibo
+      if (data.recibo && data.recibo.length > 0) {
+        formData.append("recibo", data.recibo[0]);
+      }
+
+      console.log("📤 Enviando FormData...");
+
+      await axiosInstance.post("/reservas", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       toast.success("Reserva creada exitosamente", {
         duration: 2000,
@@ -758,7 +815,7 @@ export function CreateReservaDialog({
                         if (!fecha || !fechaStr) {
                           return <div key={`empty-${index}`} className="aspect-square" />;
                         }
-                        
+
                         // Recalcular el día de la semana para asegurar consistencia
                         const diaSemanaCalculado = obtenerDiaSemana(fechaStr);
                         const disponiblePorDiaSemana = esDiaDisponibleCalendario(diaSemanaCalculado, fechaStr);
@@ -768,10 +825,10 @@ export function CreateReservaDialog({
                         const hoy = new Date();
                         const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
                         const esHoy = fechaStr === hoyStr;
-                        
+
                         // Nombre del día
                         const nombreDia = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][diaSemanaCalculado];
-                        
+
                         // Tooltip explicativo
                         let tooltip = `${nombreDia} ${fecha.getDate()}`;
                         if (!disponiblePorDiaSemana) {
@@ -779,7 +836,7 @@ export function CreateReservaDialog({
                         } else if (!tieneHoras) {
                           tooltip += " - Sin horas disponibles";
                         }
-                        
+
                         return (
                           <button
                             key={fechaStr}
@@ -793,8 +850,8 @@ export function CreateReservaDialog({
                                 ? seleccionada
                                   ? "bg-primary text-primary-foreground font-semibold"
                                   : esHoy
-                                  ? "bg-primary/20 hover:bg-primary/30 font-medium border-2 border-primary"
-                                  : "bg-background hover:bg-muted border border-input"
+                                    ? "bg-primary/20 hover:bg-primary/30 font-medium border-2 border-primary"
+                                    : "bg-background hover:bg-muted border border-input"
                                 : "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50",
                               "disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
@@ -843,15 +900,15 @@ export function CreateReservaDialog({
                                   deshabilitada
                                     ? "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50 border-muted"
                                     : seleccionada
-                                    ? "bg-primary text-primary-foreground border-primary font-semibold"
-                                    : "bg-background hover:bg-muted border-input"
+                                      ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                      : "bg-background hover:bg-muted border-input"
                                 )}
                                 title={
-                                  ocupada 
-                                    ? "Esta hora está ocupada" 
-                                    : pasada 
-                                    ? "Esta hora ya pasó" 
-                                    : ""
+                                  ocupada
+                                    ? "Esta hora está ocupada"
+                                    : pasada
+                                      ? "Esta hora ya pasó"
+                                      : ""
                                 }
                               >
                                 {hora}
@@ -888,15 +945,15 @@ export function CreateReservaDialog({
                                       deshabilitada
                                         ? "bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50 border-muted"
                                         : seleccionada
-                                        ? "bg-primary text-primary-foreground border-primary font-semibold"
-                                        : "bg-background hover:bg-muted border-input"
+                                          ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                          : "bg-background hover:bg-muted border-input"
                                     )}
                                     title={
-                                      ocupada 
-                                        ? "Esta hora está ocupada" 
-                                        : pasada 
-                                        ? "Esta hora ya pasó" 
-                                        : ""
+                                      ocupada
+                                        ? "Esta hora está ocupada"
+                                        : pasada
+                                          ? "Esta hora ya pasó"
+                                          : ""
                                     }
                                   >
                                     {hora}
@@ -906,10 +963,10 @@ export function CreateReservaDialog({
                           </div>
                           {obtenerTodasLasHoras(fechaSeleccionada)
                             .filter(({ hora }) => hora > horaInicioSeleccionada).length === 0 && (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                              No hay horas disponibles después de {horaInicioSeleccionada}
-                            </p>
-                          )}
+                              <p className="text-sm text-muted-foreground text-center py-4">
+                                No hay horas disponibles después de {horaInicioSeleccionada}
+                              </p>
+                            )}
                         </div>
                         {errors.fechaFin && (
                           <FieldError>{errors.fechaFin.message}</FieldError>
@@ -987,6 +1044,129 @@ export function CreateReservaDialog({
                 <FieldError>{errors.motivo.message}</FieldError>
               )}
             </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel>Nombre (Opcional)</FieldLabel>
+                <Input
+                  {...register("nombre")}
+                  placeholder="Nombre del responsable"
+                  disabled={loading}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Correo (Opcional)</FieldLabel>
+                <Input
+                  {...register("correo")}
+                  placeholder="correo@ejemplo.com"
+                  type="email"
+                  disabled={loading}
+                />
+                {errors.correo && (
+                  <FieldError>{errors.correo.message}</FieldError>
+                )}
+              </Field>
+            </div>
+            <Field className="flex flex-col">
+              <FieldLabel>Unidad / Casa (Opcional)</FieldLabel>
+              <Popover open={unidadComboboxOpen} onOpenChange={setUnidadComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={unidadComboboxOpen}
+                    disabled={loading || unidades.length === 0}
+                    className={cn(
+                      "w-full justify-between font-normal",
+                      !selectedUnidadId && "text-muted-foreground"
+                    )}
+                  >
+                    {selectedUnidadId
+                      ? (() => {
+                        const u = unidades.find((u) => u.id === selectedUnidadId);
+                        return u ? `${u.identificador} - ${u.tipo}` : "Seleccionar unidad...";
+                      })()
+                      : "Seleccionar unidad..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar unidad..." />
+                    <CommandList>
+                      <CommandEmpty>No se encontraron unidades.</CommandEmpty>
+                      <CommandGroup>
+                        {unidades.map((unidad) => (
+                          <CommandItem
+                            key={unidad.id}
+                            value={`${unidad.identificador} ${unidad.tipo}`}
+                            onSelect={() => {
+                              setValue("unidadId", unidad.id === selectedUnidadId ? "" : unidad.id);
+                              setUnidadComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedUnidadId === unidad.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {unidad.identificador} - {unidad.tipo}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground mt-1">
+                Si seleccionas una unidad, la reserva quedará asociada a ella.
+              </p>
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel>Modo de Pago</FieldLabel>
+                <select
+                  {...register("modoPago")}
+                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loading}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="DATAFONO">Datáfono</option>
+                  <option value="TRANSFERENCIA">Transferencia</option>
+                </select>
+              </Field>
+
+              <Field>
+                <FieldLabel>Estado del Pago</FieldLabel>
+                <select
+                  {...register("estadoPago")}
+                  className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={loading}
+                >
+                  <option value="PENDIENTE">Pendiente</option>
+                  <option value="APROBADO">Aprobado</option>
+                  <option value="RECHAZADO">Rechazado</option>
+                </select>
+              </Field>
+            </div>
+
+            {modoPago && (
+              <Field>
+                <FieldLabel>Comprobante de Pago {modoPago === 'EFECTIVO' ? '(Foto recibo)' : modoPago === 'DATAFONO' ? '(Voucher)' : '(Comprobante)'}</FieldLabel>
+                <Input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  {...register("recibo")}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Formatos: JPG, PNG, PDF
+                </p>
+              </Field>
+            )}
           </FieldGroup>
 
           <DialogFooter>
@@ -1004,7 +1184,7 @@ export function CreateReservaDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }
 

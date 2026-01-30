@@ -34,6 +34,7 @@ import {
 import { IconBell, IconUser, IconLogout } from "@tabler/icons-react";
 import toast from "react-hot-toast";
 import { getAdditionalNavItemsForUser } from "./mobile-bottom-nav";
+import { NotificationsTrigger } from "@/components/dashboard/notifications/notifications-trigger";
 
 interface NavItem {
   title: string;
@@ -200,10 +201,8 @@ export function TopNavigation({
             )} */}
 
             {/* Notifications */}
-            {/* <Button variant="ghost" size="icon" className="relative">
-              <IconBell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
-            </Button> */}
+            {/* Notifications */}
+            <NotificationsTrigger />
 
             {/* User Menu */}
             <DropdownMenu>
