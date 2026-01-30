@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,7 +36,36 @@ export function AportesVoluntariosTable({
     onLimitChange,
 }: AportesVoluntariosTableProps) {
     if (isLoading) {
-        return <div className="p-4 text-center">Cargando aportes...</div>;
+        return (
+            <div className="space-y-4">
+                <div className="rounded-md border p-0 overflow-x-auto">
+                    <table className="w-full caption-bottom text-sm text-left">
+                        <thead className="[&_tr]:border-b">
+                            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Fecha</th>
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Unidad</th>
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Nombre</th>
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Descripción</th>
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Valor</th>
+                                <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[50px]"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <tr key={i} className="border-b transition-colors hover:bg-muted/50">
+                                    <td className="p-4 align-middle"><Skeleton className="h-4 w-24" /></td>
+                                    <td className="p-4 align-middle"><Skeleton className="h-4 w-16" /></td>
+                                    <td className="p-4 align-middle"><Skeleton className="h-4 w-32" /></td>
+                                    <td className="p-4 align-middle"><Skeleton className="h-4 w-48" /></td>
+                                    <td className="p-4 align-middle flex justify-end"><Skeleton className="h-4 w-20" /></td>
+                                    <td className="p-4 align-middle"><Skeleton className="h-8 w-8 rounded-md" /></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
     }
 
     return (
