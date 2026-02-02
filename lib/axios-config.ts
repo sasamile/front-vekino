@@ -35,8 +35,9 @@ export function createAxiosInstance(subdomain: string | null): AxiosInstance {
       return response;
     },
     (error: AxiosError) => {
-      // Si recibimos un 401 (Unauthorized) o 403 (Forbidden), redirigir al login
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      // Solo redirigir en caso de 401 (Unauthorized) - sesión inválida o expirada
+      // Los 403 (Forbidden) son errores de permisos que deben manejarse en la UI
+      if (error.response?.status === 401) {
         // Solo redirigir si estamos en el navegador
         if (typeof window !== 'undefined') {
           // Evitar redirección infinita si ya estamos en login
@@ -45,6 +46,7 @@ export function createAxiosInstance(subdomain: string | null): AxiosInstance {
           }
         }
       }
+      // Para 403, solo rechazar el error sin redirigir - la UI lo manejará
       return Promise.reject(error);
     }
   );

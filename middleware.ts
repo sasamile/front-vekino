@@ -128,13 +128,21 @@ export async function middleware(request: NextRequest) {
   }
 
   // Verificar si el usuario puede acceder a esta ruta según su rol
-  if (!canAccessRoute(pathname, authData.user.role)) {
+  console.log(`[Middleware] Verificando acceso - Pathname: "${pathname}", Rol: ${authData.user.role}, Subdomain: ${subdomain}`);
+  const canAccess = canAccessRoute(pathname, authData.user.role);
+  if (!canAccess) {
+    // Log para diagnóstico (remover en producción si es necesario)
+    console.log(`[Middleware] ❌ ACCESO DENEGADO - Ruta: "${pathname}", Rol: ${authData.user.role}, Subdomain: ${subdomain}`);
+    console.log(`[Middleware] Redirigiendo a /`);
+    
     // Si no tiene permiso, redirigir a la página principal o mostrar error
     // TODO: Puedes personalizar esto según tus necesidades
     // Por ejemplo, redirigir a una página de "acceso denegado"
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }
+  
+  console.log(`[Middleware] ✅ Acceso permitido - Ruta: "${pathname}", Rol: ${authData.user.role}`);
 
   // Agregar información de autenticación a los headers
   const response = NextResponse.next();

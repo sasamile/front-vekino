@@ -11,7 +11,8 @@ export type NotificationRole =
     | "PROPIETARIO"
     | "ARRENDATARIO"
     | "RESIDENTE"
-    | "GUARDIA_SEGURIDAD";
+    | "GUARDIA_SEGURIDAD"
+    | "SUPERADMIN";
 
 export interface Notification {
     id: string;

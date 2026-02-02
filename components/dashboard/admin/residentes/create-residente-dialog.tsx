@@ -57,7 +57,15 @@ const residenteSchema = z.object({
   }),
   numeroDocumento: z.string().min(1, "El número de documento es requerido"),
   telefono: z.string().min(1, "El teléfono es requerido"),
-  unidadId: z.string().min(1, "Debes seleccionar una unidad"),
+  unidadId: z.string().optional(),
+}).refine((data) => {
+  if ( data.role === "ADMIN") {
+    return true; // Unidad es opcional para guardia y admin
+  }
+  return !!data.unidadId && data.unidadId.length > 0;
+}, {
+  message: "Debes seleccionar una unidad",
+  path: ["unidadId"],
 });
 
 type ResidenteFormData = z.infer<typeof residenteSchema>;
@@ -72,6 +80,7 @@ const ROLE_OPTIONS: { value: ResidenteRole; label: string }[] = [
   { value: "PROPIETARIO", label: "Propietario" },
   { value: "ARRENDATARIO", label: "Arrendatario" },
   { value: "RESIDENTE", label: "Residente" },
+  { value: "GUARDIA_SEGURIDAD", label: "Guardia de Seguridad" },
 ];
 
 const DOCUMENTO_OPTIONS: { value: TipoDocumento; label: string }[] = [
@@ -143,7 +152,7 @@ export function CreateResidenteDialog({
         tipoDocumento: data.tipoDocumento,
         numeroDocumento: data.numeroDocumento,
         telefono: data.telefono,
-        unidadId: data.unidadId,
+        unidadId: data.role === "ADMIN" ? "" : (data.unidadId ?? ""),
       };
 
       await axiosInstance.post("/condominios/users", requestData);
@@ -318,73 +327,75 @@ export function CreateResidenteDialog({
                 )}
               </Field>
 
-              <Field>
-                <FieldLabel>Unidad *</FieldLabel>
-                <Popover open={unidadComboboxOpen} onOpenChange={setUnidadComboboxOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={unidadComboboxOpen}
-                      disabled={loading || unidades.length === 0}
-                      className="w-full justify-between py-5"
-                    >
-                      {selectedUnidad
-                        ? `${selectedUnidad.identificador} - ${selectedUnidad.tipo}`
-                        : unidades.length === 0
-                        ? "Cargando unidades..."
-                        : "Selecciona una unidad..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Buscar unidad..." className="h-9" />
-                      <CommandList>
-                        <CommandEmpty>No se encontraron unidades.</CommandEmpty>
-                        <CommandGroup>
-                          {unidades.map((unidad) => (
+              {watch("role") !== "ADMIN" && (
+                <Field>
+                  <FieldLabel>Unidad *</FieldLabel>
+                  <Popover open={unidadComboboxOpen} onOpenChange={setUnidadComboboxOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={unidadComboboxOpen}
+                        disabled={loading || unidades.length === 0}
+                        className="w-full justify-between py-5"
+                      >
+                        {selectedUnidad
+                          ? `${selectedUnidad.identificador} - ${selectedUnidad.tipo}`
+                          : unidades.length === 0
+                            ? "Cargando unidades..."
+                            : "Selecciona una unidad..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Buscar unidad..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty>No se encontraron unidades.</CommandEmpty>
+                          <CommandGroup>
+                            {unidades.map((unidad) => (
+                              <CommandItem
+                                key={unidad.id}
+                                value={`${unidad.identificador} ${unidad.tipo}`}
+                                onSelect={() => {
+                                  setValue("unidadId", unidad.id, { shouldValidate: true });
+                                  setUnidadComboboxOpen(false);
+                                }}
+                              >
+                                {unidad.identificador} - {unidad.tipo}
+                                <Check
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    selectedUnidadId === unidad.id
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                          <CommandGroup>
                             <CommandItem
-                              key={unidad.id}
-                              value={`${unidad.identificador} ${unidad.tipo}`}
                               onSelect={() => {
-                                setValue("unidadId", unidad.id, { shouldValidate: true });
                                 setUnidadComboboxOpen(false);
+                                setCreateUnidadDialogOpen(true);
                               }}
+                              className="border-t"
                             >
-                              {unidad.identificador} - {unidad.tipo}
-                              <Check
-                                className={cn(
-                                  "ml-auto h-4 w-4",
-                                  selectedUnidadId === unidad.id
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
+                              <IconPlus className="mr-2 h-4 w-4" />
+                              Crear nueva unidad
                             </CommandItem>
-                          ))}
-                        </CommandGroup>
-                        <CommandGroup>
-                          <CommandItem
-                            onSelect={() => {
-                              setUnidadComboboxOpen(false);
-                              setCreateUnidadDialogOpen(true);
-                            }}
-                            className="border-t"
-                          >
-                            <IconPlus className="mr-2 h-4 w-4" />
-                            Crear nueva unidad
-                          </CommandItem>
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {errors.unidadId && (
-                  <FieldError>{errors.unidadId.message}</FieldError>
-                )}
-              </Field>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {errors.unidadId && (
+                    <FieldError>{errors.unidadId.message}</FieldError>
+                  )}
+                </Field>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -128,6 +128,11 @@ const getNavConfig = (
             icon: IconUsers,
           },
           {
+            title: "Guardias",
+            url: `/guardias`,
+            icon: IconShield,
+          },
+          {
             title: "Carga Masiva",
             url: `/residentes/carga-masiva`,
             icon: IconFileText,

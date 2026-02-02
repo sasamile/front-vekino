@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IconBell } from "@tabler/icons-react";
 import { useUnreadNotificationsCount } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,31 @@ import { cn } from "@/lib/utils";
 
 export function NotificationsTrigger() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const { data: unreadData } = useUnreadNotificationsCount();
 
-    // Prevent hydration mismatch by only rendering the badge content on client if needed,
-    // or accept that initial render might differ. For now, simple standard render.
+    // Prevenir errores de hidratación renderizando solo en el cliente
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const unreadCount = unreadData?.count || 0;
     const hasUnread = unreadCount > 0;
+
+    // Renderizar un placeholder durante SSR para evitar diferencias de hidratación
+    if (!isMounted) {
+        return (
+            <Button
+                variant="ghost"
+                size="icon"
+                className="relative transition-all"
+                aria-label="Notificaciones"
+                suppressHydrationWarning
+            >
+                <IconBell className="h-5 w-5" />
+            </Button>
+        );
+    }
 
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>

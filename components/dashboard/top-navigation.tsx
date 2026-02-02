@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   IconDashboard,
@@ -16,6 +16,7 @@ import {
   IconTicket,
   IconMessageReport,
   IconPackage,
+  IconShield,
 } from "@tabler/icons-react";
 import type { UserRole } from "@/lib/middleware/types";
 import Logo from "@/components/common/logo";
@@ -79,6 +80,11 @@ const getNavItems = (role: UserRole): NavItem[] => {
           title: "Residentes",
           url: "/residentes",
           icon: IconUsers,
+        },
+        {
+          title: "Guardias",
+          url: "/guardias",
+          icon: IconShield,
         },
         {
           title: "Finanzas",
@@ -148,8 +154,14 @@ export function TopNavigation({
   const router = useRouter();
   const { subdomain } = useSubdomain();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const navItems = getNavItems(userRole);
   const additionalNavItems = getAdditionalNavItemsForUser(userRole);
+
+  // Prevenir errores de hidratación renderizando solo en el cliente
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const isActive = (url: string) => {
     if (url === "/") {
@@ -205,95 +217,113 @@ export function TopNavigation({
             <NotificationsTrigger />
 
             {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <IconUser className="h-4 w-4 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium hidden md:inline">
-                    {userName}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+            {isMounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <IconUser className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium hidden md:inline">
                       {userName}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {userEmail}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {/* Enlaces adicionales solo en móviles */}
-                {additionalNavItems.length > 0 && (
-                  <>
-                    <div className="md:hidden">
-                      {additionalNavItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <DropdownMenuItem key={item.url} asChild>
-                            <Link href={item.url} className="flex items-center">
-                              <Icon className="mr-2 h-4 w-4" />
-                              <span>{item.title}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {userName}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userEmail}
+                      </p>
                     </div>
-                    <DropdownMenuSeparator className="md:hidden" />
-                  </>
-                )}
-                {/* Enlaces adicionales solo en desktop para ADMIN */}
-                {userRole === "ADMIN" && (
-                  <>
-                    <div className="hidden md:block">
-                      <DropdownMenuItem asChild>
-                        <Link href="/unidades" className="flex items-center">
-                          <IconBuilding className="mr-2 h-4 w-4" />
-                          <span>Unidades</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/espacio-comunal"
-                          className="flex items-center"
-                        >
-                          <IconBuildingCommunity className="mr-2 h-4 w-4" />
-                          <span>Espacio Comunal</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/tickets" className="flex items-center">
-                          <IconMessageReport className="mr-2 h-4 w-4" />
-                          <span>PQRS</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </div>
-                    <DropdownMenuSeparator className="hidden md:block" />
-                  </>
-                )}
-                <DropdownMenuItem>
-                  <IconUser className="mr-2 h-4 w-4" />
-                  <span>Perfil</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  <IconLogout className="mr-2 h-4 w-4" />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full text-left"
-                    disabled={isLoggingOut}
-                  >
-                    Cerrar sesión
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {/* Enlaces adicionales solo en móviles */}
+                  {additionalNavItems.length > 0 && (
+                    <>
+                      <div className="md:hidden">
+                        {additionalNavItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <DropdownMenuItem key={item.url} asChild>
+                              <Link
+                                href={item.url}
+                                className="flex items-center"
+                              >
+                                <Icon className="mr-2 h-4 w-4" />
+                                <span>{item.title}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </div>
+                      <DropdownMenuSeparator className="md:hidden" />
+                    </>
+                  )}
+                  {/* Enlaces adicionales solo en desktop para ADMIN */}
+                  {userRole === "ADMIN" && (
+                    <>
+                      <div className="hidden md:block">
+                        <DropdownMenuItem asChild>
+                          <Link href="/unidades" className="flex items-center">
+                            <IconBuilding className="mr-2 h-4 w-4" />
+                            <span>Unidades</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href="/espacio-comunal"
+                            className="flex items-center"
+                          >
+                            <IconBuildingCommunity className="mr-2 h-4 w-4" />
+                            <span>Espacio Comunal</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/tickets" className="flex items-center">
+                            <IconMessageReport className="mr-2 h-4 w-4" />
+                            <span>PQRS</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      </div>
+                      <DropdownMenuSeparator className="hidden md:block" />
+                    </>
+                  )}
+                  <DropdownMenuItem>
+                    <IconUser className="mr-2 h-4 w-4" />
+                    <span>Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600">
+                    <IconLogout className="mr-2 h-4 w-4" />
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full text-left"
+                      disabled={isLoggingOut}
+                    >
+                      Cerrar sesión
+                    </button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                className="flex items-center gap-2"
+                suppressHydrationWarning
+              >
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <IconUser className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium hidden md:inline">
+                  {userName}
+                </span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -314,7 +344,7 @@ export function TopNavigation({
                     "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
                     active
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   )}
                 >
                   <Icon className="h-4 w-4" />

@@ -240,7 +240,8 @@ export type ResidenteRole =
   | "ADMIN"
   | "PROPIETARIO"
   | "ARRENDATARIO"
-  | "RESIDENTE";
+  | "RESIDENTE"
+  | "GUARDIA_SEGURIDAD";
 export type TipoDocumento = "CC" | "CE" | "NIT" | "PASAPORTE" | "OTRO";
 
 export interface Residente {
