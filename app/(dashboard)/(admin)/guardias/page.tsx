@@ -92,24 +92,29 @@ function GuardiasPage() {
             return response.data;
         },
         retry: false, // No reintentar automáticamente en caso de error
-        onError: (error: any) => {
+    });
+
+    // Manejar errores (React Query v5 no tiene onError)
+    useEffect(() => {
+        if (error) {
+            const axiosError = error as any;
             // Mostrar error específico para 403
-            if (error?.response?.status === 403) {
+            if (axiosError?.response?.status === 403) {
                 toast.error("No tienes permisos para acceder a esta sección", {
                     duration: 4000,
                 });
             } else {
                 toast.error(
-                    error?.response?.data?.message ||
-                    error?.message ||
+                    axiosError?.response?.data?.message ||
+                    axiosError?.message ||
                     "Error al cargar los guardias",
                     {
                         duration: 4000,
                     }
                 );
             }
-        },
-    });
+        }
+    }, [error]);
 
     const guardias = guardiasPayload?.data || [];
     const total = guardiasPayload?.total || 0;
