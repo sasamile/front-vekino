@@ -78,14 +78,15 @@ function getEffectiveSubdomain(subdomain: string | null): string | null {
  * Obtiene la URL base según el subdomain
  */
 function getBaseUrl(subdomain: string | null): string {
-  const effective = getEffectiveSubdomain(subdomain);
-
-  // DEV: SIEMPRE proxy local
-  if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
+  // SIEMPRE usar el proxy /api cuando estamos en el navegador (cliente)
+  // El proxy (app/api/[...path]/route.ts) maneja correctamente el subdominio
+  // desde el header 'host' de la request
+  if (typeof window !== 'undefined') {
     return '/api';
   }
 
-  // PROD
+  // Solo en el servidor (SSR) usar URLs completas
+  const effective = getEffectiveSubdomain(subdomain);
   if (effective) {
     return `https://${effective}.vekino.site/api`;
   }
