@@ -14,6 +14,8 @@ export default async function DashboardLayout({
   const userName = headersList.get("x-user-name") || "Usuario";
   const userEmail = headersList.get("x-user-email") || "";
 
+  console.log(userRole);
+
   return (
     <DashboardLayoutWrapper
       userRole={userRole}

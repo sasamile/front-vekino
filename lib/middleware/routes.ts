@@ -39,7 +39,17 @@ const ADMIN_ROUTES = [
 const USER_ROUTES = [
   "/pagos",
   "/reservations",
+];
 
+/**
+ * Lista de rutas exclusivas para GUARDIA_SEGURIDAD
+ */
+const GUARDIA_ROUTES = [
+  "/visitantes",
+  "/paqueteria",
+  "/control-reservas",
+  "/avisos",
+  "/novedades",
 ];
 
 /**
@@ -85,6 +95,13 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
   if (matchingUserRoute) {
     const allowed = userRole === 'PROPIETARIO';
     console.log(`[canAccessRoute] Ruta USER "${matchingUserRoute}" - Acceso: ${allowed}`);
+    return allowed;
+  }
+
+  const matchingGuardiaRoute = GUARDIA_ROUTES.find(route => normalizedPath.startsWith(route));
+  if (matchingGuardiaRoute) {
+    const allowed = userRole === 'GUARDIA_SEGURIDAD';
+    console.log(`[canAccessRoute] Ruta GUARDIA "${matchingGuardiaRoute}" - Acceso: ${allowed}`);
     return allowed;
   }
 

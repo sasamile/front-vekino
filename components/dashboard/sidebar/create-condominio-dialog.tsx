@@ -31,6 +31,9 @@ import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { Upload, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
+// Solo letras minúsculas, números y guiones. No puede empezar ni terminar en guión.
+const subdomainRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+
 const condominioSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   nit: z.string().min(1, "El NIT es requerido"),
@@ -38,7 +41,14 @@ const condominioSchema = z.object({
   city: z.string().min(1, "La ciudad es requerida"),
   country: z.string().min(1, "El país es requerido"),
   timezone: z.string().min(1, "El timezone es requerido"),
-  subdomain: z.string().min(1, "El subdominio es requerido"),
+  subdomain: z
+    .string()
+    .min(2, "El subdominio debe tener al menos 2 caracteres")
+    .max(63, "El subdominio no puede exceder 63 caracteres")
+    .regex(
+      subdomainRegex,
+      "Solo letras minúsculas, números y guiones. Sin espacios ni caracteres especiales.",
+    ),
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Color inválido (debe ser hexadecimal)"),
@@ -339,11 +349,19 @@ export function CreateCondominioDialog({
                   }
                 >
                   <FieldLabel>Subdominio *</FieldLabel>
+                  <FieldDescription className="mb-2 text-muted-foreground">
+                    Solo letras minúsculas (a-z), números (0-9) y guiones (-).
+                    Sin espacios ni caracteres especiales. Ejemplo: mi-condominio
+                  </FieldDescription>
                   <div className="space-y-2">
                     <Input
                       disabled={loading}
-                      {...register("subdomain")}
                       placeholder="condominio"
+                      value={subdomainValue}
+                      onChange={(e) => {
+                        const raw = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+|-+$/g, "");
+                        setValue("subdomain", raw, { shouldValidate: true });
+                      }}
                     />
                     {subdomainStatus.checking && (
                       <FieldDescription className="text-sm text-muted-foreground">
@@ -638,7 +656,16 @@ export function CreateCondominioDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={
+                loading ||
+                !!errors.subdomain ||
+                (debouncedSubdomain.length >= 2 &&
+                  (subdomainStatus.checking ||
+                    subdomainStatus.available !== true))
+              }
+            >
               {loading ? "Creando..." : "Crear Condominio"}
             </Button>
           </DialogFooter>

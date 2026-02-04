@@ -4,6 +4,7 @@ import { AdminDashboard } from "@/components/dashboard/admin-dashboard"
 import { UserDashboard } from "@/components/dashboard/user-dashboard"
 import type { UserRole } from "@/lib/middleware/types"
 import { SuperAdminDashboard } from "@/components/dashboard/superadmin/dashboard/superadmin-dashboard"
+import GuardiaSeguridadDashboard from "@/components/dashboard/guardia/dashboard-seguridad"
 
 async function DashboardPage() {
   const headersList = await headers()
@@ -19,6 +20,8 @@ async function DashboardPage() {
       return <AdminDashboard />
     case "PROPIETARIO":
       return <UserDashboard />
+    case "GUARDIA_SEGURIDAD":
+      return <GuardiaSeguridadDashboard />
     default:
       return <UserDashboard />
   }

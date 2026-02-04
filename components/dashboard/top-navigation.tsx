@@ -17,6 +17,12 @@ import {
   IconMessageReport,
   IconPackage,
   IconShield,
+  IconClipboardList,
+  IconUserFilled,
+  IconPackageImport,
+  IconCalendarCheck,
+  IconSpeakerphone,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 import type { UserRole } from "@/lib/middleware/types";
 import Logo from "@/components/common/logo";
@@ -132,6 +138,39 @@ const getNavItems = (role: UserRole): NavItem[] => {
         },
       ];
 
+    case "GUARDIA_SEGURIDAD":
+      return [
+        {
+          title: "Minuta Digital",
+          url: "/",
+          icon: IconClipboardList,
+        },
+        {
+          title: "Visitantes",
+          url: "/visitantes",
+          icon: IconUserFilled,
+        },
+        {
+          title: "Paquetería",
+          url: "/paqueteria",
+          icon: IconPackageImport,
+        },
+        {
+          title: "Reservas",
+          url: "/control-reservas",
+          icon: IconCalendarCheck,
+        },
+        {
+          title: "Avisos",
+          url: "/avisos",
+          icon: IconSpeakerphone,
+        },
+        {
+          title: "Novedades",
+          url: "/novedades",
+          icon: IconAlertTriangle,
+        },
+      ];
     default:
       return [];
   }

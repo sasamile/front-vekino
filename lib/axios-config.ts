@@ -55,17 +55,39 @@ export function createAxiosInstance(subdomain: string | null): AxiosInstance {
 }
 
 /**
+ * Obtiene el subdominio efectivo: si en el navegador no se pasa subdomain,
+ * se deriva del hostname para evitar que las primeras peticiones vayan a vekino.site
+ * (race: el SubdomainProvider actualiza subdomain en useEffect, pero los queries ya dispararon).
+ */
+function getEffectiveSubdomain(subdomain: string | null): string | null {
+  if (typeof window === 'undefined') return subdomain;
+  if (subdomain) return subdomain;
+  const hostname = window.location.hostname;
+  if (hostname.includes('localhost')) {
+    const parts = hostname.split('.');
+    if (parts.length > 1 && parts[0] !== 'localhost') return parts[0];
+    return null;
+  }
+  const parts = hostname.split('.');
+  // condominio-las-flores-actualizado.vekino.site -> condominio-las-flores-actualizado
+  if (parts.length > 2) return parts[0];
+  return null;
+}
+
+/**
  * Obtiene la URL base según el subdomain
  */
 function getBaseUrl(subdomain: string | null): string {
+  const effective = getEffectiveSubdomain(subdomain);
+
   // DEV: SIEMPRE proxy local
   if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
     return '/api';
   }
 
   // PROD
-  if (subdomain) {
-    return `https://${subdomain}.vekino.site/api`;
+  if (effective) {
+    return `https://${effective}.vekino.site/api`;
   }
 
   return 'https://vekino.site/api';
@@ -84,7 +106,7 @@ export function getAxiosInstance(subdomain: string | null): AxiosInstance {
   if (!axiosInstance) {
     axiosInstance = createAxiosInstance(subdomain);
   } else {
-    // Actualizar la baseURL si el subdomain cambió
+    // Actualizar la baseURL si el subdomain cambió (getBaseUrl usa subdomain efectivo en navegador)
     const newBaseURL = getBaseUrl(subdomain);
     if (axiosInstance.defaults.baseURL !== newBaseURL) {
       axiosInstance.defaults.baseURL = newBaseURL;

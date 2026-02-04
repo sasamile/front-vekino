@@ -22,6 +22,7 @@ import {
   IconHelp,
   IconSearch,
   IconShield,
+  IconAlertTriangle,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -38,7 +39,9 @@ const getMainNavItems = (role: UserRole): NavItem[] => {
       ? "/propietario"
       : role === "ADMIN"
         ? "/admin"
-        : "/superadmin";
+        : role === "GUARDIA_SEGURIDAD"
+          ? "/guardia"
+          : "/superadmin";
 
   switch (role) {
     case "PROPIETARIO":
@@ -125,6 +128,34 @@ const getMainNavItems = (role: UserRole): NavItem[] => {
           title: "Reportes",
           url: `/reportes`,
           icon: IconFile,
+        },
+      ];
+    case "GUARDIA_SEGURIDAD":
+      return [
+        {
+          title: "Minuta",
+          url: `/`,
+          icon: IconDashboard,
+        },
+        {
+          title: "Visitantes",
+          url: `/visitantes`,
+          icon: IconUsers,
+        },
+        {
+          title: "Paquetería",
+          url: `/paqueteria`,
+          icon: IconPackage,
+        },
+        {
+          title: "Avisos",
+          url: `/avisos`,
+          icon: IconMessageReport,
+        },
+        {
+          title: "Novedades",
+          url: `/novedades`,
+          icon: IconAlertTriangle,
         },
       ];
 
