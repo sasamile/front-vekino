@@ -94,6 +94,7 @@ export function UserDashboard() {
       const response = await axiosInstance.get("/condominios/me")
       return response.data.user || response.data
     },
+    retry: false, // No reintentar - si falla aquí, el middleware redirigirá
   })
 
   // Obtener información de la unidad si existe unidadId
@@ -120,6 +121,9 @@ export function UserDashboard() {
       const response = await axiosInstance.get("/finanzas/mis-pagos?page=1&limit=5")
       return response.data
     },
+    retry: false, // No reintentar automáticamente
+    // Si falla, no afectar otras queries
+    throwOnError: false,
   })
 
   // Obtener reservas activas (confirmadas y pendientes)
@@ -127,19 +131,30 @@ export function UserDashboard() {
     queryKey: ["reservas-activas"],
     queryFn: async () => {
       const axiosInstance = getAxiosInstance(subdomain)
-      const response = await axiosInstance.get("/usuario/reservas?page=1&limit=5")
-      const data = response.data
-      const reservas = Array.isArray(data) ? data : (data?.data || [])
-      // Filtrar solo reservas activas (confirmadas y pendientes) con fecha futura
-      const ahora = new Date()
-      return reservas.filter((r: Reserva) => {
-        const fechaFin = new Date(r.fechaFin)
-        return (
-          (r.estado === "CONFIRMADA" || r.estado === "PENDIENTE") &&
-          fechaFin > ahora
-        )
-      })
+      try {
+        const response = await axiosInstance.get("/usuario/reservas?page=1&limit=5")
+        const data = response.data
+        const reservas = Array.isArray(data) ? data : (data?.data || [])
+        // Filtrar solo reservas activas (confirmadas y pendientes) con fecha futura
+        const ahora = new Date()
+        return reservas.filter((r: Reserva) => {
+          const fechaFin = new Date(r.fechaFin)
+          return (
+            (r.estado === "CONFIRMADA" || r.estado === "PENDIENTE") &&
+            fechaFin > ahora
+          )
+        })
+      } catch (error: any) {
+        // Si falla (401, 403, etc.), retornar array vacío en lugar de lanzar error
+        // Esto evita que un error en reservas borre la sesión o interrumpa el dashboard
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          return []
+        }
+        throw error
+      }
     },
+    retry: false,
+    throwOnError: false, // No lanzar error, solo retornar array vacío
   })
 
   // Obtener tickets abiertos

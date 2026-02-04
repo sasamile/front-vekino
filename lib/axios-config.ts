@@ -35,18 +35,16 @@ export function createAxiosInstance(subdomain: string | null): AxiosInstance {
       return response;
     },
     (error: AxiosError) => {
-      // Solo redirigir en caso de 401 (Unauthorized) - sesión inválida o expirada
-      // Los 403 (Forbidden) son errores de permisos que deben manejarse en la UI
-      if (error.response?.status === 401) {
-        // Solo redirigir si estamos en el navegador
-        if (typeof window !== 'undefined') {
-          // Evitar redirección infinita si ya estamos en login
-          if (!window.location.pathname.includes('/auth/login')) {
-            window.location.href = '/auth/login';
-          }
-        }
-      }
-      // Para 403, solo rechazar el error sin redirigir - la UI lo manejará
+      // NO redirigir automáticamente desde el interceptor.
+      // El middleware de Next.js ya maneja la autenticación y redirige cuando es necesario.
+      // Si redirigimos aquí, podemos interrumpir la carga del dashboard cuando hay errores
+      // temporales o de permisos específicos (ej: un endpoint devuelve 401 pero otros funcionan).
+      // 
+      // Los errores se manejan en los componentes con React Query:
+      // - 401: El middleware detectará la falta de sesión y redirigirá
+      // - 403: Se maneja en la UI mostrando mensajes de error
+      // 
+      // Solo rechazar el error para que React Query lo maneje
       return Promise.reject(error);
     }
   );

@@ -60,10 +60,15 @@ async function handler(
   const responseHeaders = new Headers(res.headers);
 
   // En respuestas 4xx, NO reenviar Set-Cookie que borre la sesión.
-  // Si el backend devuelve 403 y además Set-Cookie para borrar la sesión,
+  // Si el backend devuelve 401/403 y además Set-Cookie para borrar la sesión,
   // el navegador borraría la cookie y el usuario quedaría deslogueado "de la nada".
   if (res.status >= 400 && res.status < 500) {
-    responseHeaders.delete("set-cookie");
+    const setCookieHeader = responseHeaders.get("set-cookie");
+    if (setCookieHeader) {
+      // Log para debugging (remover en producción si es necesario)
+      console.log(`[Proxy] Bloqueando Set-Cookie en ${res.status} para ${path.join("/")}`);
+      responseHeaders.delete("set-cookie");
+    }
   }
 
   // Remover content-encoding: zstd ya que los navegadores no lo soportan
