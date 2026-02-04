@@ -1,13 +1,16 @@
 "use server";
 import axios from "axios";
 
+const DOMAINS_API_BASE =
+  process.env.API_BASE_URL || process.env.DOMAINS_API_URL || "https://vekino.site";
+
 export const getDomains = async () => {
-  const url = 'https://vekino.site/api/condominios/domains';
-  
+  const url = `${DOMAINS_API_BASE}/api/condominios/domains`;
+
   try {
-    // Configurar timeout de 10 segundos para evitar esperas largas
+    // Timeout corto para no bloquear si el servidor no responde (ej. desde Docker)
     const response = await axios.get(url, {
-      timeout: 10000, // 10 segundos
+      timeout: 5000,
       // Agregar headers para mejor compatibilidad
       headers: {
         'Content-Type': 'application/json',

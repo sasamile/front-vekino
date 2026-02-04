@@ -21,15 +21,17 @@ export async function getValidDomains(): Promise<string[]> {
     return pendingFetch;
   }
 
+  const domainsApiBase =
+    process.env.API_BASE_URL || process.env.DOMAINS_API_URL || "https://vekino.site";
+
   // Crear un nuevo fetch y guardarlo como pendiente
   pendingFetch = (async () => {
     try {
-      // Crear un AbortController para timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos timeout
-      
-      const response = await fetch('https://vekino.site/api/condominios/domains', {
-        cache: 'no-store', // No usar cache del navegador, usar nuestro cache en memoria
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const response = await fetch(`${domainsApiBase}/api/condominios/domains`, {
+        cache: "no-store",
         signal: controller.signal,
       });
       

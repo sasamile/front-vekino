@@ -57,11 +57,16 @@ async function handler(
     redirect: "manual",
   });
 
-  // IMPORTANTÍSIMO: pasar Set-Cookie tal cual (para que el browser la guarde en localhost)
   const responseHeaders = new Headers(res.headers);
-  
+
+  // En respuestas 4xx, NO reenviar Set-Cookie que borre la sesión.
+  // Si el backend devuelve 403 y además Set-Cookie para borrar la sesión,
+  // el navegador borraría la cookie y el usuario quedaría deslogueado "de la nada".
+  if (res.status >= 400 && res.status < 500) {
+    responseHeaders.delete("set-cookie");
+  }
+
   // Remover content-encoding: zstd ya que los navegadores no lo soportan
-  // Esto causa ERR_CONTENT_DECODING_FAILED
   const contentEncoding = responseHeaders.get('content-encoding');
   if (contentEncoding && contentEncoding.includes('zstd')) {
     responseHeaders.delete('content-encoding');
