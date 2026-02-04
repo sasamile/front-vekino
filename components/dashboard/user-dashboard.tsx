@@ -26,6 +26,7 @@ import {
   IconArrowRight,
   IconTicket,
   IconReceipt,
+  IconFileDownload,
 } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 import type { Reserva, ReservaEstado, Factura, FacturaEstado, Ticket, TicketEstado } from "@/types/types"
@@ -71,107 +72,34 @@ interface UsuarioInfo {
   };
 }
 
-interface UnidadInfo {
-  id: string;
-  identificador: string;
-  tipo: string;
-  area?: number;
-  coeficienteCopropiedad?: number;
-  valorCuotaAdministracion?: number;
-  estado?: string;
-  totalUsuarios?: number;
+/** Respuesta unificada del endpoint GET /usuario/dashboard */
+interface DashboardResponse {
+  user: UsuarioInfo;
+  misPagos: MisPagosResponse;
+  reservasActivas: Reserva[];
+  ticketsAbiertos: Ticket[];
 }
 
 export function UserDashboard() {
   const { subdomain } = useSubdomain()
   const router = useRouter()
 
-  // Obtener información del usuario
-  const { data: usuarioInfo, isLoading: usuarioLoading } = useQuery<UsuarioInfo>({
-    queryKey: ["usuario-info"],
+  // Una sola petición: usuario, pagos, reservas activas y tickets abiertos
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery<DashboardResponse>({
+    queryKey: ["usuario-dashboard"],
     queryFn: async () => {
       const axiosInstance = getAxiosInstance(subdomain)
-      const response = await axiosInstance.get("/condominios/me")
-      return response.data.user || response.data
-    },
-    retry: false, // No reintentar - si falla aquí, el middleware redirigirá
-  })
-
-  // Obtener información de la unidad si existe unidadId
-  const { data: unidadInfo } = useQuery<UnidadInfo>({
-    queryKey: ["unidad-info", usuarioInfo?.unidadId],
-    queryFn: async () => {
-      if (!usuarioInfo?.unidadId) return null
-      const axiosInstance = getAxiosInstance(subdomain)
-      try {
-        const response = await axiosInstance.get(`/unidades/public/${usuarioInfo.unidadId}`)
-        return response.data
-      } catch {
-        return null
-      }
-    },
-    enabled: !!usuarioInfo?.unidadId,
-  })
-
-  // Obtener resumen de pagos
-  const { data: misPagos, isLoading: pagosLoading } = useQuery<MisPagosResponse>({
-    queryKey: ["mis-pagos-resumen"],
-    queryFn: async () => {
-      const axiosInstance = getAxiosInstance(subdomain)
-      const response = await axiosInstance.get("/finanzas/mis-pagos?page=1&limit=5")
+      const response = await axiosInstance.get("/usuario/dashboard")
       return response.data
     },
-    retry: false, // No reintentar automáticamente
-    // Si falla, no afectar otras queries
+    retry: false,
     throwOnError: false,
   })
 
-  // Obtener reservas activas (confirmadas y pendientes)
-  const { data: reservasActivas = [], isLoading: reservasLoading } = useQuery<Reserva[]>({
-    queryKey: ["reservas-activas"],
-    queryFn: async () => {
-      const axiosInstance = getAxiosInstance(subdomain)
-      try {
-        const response = await axiosInstance.get("/usuario/reservas?page=1&limit=5")
-        const data = response.data
-        const reservas = Array.isArray(data) ? data : (data?.data || [])
-        // Filtrar solo reservas activas (confirmadas y pendientes) con fecha futura
-        const ahora = new Date()
-        return reservas.filter((r: Reserva) => {
-          const fechaFin = new Date(r.fechaFin)
-          return (
-            (r.estado === "CONFIRMADA" || r.estado === "PENDIENTE") &&
-            fechaFin > ahora
-          )
-        })
-      } catch (error: any) {
-        // Si falla (401, 403, etc.), retornar array vacío en lugar de lanzar error
-        // Esto evita que un error en reservas borre la sesión o interrumpa el dashboard
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          return []
-        }
-        throw error
-      }
-    },
-    retry: false,
-    throwOnError: false, // No lanzar error, solo retornar array vacío
-  })
-
-  // Obtener tickets abiertos
-  const { data: ticketsAbiertos = [], isLoading: ticketsLoading } = useQuery<Ticket[]>({
-    queryKey: ["tickets-abiertos"],
-    queryFn: async () => {
-      const axiosInstance = getAxiosInstance(subdomain)
-      try {
-        const response = await axiosInstance.get("/comunicacion/tickets?estado=ABIERTO&page=1&limit=5")
-        const data = response.data
-        return Array.isArray(data) ? data : (data?.data || [])
-      } catch {
-        // Si el endpoint no existe, retornar array vacío
-        return []
-      }
-    },
-  })
+  const usuarioInfo = dashboardData?.user
+  const misPagos = dashboardData?.misPagos
+  const reservasActivas = dashboardData?.reservasActivas ?? []
+  const ticketsAbiertos = dashboardData?.ticketsAbiertos ?? []
 
   // Función para obtener saludo según la hora
   const obtenerSaludo = (): string => {
@@ -230,17 +158,11 @@ export function UserDashboard() {
     }).format(amount)
   }
 
-  // Obtener identificador de unidad
+  // Obtener identificador de unidad (user del dashboard incluye unidad si tiene unidadId)
   const getUnidadIdentificador = () => {
-    // Primero intentar con unidadInfo (obtenida del endpoint público)
-    if (unidadInfo?.identificador) {
-      return unidadInfo.identificador
-    }
-    // Luego intentar con unidad del usuario (si viene en la respuesta)
     if (usuarioInfo?.unidad?.identificador) {
       return usuarioInfo.unidad.identificador
     }
-    // Si hay unidadId pero no se pudo obtener la info, mostrar mensaje
     if (usuarioInfo?.unidadId) {
       return "Cargando unidad..."
     }
@@ -309,7 +231,7 @@ export function UserDashboard() {
     )
   }
 
-  if (usuarioLoading || pagosLoading) {
+  if (dashboardLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-32 w-full" />
@@ -520,20 +442,14 @@ export function UserDashboard() {
             <IconTicket className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            {ticketsLoading ? (
-              <Skeleton className="h-8 w-16 bg-white/40" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold">
-                  {ticketsAbiertos.length}
-                </div>
-                <p className="text-xs text-slate-900/80 mt-1">
-                  {ticketsAbiertos.length === 1
-                    ? "Ticket abierto"
-                    : "Tickets abiertos"}
-                </p>
-              </>
-            )}
+            <div className="text-2xl font-bold">
+              {ticketsAbiertos.length}
+            </div>
+            <p className="text-xs text-slate-900/80 mt-1">
+              {ticketsAbiertos.length === 1
+                ? "Ticket abierto"
+                : "Tickets abiertos"}
+            </p>
           </CardContent>
         </Card>
 
@@ -594,13 +510,7 @@ export function UserDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {reservasLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-20 w-full" />
-                ))}
-              </div>
-            ) : reservasActivas.length > 0 ? (
+            {reservasActivas.length > 0 ? (
             <div className="space-y-3">
                 {reservasActivas.slice(0, 3).map((reserva) => (
                 <div
@@ -664,13 +574,7 @@ export function UserDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {ticketsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-20 w-full" />
-                ))}
-              </div>
-            ) : ticketsAbiertos.length > 0 ? (
+            {ticketsAbiertos.length > 0 ? (
             <div className="space-y-3">
                 {ticketsAbiertos.slice(0, 3).map((ticket) => (
                 <div
@@ -724,13 +628,7 @@ export function UserDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          {pagosLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-              ))}
-            </div>
-          ) : misPagos && misPagos.facturas.length > 0 ? (
+          {misPagos && misPagos.facturas.length > 0 ? (
             <div className="space-y-3">
               {misPagos.facturas.slice(0, 5).map((factura) => {
                 const isPagada = factura.estado === "PAGADA"
@@ -764,29 +662,40 @@ export function UserDashboard() {
                         {formatDate(factura.fechaVencimiento)}
                     </div>
                   </div>
-                  <div className="text-right">
-                      <div className={cn(
-                        "font-bold",
-                        isPagada 
-                          ? "text-green-700 dark:text-green-400"
-                          : isVencida
-                          ? "text-red-700 dark:text-red-400"
-                          : "text-orange-700 dark:text-orange-400"
-                      )}>
-                        {formatCurrency(factura.valor)}
+                  <div className="flex items-center gap-3 text-right">
+                      <div>
+                        <div className={cn(
+                          "font-bold",
+                          isPagada 
+                            ? "text-green-700 dark:text-green-400"
+                            : isVencida
+                            ? "text-red-700 dark:text-red-400"
+                            : "text-orange-700 dark:text-orange-400"
+                        )}>
+                          {formatCurrency(factura.valor)}
+                        </div>
+                        <Badge
+                          variant={
+                            factura.estado === "PAGADA"
+                              ? "default"
+                              : factura.estado === "VENCIDA"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                          className="text-xs mt-1 font-semibold"
+                        >
+                          {factura.estado}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant={
-                          factura.estado === "PAGADA"
-                            ? "default"
-                            : factura.estado === "VENCIDA"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                        className="text-xs mt-1 font-semibold"
+                      <a
+                        href={`/api/finanzas/mis-facturas/${factura.id}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                       >
-                        {factura.estado}
-                      </Badge>
+                        <IconFileDownload className="w-4 h-4" />
+                        PDF
+                      </a>
                     </div>
                   </div>
                 )
