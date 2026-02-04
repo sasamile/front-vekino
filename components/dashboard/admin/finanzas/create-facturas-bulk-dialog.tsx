@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState, useRef } from "react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -16,24 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldError,
-} from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
 import { getAxiosInstance } from "@/lib/axios-config";
 import { useSubdomain } from "@/components/providers/subdomain-provider";
-import type { CreateFacturasBulkRequest } from "@/types/types";
+import { IconFileUpload, IconLoader2 } from "@tabler/icons-react";
 
-const facturasBulkSchema = z.object({
-  periodo: z.string().regex(/^\d{4}-\d{2}$/, "El período debe tener el formato YYYY-MM"),
-  fechaEmision: z.string().min(1, "La fecha de emisión es requerida"),
-  fechaVencimiento: z.string().min(1, "La fecha de vencimiento es requerida"),
-  enviarFacturas: z.boolean().default(false),
-});
-
-type FacturasBulkFormData = z.input<typeof facturasBulkSchema>;
+const PERIODO_REGEX = /^\d{4}-\d{2}$/;
 
 interface CreateFacturasBulkDialogProps {
   open: boolean;
@@ -47,186 +32,171 @@ export function CreateFacturasBulkDialog({
   const queryClient = useQueryClient();
   const { subdomain } = useSubdomain();
   const [loading, setLoading] = useState(false);
+  const [periodo, setPeriodo] = useState("");
+  const [periodoError, setPeriodoError] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FacturasBulkFormData>({
-    resolver: zodResolver(facturasBulkSchema),
-    defaultValues: {
-      periodo: "",
-      fechaEmision: "",
-      fechaVencimiento: "",
-      enviarFacturas: false,
-    },
-  });
+  const isValidPeriodo = periodo && PERIODO_REGEX.test(periodo);
 
-  const onSubmit = async (data: FacturasBulkFormData) => {
+  const handleClose = () => {
+    if (loading) return;
+    setPeriodo("");
+    setPeriodoError("");
+    setFile(null);
+    setFileError("");
+    onOpenChange(false);
+  };
+
+  const validate = (): boolean => {
+    let ok = true;
+    if (!periodo.trim()) {
+      setPeriodoError("El período es requerido (formato YYYY-MM)");
+      ok = false;
+    } else if (!PERIODO_REGEX.test(periodo)) {
+      setPeriodoError("El período debe tener el formato YYYY-MM (ej: 2026-01)");
+      ok = false;
+    } else {
+      setPeriodoError("");
+    }
+    if (!file) {
+      setFileError("Debes seleccionar un archivo PDF");
+      ok = false;
+    } else if (file.type !== "application/pdf") {
+      setFileError("Solo se permiten archivos PDF");
+      ok = false;
+    } else {
+      setFileError("");
+    }
+    return ok;
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    if (!validate()) return;
+
     setLoading(true);
+    setPeriodoError("");
+    setFileError("");
 
     try {
       const axiosInstance = getAxiosInstance(subdomain);
-      
-      // Convertir fechas a ISO string con timezone offset
-      const convertirFechaLocal = (fechaLocal: string, esInicioDia: boolean = false): string => {
-        if (!fechaLocal) return "";
-        
-        if (fechaLocal.includes('Z') || fechaLocal.match(/[+-]\d{2}:\d{2}/)) {
-          return fechaLocal;
+      const formData = new FormData();
+      formData.append("file", file!);
+      formData.append("periodo", periodo.trim());
+
+      const response = await axiosInstance.post(
+        "/finanzas/facturas/importar-pdf",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+          timeout: 300000, // 5 minutos para PDFs grandes
         }
-        
-        if (fechaLocal.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          const offsetMinutes = new Date().getTimezoneOffset();
-          const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
-          const offsetMins = Math.abs(offsetMinutes) % 60;
-          const offsetSign = offsetMinutes >= 0 ? '-' : '+';
-          const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
-          // Para fechaEmision usar inicio del día (00:00:00), para fechaVencimiento usar fin del día (23:59:59)
-          const hora = esInicioDia ? "00:00:00" : "23:59:59";
-          return `${fechaLocal}T${hora}${offsetString}`;
-        }
-        
-        if (fechaLocal.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)) {
-          const offsetMinutes = new Date().getTimezoneOffset();
-          const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
-          const offsetMins = Math.abs(offsetMinutes) % 60;
-          const offsetSign = offsetMinutes >= 0 ? '-' : '+';
-          const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
-          return fechaLocal + `:00${offsetString}`;
-        }
-        
-        return fechaLocal;
-      };
-      
-      const fechaEmisionISO = convertirFechaLocal(data.fechaEmision, true);
-      const fechaVencimientoISO = convertirFechaLocal(data.fechaVencimiento, false);
-      
-      const requestData: CreateFacturasBulkRequest = {
-        periodo: data.periodo,
-        fechaEmision: fechaEmisionISO,
-        fechaVencimiento: fechaVencimientoISO,
-        enviarFacturas: data.enviarFacturas,
-      };
+      );
 
-      const response = await axiosInstance.post("/finanzas/facturas/bulk", requestData);
-
-      toast.success(`Se crearon ${response.data.total || 0} facturas exitosamente`, {
-        duration: 3000,
-      });
-
-      await queryClient.invalidateQueries({ queryKey: ["facturas"] });
-
-      reset();
-      onOpenChange(false);
+      const total = response.data?.total ?? response.data?.importadas ?? 0;
+      toast.success(
+        total > 0
+          ? `Se importaron ${total} facturas correctamente`
+          : "Carga completada",
+        { duration: 3000 }
+      );
+      queryClient.invalidateQueries({ queryKey: ["facturas"] });
+      handleClose();
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error al crear las facturas";
-
-      toast.error(errorMessage, {
-        duration: 3000,
-      });
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        "Error al importar facturas desde el PDF";
+      toast.error(message, { duration: 4000 });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleClose = () => {
-    if (!loading) {
-      reset();
-      onOpenChange(false);
-    }
+  // No permitir cerrar el modal mientras está cargando
+  const handleOpenChange = (next: boolean) => {
+    if (loading) return;
+    if (!next) handleClose();
+    else onOpenChange(true);
+  };
+
+  const preventCloseWhenLoading = (e: { preventDefault: () => void }) => {
+    if (loading) e.preventDefault();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="max-w-md"
+        onPointerDownOutside={preventCloseWhenLoading}
+        onEscapeKeyDown={preventCloseWhenLoading}
+        onInteractOutside={preventCloseWhenLoading}
+      >
         <DialogHeader>
-          <DialogTitle>Crear Facturas Masivas</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <IconFileUpload className="size-5" />
+            Cargar facturas desde PDF
+          </DialogTitle>
           <DialogDescription>
-            Crea facturas para todas las unidades activas usando su valor de cuota de administración asignado
+            Sube un PDF de facturación para importar las facturas del período indicado. El proceso puede tardar varios minutos; no cierres esta ventana hasta que finalice.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <FieldGroup>
-            <div className="grid grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel>Período * (YYYY-MM)</FieldLabel>
-                <Input
-                  type="month"
-                  {...register("periodo")}
-                  disabled={loading}
-                />
-                {errors.periodo && (
-                  <FieldError>{errors.periodo.message}</FieldError>
-                )}
-              </Field>
-            </div>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="periodo">Período (YYYY-MM) *</Label>
+            <Input
+              id="periodo"
+              type="month"
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
+              disabled={loading}
+              placeholder="2026-01"
+              className={periodoError ? "border-destructive" : ""}
+            />
+            {periodoError && (
+              <p className="text-sm text-destructive">{periodoError}</p>
+            )}
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel>Fecha de Emisión *</FieldLabel>
-                <Input
-                  type="date"
-                  {...register("fechaEmision")}
-                  disabled={loading}
-                />
-                {errors.fechaEmision && (
-                  <FieldError>{errors.fechaEmision.message}</FieldError>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Fecha en que se emite/envía la factura
-                </p>
-              </Field>
-
-              <Field>
-                <FieldLabel>Fecha de Vencimiento *</FieldLabel>
-                <Input
-                  type="date"
-                  {...register("fechaVencimiento")}
-                  disabled={loading}
-                />
-                {errors.fechaVencimiento && (
-                  <FieldError>{errors.fechaVencimiento.message}</FieldError>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Fecha límite de pago
-                </p>
-              </Field>
-            </div>
-
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                Información importante:
+          <div className="space-y-2">
+            <Label>Archivo PDF *</Label>
+            <Input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              disabled={loading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setFile(f ?? null);
+                setFileError("");
+              }}
+              className={fileError ? "border-destructive" : ""}
+            />
+            {file && (
+              <p className="text-sm text-muted-foreground truncate">
+                {file.name}
               </p>
-              <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-disc list-inside">
-                <li>Se crearán facturas para todas las unidades activas que tengan un valor de cuota de administración asignado</li>
-                <li>El valor de cada factura se tomará automáticamente del campo "valorCuotaAdministracion" de cada unidad</li>
-                <li>Las facturas se asignarán automáticamente al propietario o arrendatario de cada unidad</li>
-                <li>No se pueden crear facturas duplicadas para el mismo período</li>
-              </ul>
+            )}
+            {fileError && (
+              <p className="text-sm text-destructive">{fileError}</p>
+            )}
+          </div>
+
+          {loading && (
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+              <IconLoader2 className="size-5 animate-spin shrink-0" />
+              <span>Importando facturas desde el PDF. No cierres esta ventana.</span>
             </div>
+          )}
 
-            <Field>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  {...register("enviarFacturas")}
-                  disabled={loading}
-                  className="size-4 rounded border-input"
-                />
-                <FieldLabel className="mb-0!">
-                  Enviar facturas automáticamente (cambiará el estado a ENVIADA y enviará notificación)
-                </FieldLabel>
-              </div>
-            </Field>
-          </FieldGroup>
-
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
@@ -235,8 +205,18 @@ export function CreateFacturasBulkDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Creando..." : "Crear Facturas Masivas"}
+            <Button type="submit" disabled={loading || !file || !isValidPeriodo}>
+              {loading ? (
+                <>
+                  <IconLoader2 className="size-4 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <IconFileUpload className="size-4" />
+                  Importar PDF
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>
@@ -244,4 +224,3 @@ export function CreateFacturasBulkDialog({
     </Dialog>
   );
 }
-
