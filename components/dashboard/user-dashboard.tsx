@@ -433,25 +433,7 @@ export function UserDashboard() {
           </CardContent>
         </Card>
 
-        {/* Tickets Abiertos */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Tickets Abiertos
-            </CardTitle>
-            <IconTicket className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {ticketsAbiertos.length}
-            </div>
-            <p className="text-xs text-slate-900/80 mt-1">
-              {ticketsAbiertos.length === 1
-                ? "Ticket abierto"
-                : "Tickets abiertos"}
-            </p>
-          </CardContent>
-        </Card>
+        
 
         {/* Facturas Pendientes */}
         <Card className={cn(
