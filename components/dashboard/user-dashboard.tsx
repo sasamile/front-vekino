@@ -268,16 +268,20 @@ export function UserDashboard() {
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-primary text-primary-foreground p-6 md:p-8 shadow-sm">
+      <div className="rounded-3xl bg-linear-to-r from-primary/70 via-primary/55 to-primary/20 text-white p-6 md:p-8 border border-white/10">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/90">
-              TU COMUNIDAD
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/80">
+              Tu comunidad
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-              {greetingText} , {firstName}
+              {greetingText}{" "}
+              <span role="img" aria-label="saludo">
+                {greetingEmoji}
+              </span>
+              , {firstName}
             </h1>
-            <p className="text-white/90 text-sm md:text-base">
+            <p className="text-white/80 text-sm md:text-base">
               {getUnidadIdentificador()}
             </p>
           </div>
@@ -288,12 +292,19 @@ export function UserDashboard() {
       {/* Saludo y Estado de Facturas */}
       <Card
         className={cn(
-          "rounded-2xl shadow-sm bg-white border",
-          tieneVencidas ? "border-red-100 shadow-red-50" : "border-gray-100"
+          "border-2 rounded-2xl shadow-sm bg-card/80 backdrop-blur",
+          estadoColor,
         )}
       >
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-bold text-gray-800">
+        <CardHeader>
+          <CardTitle className={cn(
+            "text-xl",
+            estaAlDia 
+              ? "text-green-700 dark:text-green-400"
+              : tieneVencidas
+              ? "text-red-700 dark:text-red-400"
+              : "text-orange-700 dark:text-orange-400"
+          )}>
             Estado de Facturas
           </CardTitle>
         </CardHeader>
@@ -336,9 +347,9 @@ export function UserDashboard() {
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 shrink-0">
-                    <IconAlertCircle className="w-6 h-6 text-orange-600" />
-                  </div>
+                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-orange-100 dark:bg-orange-900/30 shadow-lg shadow-orange-200 dark:shadow-orange-900/50">
+                    <IconAlertCircle className="w-7 h-7 text-orange-600 dark:text-orange-400" />
+            </div>
                   <div>
                     {proximoPago && (
                       <div className="text-2xl font-bold text-orange-700 mb-0 leading-none">
@@ -381,13 +392,9 @@ export function UserDashboard() {
       </Card>
 
       {/* Tarjetas de Resumen */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Próximo Pago */}
-        <Card
-          className="hover:shadow-md transition-shadow bg-gradient-to-br from-[#00C853] to-[#009624] text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
-          onClick={() => router.push("/pagos")}
-          role="button"
-        >
+        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-white/90">
               Próximo Pago
