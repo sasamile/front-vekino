@@ -402,7 +402,7 @@ export function UserDashboard() {
       </Card>
 
       {/* Tarjetas de Resumen */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Próximo Pago */}
         <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-green-500/30 via-card to-card border border-emerald-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -461,33 +461,6 @@ export function UserDashboard() {
               {ticketsAbiertos.length === 1
                 ? "Ticket abierto"
                 : "Tickets abiertos"}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Facturas Pendientes */}
-        <Card
-          className={cn(
-            "hover:shadow-lg transition-shadow border-none",
-            tieneVencidas
-              ? "bg-linear-to-br from-red-500/35 via-card to-card border-red-300/35 shadow-lg"
-              : tienePendientes
-                ? "bg-linear-to-br from-orange-500/35 via-card to-card border-orange-300/35 shadow-lg"
-                : "bg-linear-to-br from-slate-600/35 via-card to-card border-slate-300/35 shadow-lg",
-          )}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={cn("text-sm font-medium")}>
-              Facturas Pendientes
-            </CardTitle>
-            <IconReceipt className={cn("h-4 w-4")} />
-          </CardHeader>
-          <CardContent>
-            <div className={cn("text-2xl font-bold")}>
-              {misPagos?.resumen.pendientes.cantidad || 0}
-            </div>
-            <p className={cn("text-xs mt-1")}>
-              Total: {formatCurrency(misPagos?.resumen.pendientes.valor || 0)}
             </p>
           </CardContent>
         </Card>
