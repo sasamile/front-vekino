@@ -54,7 +54,7 @@ const getNavItems = (role: UserRole): NavItem[] => {
     case "PROPIETARIO":
       return [
         {
-          title: "Dashboard",
+          title: "Inicio",
           url: "/",
           icon: IconDashboard,
         },
