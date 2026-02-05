@@ -30,10 +30,8 @@ export function ProximoPago({
   handlePagar,
   isPaying,
 }: ProximoPagoProps) {
-  if (!proximoPago && !(estaAlDia && proximoPeriodoInfo)) {
-    return null;
-  }
-
+  // Eliminamos el retorno nulo para mostrar siempre la tarjeta
+  
   return (
     <div className="h-full w-full min-h-[180px] p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white flex flex-col justify-between">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
@@ -42,7 +40,13 @@ export function ProximoPago({
             <span className="text-base sm:text-lg font-semibold">
               Factura Pendiente
             </span>
-            {proximoPago && <BadgeEstado estado={proximoPago.estado} />}
+            {proximoPago ? (
+              <BadgeEstado estado={proximoPago.estado} />
+            ) : (
+              <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                AL DÍA
+              </span>
+            )}
           </div>
           {proximoPago ? (
             <>
@@ -81,7 +85,19 @@ export function ProximoPago({
                 La factura se generará próximamente
               </p>
             </>
-          ) : null}
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-2">
+                Estado de cuenta
+              </p>
+              <p className="text-sm font-medium mb-1">
+                No hay facturas pendientes
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Estás al día con tus pagos
+              </p>
+            </>
+          )}
         </div>
         <div className="text-left sm:text-right shrink-0 w-full sm:w-auto">
           {proximoPago ? (
@@ -99,16 +115,16 @@ export function ProximoPago({
                     "Procesando..."
                   ) : (
                     <>
-                      Pagar ahora
-                      <IconArrowRight className="size-4 ml-2" />
+                      Pagar Ahora
+                      <IconArrowRight className="ml-2 h-4 w-4" />
                     </>
-                    )}
-                  </Button>
-                ) : null}
+                  )}
+                </Button>
+              ) : null}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Pendiente de generación
+            <p className="text-xl sm:text-2xl font-bold mb-3 text-emerald-600">
+              {formatCurrency(0)}
             </p>
           )}
         </div>

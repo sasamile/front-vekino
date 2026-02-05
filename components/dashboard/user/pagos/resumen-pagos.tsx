@@ -25,14 +25,14 @@ export function ResumenPagos({
     return <Skeleton className="h-[180px] w-full rounded-xl" />;
   }
 
-  if (!misPagos) return null;
+  // Valores por defecto si no hay datos
+  const pendientesCantidad = misPagos?.resumen?.pendientes?.cantidad || 0;
+  const vencidasCantidad = misPagos?.resumen?.vencidas?.cantidad || 0;
+  const pendientesValor = misPagos?.resumen?.pendientes?.valor || 0;
+  const vencidasValor = misPagos?.resumen?.vencidas?.valor || 0;
 
-  const totalDeudaCantidad =
-    (misPagos.resumen.pendientes.cantidad || 0) +
-    (misPagos.resumen.vencidas.cantidad || 0);
-  const totalDeudaValor =
-    (misPagos.resumen.pendientes.valor || 0) +
-    (misPagos.resumen.vencidas.valor || 0);
+  const totalDeudaCantidad = pendientesCantidad + vencidasCantidad;
+  const totalDeudaValor = pendientesValor + vencidasValor;
 
   return (
     <div className="h-full w-full min-h-[180px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white flex flex-col justify-between">
@@ -43,14 +43,14 @@ export function ResumenPagos({
             className={`text-xs px-2 py-1 rounded-md ${
               estaAlDia
                 ? "bg-emerald-100 text-emerald-700"
-                : misPagos.resumen.vencidas.cantidad > 0
+                : vencidasCantidad > 0
                 ? "bg-red-100 text-red-700"
                 : "bg-amber-100 text-amber-700"
             }`}
           >
             {estaAlDia
               ? "Al día"
-              : misPagos.resumen.vencidas.cantidad > 0
+              : vencidasCantidad > 0
               ? "Vencida"
               : "Pendiente"}
           </span>
