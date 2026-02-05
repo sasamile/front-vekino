@@ -115,7 +115,7 @@ export function UserDashboard() {
 
   // Calcular si está al día
   const estaAlDia = misPagos?.resumen
-    ? misPagos.resumen.vencidas.cantidad === 0 && misPagos.resumen.pendientes.cantidad === 0
+    ? misPagos.resumen.vencidas?.cantidad === 0 && misPagos.resumen.pendientes?.cantidad === 0
     : false
 
   // Obtener próximo pago
@@ -245,8 +245,8 @@ export function UserDashboard() {
   }
 
   // Determinar el estado de facturas para el color (sistema semáforo)
-  const tieneVencidas = (misPagos?.resumen.vencidas.cantidad || 0) > 0
-  const tienePendientes = (misPagos?.resumen.pendientes.cantidad || 0) > 0
+  const tieneVencidas = (misPagos?.resumen?.vencidas?.cantidad || 0) > 0
+  const tienePendientes = (misPagos?.resumen?.pendientes?.cantidad || 0) > 0
   const estadoColor = estaAlDia 
     ? "border-green-200 dark:border-green-900/30 bg-green-50/50 dark:bg-green-950/10"
     : tieneVencidas
@@ -268,20 +268,16 @@ export function UserDashboard() {
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-primary text-white p-6 md:p-8 border border-white/10">
+      <div className="rounded-3xl bg-[#71BC44] text-white p-6 md:p-8 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/80">
-              Tu comunidad
+          <div className="space-y-1">
+            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/90">
+              TU COMUNIDAD
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-              {greetingText}{" "}
-              <span role="img" aria-label="saludo">
-                {greetingEmoji}
-              </span>
-              , {firstName}
+              {greetingText} , {firstName}
             </h1>
-            <p className="text-white/80 text-sm md:text-base">
+            <p className="text-white/90 text-sm md:text-base">
               {getUnidadIdentificador()}
             </p>
           </div>
@@ -292,75 +288,68 @@ export function UserDashboard() {
       {/* Saludo y Estado de Facturas */}
       <Card
         className={cn(
-          "border-2 rounded-2xl shadow-sm bg-card/80 backdrop-blur",
-          estadoColor,
+          "rounded-2xl shadow-sm bg-white border",
+          tieneVencidas ? "border-red-100 shadow-red-50" : "border-gray-100"
         )}
       >
-        <CardHeader>
-          <CardTitle className={cn(
-            "text-xl",
-            estaAlDia 
-              ? "text-green-700 dark:text-green-400"
-              : tieneVencidas
-              ? "text-red-700 dark:text-red-400"
-              : "text-orange-700 dark:text-orange-400"
-          )}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-bold text-gray-800">
             Estado de Facturas
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               {estaAlDia ? (
                 <>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 shadow-lg shadow-green-200 dark:shadow-green-900/50">
-                    <IconCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 shrink-0">
+                    <IconCheck className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-bold text-lg text-green-700 dark:text-green-400">
+                    <p className="font-bold text-lg text-green-700">
                       Estás al día
                     </p>
-                    <p className="text-sm text-green-600 dark:text-green-500">
+                    <p className="text-sm text-green-600">
                       No tienes facturas pendientes
                     </p>
                   </div>
                 </>
               ) : tieneVencidas ? (
                 <>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 shadow-lg shadow-red-200 dark:shadow-red-900/50 shrink-0">
-                    <IconAlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-50 shrink-0 border border-red-100">
+                    <IconAlertCircle className="w-6 h-6 text-red-500" />
                   </div>
                   <div>
                     {proximoPago && (
-                      <div className="text-2xl font-bold text-red-700 dark:text-red-400 mb-1">
+                      <div className="text-2xl font-bold text-red-600 mb-0 leading-none">
                         {formatCurrency(proximoPago.valor)}
                       </div>
                     )}
-                    <p className="font-bold text-base text-red-700 dark:text-red-400">
+                    <p className="font-bold text-base text-red-600 mt-1">
                       Tienes facturas vencidas
                     </p>
-                    <p className="text-sm text-red-600 dark:text-red-500">
-                      {misPagos?.resumen.vencidas.cantidad || 0} vencidas,{" "}
-                      {misPagos?.resumen.pendientes.cantidad || 0} pendientes
+                    <p className="text-sm text-red-500">
+                      {misPagos?.resumen?.vencidas?.cantidad || 0} vencidas,{" "}
+                      {misPagos?.resumen?.pendientes?.cantidad || 0} pendientes
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 shadow-lg shadow-orange-200 dark:shadow-orange-900/50 shrink-0">
-                    <IconAlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 shrink-0">
+                    <IconAlertCircle className="w-6 h-6 text-orange-600" />
                   </div>
                   <div>
                     {proximoPago && (
-                      <div className="text-2xl font-bold text-orange-700 dark:text-orange-400 mb-1">
+                      <div className="text-2xl font-bold text-orange-700 mb-0 leading-none">
                         {formatCurrency(proximoPago.valor)}
                       </div>
                     )}
-                    <p className="font-bold text-base text-orange-700 dark:text-orange-400">
+                    <p className="font-bold text-base text-orange-700 mt-1">
                       Tienes facturas pendientes
                     </p>
-                    <p className="text-sm text-orange-600 dark:text-orange-500">
-                      {misPagos?.resumen.pendientes.cantidad || 0} pendientes de pago
+                    <p className="text-sm text-orange-600">
+                      {misPagos?.resumen?.pendientes?.cantidad || 0} pendientes de pago
                     </p>
                   </div>
                 </>
@@ -371,6 +360,7 @@ export function UserDashboard() {
               <Button
                 variant={estaAlDia ? "default" : "destructive"}
                 className={cn(
+                  "rounded-full px-6",
                   estaAlDia && "bg-green-600 hover:bg-green-700 text-white",
                   !estaAlDia && "bg-red-600 hover:bg-red-700 text-white"
                 )}
@@ -391,36 +381,39 @@ export function UserDashboard() {
       </Card>
 
       {/* Tarjetas de Resumen */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* Próximo Pago */}
         <Card
-          className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg cursor-pointer"
+          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/pagos")}
           role="button"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium ">
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
+            <CardTitle className="text-sm font-bold text-gray-700">
               Próximo Pago
             </CardTitle>
-            <IconCreditCard className="h-4 w-4" />
+            <IconCreditCard className="h-4 w-4 text-gray-400" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="pl-5 pr-5 pb-5">
             {proximoPago ? (
               <>
-                <div className="text-2xl font-bold ">
+                <div className="text-2xl font-bold text-gray-900 mt-1">
                   {formatCurrency(proximoPago.valor)}
                 </div>
-                <p className="text-xs mt-1">
-                  Vence: {formatDate(proximoPago.fechaVencimiento)}
-                </p>
-                <p className="text-xs">
-                  {proximoPago.numeroFactura}
-                </p>
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">
+                    Vence: {formatDate(proximoPago.fechaVencimiento)}
+                  </p>
+                  <p className="text-[10px] text-gray-400 font-mono">
+                    {proximoPago.numeroFactura}
+                  </p>
+                </div>
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold /70">-</div>
-                <p className="text-xs /80 mt-1">
+                <div className="text-2xl font-bold text-gray-300 mt-1">-</div>
+                <p className="text-xs text-gray-400 mt-2">
                   No hay pagos pendientes
                 </p>
               </>
@@ -430,21 +423,22 @@ export function UserDashboard() {
 
         {/* Reservas Activas */}
         <Card
-          className="hover:shadow-lg transition-shadow bg-linear-to-br from-indigo-500/35 via-card to-card border-indigo-300/35 shadow-lg cursor-pointer"
+          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/reservations")}
           role="button"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
+            <CardTitle className="text-sm font-bold text-gray-700">
               Reservas Activas
             </CardTitle>
-            <IconCalendar className="h-4 w-4" />
+            <IconCalendar className="h-4 w-4 text-gray-400" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="pl-5 pr-5 pb-5">
+            <div className="text-2xl font-bold text-gray-900 mt-1">
               {reservasActivas.length}
             </div>
-            <p className="text-xs mt-1">
+            <p className="text-xs text-gray-500 mt-2">
               {reservasActivas.length === 1
                 ? "Reserva activa"
                 : "Reservas activas"}
@@ -454,85 +448,118 @@ export function UserDashboard() {
 
         {/* Tickets Abiertos */}
         <Card
-          className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg cursor-pointer"
+          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/comunicacion")}
           role="button"
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
+            <CardTitle className="text-sm font-bold text-gray-700">
               Tickets Abiertos
             </CardTitle>
-            <IconTicket className="h-4 w-4" />
+            <IconTicket className="h-4 w-4 text-gray-400" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="pl-5 pr-5 pb-5">
+            <div className="text-2xl font-bold text-gray-900 mt-1">
               {ticketsAbiertos.length}
             </div>
-            <p className="text-xs text-slate-900/80 mt-1">
+            <p className="text-xs text-gray-500 mt-2">
               {ticketsAbiertos.length === 1
                 ? "Ticket abierto"
                 : "Tickets abiertos"}
             </p>
           </CardContent>
         </Card>
-
-        {/* Facturas Pendientes */}
-        <Card
-          className={cn(
-            "hover:shadow-lg transition-shadow border-none cursor-pointer",
-            tieneVencidas
-              ? "bg-linear-to-br from-red-500/35 via-card to-card border-red-300/35 shadow-lg"
-              : tienePendientes
-              ? "bg-linear-to-br from-orange-500/35 via-card to-card border-orange-300/35 shadow-lg"
-              : "bg-linear-to-br from-slate-600/35 via-card to-card border-slate-300/35 shadow-lg"
-          )}
-          onClick={() => router.push("/pagos")}
-          role="button"
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={cn(
-              "text-sm font-medium"
-            )}>
-              Facturas Pendientes
-            </CardTitle>
-            <IconReceipt className={cn(
-              "h-4 w-4"
-            )} />
-          </CardHeader>
-          <CardContent>
-            <div className={cn(
-              "text-2xl font-bold"
-            )}>
-              {misPagos?.resumen.pendientes.cantidad || 0}
-            </div>
-            <p className={cn(
-              "text-xs mt-1"
-            )}>
-              Total: {formatCurrency(misPagos?.resumen.pendientes.valor || 0)}
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Reservas Activas y Tickets Abiertos */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Reservas Activas */}
-        <Card>
-          <CardHeader>
+      {/* Historial y Reservas */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Historial de Pagos */}
+        <Card className="rounded-2xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Reservas Activas</CardTitle>
+                <CardTitle className="text-base font-bold text-gray-800">Historial de Pagos</CardTitle>
+                <CardDescription>
+                  Últimas facturas y pagos
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs hover:bg-transparent hover:text-primary"
+                onClick={() => router.push("/pagos")}
+              >
+                Ver historial completo
+                <IconArrowRight className="ml-1 w-3 h-3" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {misPagos?.facturas && misPagos.facturas.length > 0 ? (
+              <div className="space-y-3">
+                {misPagos.facturas.slice(0, 3).map((factura) => (
+                  <div
+                    key={factura.id}
+                    className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold text-sm text-gray-700">
+                        {factura.descripcion || "Cuota de administración"} - {factura.periodo}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(factura.fechaEmision)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-sm text-gray-900">
+                        {formatCurrency(factura.valor)}
+                      </span>
+                      {factura.estado === "PAGADA" ? (
+                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none shadow-none text-[10px]">PAGADA</Badge>
+                      ) : factura.estado === "VENCIDA" ? (
+                        <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-none shadow-none text-[10px]">VENCIDA</Badge>
+                      ) : (
+                        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none shadow-none text-[10px]">PENDIENTE</Badge>
+                      )}
+                      <a
+                        href={`/api/finanzas/mis-facturas/${factura.id}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center h-6 w-6 text-gray-400 hover:text-primary transition-colors"
+                      >
+                         <IconFileDownload className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <p>No hay historial disponible</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Reservas Activas (Lista o Empty State) */}
+        <Card className="rounded-2xl shadow-sm border border-gray-100">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-bold text-gray-800">Reservas Activas</CardTitle>
                 <CardDescription>
                   Próximas reservas confirmadas
                 </CardDescription>
               </div>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
+                className="text-xs hover:bg-transparent hover:text-primary"
                 onClick={() => router.push("/reservations")}
               >
                 Ver todas
-                <IconArrowRight className="ml-2 w-4 h-4" />
+                <IconArrowRight className="ml-1 w-3 h-3" />
               </Button>
             </div>
           </CardHeader>
@@ -542,20 +569,15 @@ export function UserDashboard() {
                 {reservasActivas.slice(0, 3).map((reserva) => (
                 <div
                   key={reserva.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex-1">
-                      <div className="font-medium">
+                      <div className="font-medium text-sm text-gray-700">
                         {reserva.espacioComun?.nombre || "Espacio"}
                       </div>
-                    <div className="text-sm text-muted-foreground">
-                        {formatDateTime(reserva.fechaInicio)} - {formatDateTime(reserva.fechaFin)}
+                    <div className="text-xs text-gray-500">
+                        {formatDateTime(reserva.fechaInicio)}
                       </div>
-                      {reserva.motivo && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {reserva.motivo}
-                        </div>
-                      )}
                     </div>
                     <div className="ml-4">
                       {getReservaBadge(reserva.estado)}
@@ -564,13 +586,12 @@ export function UserDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <IconCalendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No tienes reservas activas</p>
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <IconCalendar className="w-10 h-10 text-gray-300 mb-3" />
+                <p className="text-sm text-gray-500 mb-4">No tienes reservas activas</p>
                 <Button
-                  variant="default"
+                  className="bg-[#71BC44] hover:bg-[#65a93d] text-white rounded-full px-6"
                   size="sm"
-                  className="mt-4"
                   onClick={() => router.push("/reservations")}
                 >
                   Crear Reserva
@@ -579,163 +600,7 @@ export function UserDashboard() {
             )}
           </CardContent>
         </Card>
-
-        {/* Tickets Abiertos */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Tickets Abiertos</CardTitle>
-                <CardDescription>
-                  Tus solicitudes pendientes
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push("/comunicacion")}
-              >
-                Ver todos
-                <IconArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {ticketsAbiertos.length > 0 ? (
-            <div className="space-y-3">
-                {ticketsAbiertos.slice(0, 3).map((ticket) => (
-                <div
-                    key={ticket.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                    <div className="flex-1">
-                      <div className="font-medium">{ticket.titulo}</div>
-                    <div className="text-sm text-muted-foreground">
-                        {ticket.descripcion?.substring(0, 60)}
-                        {ticket.descripcion && ticket.descripcion.length > 60 ? "..." : ""}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {formatDate(ticket.createdAt)}
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      {getTicketBadge(ticket.estado)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <IconTicket className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No tienes tickets abiertos</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Historial de Pagos Recientes */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Historial de Pagos</CardTitle>
-              <CardDescription>
-                Últimas facturas y pagos
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/pagos")}
-            >
-              Ver historial completo
-              <IconArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {misPagos && misPagos.facturas.length > 0 ? (
-            <div className="space-y-3">
-              {misPagos.facturas.slice(0, 5).map((factura) => {
-                const isPagada = factura.estado === "PAGADA"
-                const isVencida = factura.estado === "VENCIDA"
-                const isPendiente = factura.estado === "PENDIENTE"
-                
-                return (
-                  <div
-                    key={factura.id}
-                    className={cn(
-                      "flex items-center justify-between p-4 border-2 rounded-lg hover:shadow-md transition-all",
-                      isPagada 
-                        ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20"
-                        : isVencida
-                        ? "border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20"
-                        : "border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/20"
-                    )}
-                  >
-                    <div className="flex-1">
-                      <div className={cn(
-                        "font-semibold",
-                        isPagada 
-                          ? "text-green-700 dark:text-green-400"
-                          : isVencida
-                          ? "text-red-700 dark:text-red-400"
-                          : "text-orange-700 dark:text-orange-400"
-                      )}>
-                        {factura.descripcion || factura.numeroFactura}
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        {formatDate(factura.fechaVencimiento)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 text-right">
-                      <div>
-                        <div className={cn(
-                          "font-bold",
-                          isPagada 
-                            ? "text-green-700 dark:text-green-400"
-                            : isVencida
-                            ? "text-red-700 dark:text-red-400"
-                            : "text-orange-700 dark:text-orange-400"
-                        )}>
-                          {formatCurrency(factura.valor)}
-                        </div>
-                        <Badge
-                          variant={
-                            factura.estado === "PAGADA"
-                              ? "default"
-                              : factura.estado === "VENCIDA"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                          className="text-xs mt-1 font-semibold"
-                        >
-                          {factura.estado}
-                        </Badge>
-                      </div>
-                      <a
-                        href={`/api/finanzas/mis-facturas/${factura.id}/pdf`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      >
-                        <IconFileDownload className="w-4 h-4" />
-                        PDF
-                      </a>
-                    </div>
-                  </div>
-                )
-              })}
-                </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <IconReceipt className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>No hay facturas registradas</p>
-            </div>
-          )}
-          </CardContent>
-        </Card>
     </div>
   )
 }

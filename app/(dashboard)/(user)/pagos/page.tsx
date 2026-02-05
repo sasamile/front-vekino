@@ -43,8 +43,8 @@ function PagosPage() {
 
   // Calcular si está al día
   const estaAlDia = misPagos?.resumen
-    ? misPagos.resumen.vencidas.cantidad === 0 &&
-      misPagos.resumen.pendientes.cantidad === 0
+    ? misPagos.resumen.vencidas?.cantidad === 0 &&
+      misPagos.resumen.pendientes?.cantidad === 0
     : false;
 
   // Obtener próximo pago del resumen
