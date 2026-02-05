@@ -14,7 +14,6 @@ import {
   formatDate,
   puedePagar,
 } from "@/components/dashboard/user/pagos/utils";
-import { BadgeEstado } from "@/components/dashboard/user/pagos/badge-estado";
 import type { Factura, CreatePagoRequest } from "@/types/types";
 import type { MisPagosResponse } from "@/components/dashboard/user/pagos/types";
 
@@ -187,7 +186,7 @@ function PagosPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-stretch">
           <ResumenPagos
             misPagos={misPagos}
             isLoading={misPagosLoading}

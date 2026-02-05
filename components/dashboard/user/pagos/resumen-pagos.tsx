@@ -22,12 +22,7 @@ export function ResumenPagos({
     : false;
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
+    return <Skeleton className="h-[180px] w-full rounded-xl" />;
   }
 
   if (!misPagos) return null;
@@ -40,8 +35,8 @@ export function ResumenPagos({
     (misPagos.resumen.vencidas.valor || 0);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      <div className="h-full w-full min-h-[140px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white">
+    <div className="h-full w-full min-h-[180px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white flex flex-col justify-between">
+      <div>
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold">Estado Actual</span>
           <span
@@ -63,8 +58,10 @@ export function ResumenPagos({
         <p className="text-sm text-muted-foreground mb-4">
           Deuda: {totalDeudaCantidad} factura{totalDeudaCantidad !== 1 ? "s" : ""} ({formatCurrency(totalDeudaValor)})
         </p>
+      </div>
+      <div>
         <button
-          className="inline-flex items-center gap-2 rounded-md bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 text-sm"
+          className="inline-flex items-center gap-2 rounded-md bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 text-sm transition-colors"
           onClick={() => {
             if (onVerDetalle) {
               onVerDetalle();
