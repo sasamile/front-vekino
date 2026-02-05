@@ -262,13 +262,14 @@ export function UserDashboard() {
   };
 
   const { text: greetingText, emoji: greetingEmoji } = getGreeting();
-  const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toUpperCase();
+  const rawName = usuarioInfo?.name?.split(" ")[0] || "Usuario";
+  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
   const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL || "https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval";
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-[#71BC44] text-white p-6 md:p-8 shadow-sm">
+      <div className="rounded-3xl bg-primary text-primary-foreground p-6 md:p-8 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/90">
@@ -384,36 +385,35 @@ export function UserDashboard() {
       <div className="grid gap-6 md:grid-cols-3">
         {/* Próximo Pago */}
         <Card
-          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/pagos")}
           role="button"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
-            <CardTitle className="text-sm font-bold text-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/90">
               Próximo Pago
             </CardTitle>
-            <IconCreditCard className="h-4 w-4 text-gray-400" />
+            <IconCreditCard className="h-4 w-4 text-white/80" />
           </CardHeader>
-          <CardContent className="pl-5 pr-5 pb-5">
+          <CardContent>
             {proximoPago ? (
               <>
-                <div className="text-2xl font-bold text-gray-900 mt-1">
+                <div className="text-2xl font-bold text-white mt-1">
                   {formatCurrency(proximoPago.valor)}
                 </div>
                 <div className="mt-2 space-y-0.5">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">
+                  <p className="text-[10px] text-white/90 uppercase tracking-wider font-medium">
                     Vence: {formatDate(proximoPago.fechaVencimiento)}
                   </p>
-                  <p className="text-[10px] text-gray-400 font-mono">
+                  <p className="text-[10px] text-white/80 font-mono">
                     {proximoPago.numeroFactura}
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold text-gray-300 mt-1">-</div>
-                <p className="text-xs text-gray-400 mt-2">
+                <div className="text-2xl font-bold text-white/50 mt-1">-</div>
+                <p className="text-xs text-white/80 mt-2">
                   No hay pagos pendientes
                 </p>
               </>
@@ -423,22 +423,21 @@ export function UserDashboard() {
 
         {/* Reservas Activas */}
         <Card
-          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/reservations")}
           role="button"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
-            <CardTitle className="text-sm font-bold text-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/90">
               Reservas Activas
             </CardTitle>
-            <IconCalendar className="h-4 w-4 text-gray-400" />
+            <IconCalendar className="h-4 w-4 text-white/80" />
           </CardHeader>
-          <CardContent className="pl-5 pr-5 pb-5">
-            <div className="text-2xl font-bold text-gray-900 mt-1">
+          <CardContent>
+            <div className="text-2xl font-bold text-white mt-1">
               {reservasActivas.length}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-white/80 mt-2">
               {reservasActivas.length === 1
                 ? "Reserva activa"
                 : "Reservas activas"}
@@ -448,22 +447,21 @@ export function UserDashboard() {
 
         {/* Tickets Abiertos */}
         <Card
-          className="hover:shadow-md transition-shadow bg-white border border-gray-100 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-amber-500 to-amber-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/comunicacion")}
           role="button"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-5 pl-5 pr-5">
-            <CardTitle className="text-sm font-bold text-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-white/90">
               Tickets Abiertos
             </CardTitle>
-            <IconTicket className="h-4 w-4 text-gray-400" />
+            <IconTicket className="h-4 w-4 text-white/80" />
           </CardHeader>
-          <CardContent className="pl-5 pr-5 pb-5">
-            <div className="text-2xl font-bold text-gray-900 mt-1">
+          <CardContent>
+            <div className="text-2xl font-bold text-white mt-1">
               {ticketsAbiertos.length}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-white/80 mt-2">
               {ticketsAbiertos.length === 1
                 ? "Ticket abierto"
                 : "Tickets abiertos"}
@@ -590,7 +588,7 @@ export function UserDashboard() {
                 <IconCalendar className="w-10 h-10 text-gray-300 mb-3" />
                 <p className="text-sm text-gray-500 mb-4">No tienes reservas activas</p>
                 <Button
-                  className="bg-[#71BC44] hover:bg-[#65a93d] text-white rounded-full px-6"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
                   size="sm"
                   onClick={() => router.push("/reservations")}
                 >
