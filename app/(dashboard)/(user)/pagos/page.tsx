@@ -187,24 +187,23 @@ function PagosPage() {
           </p>
         </div>
 
-        {/* Resumen */}
-        <ResumenPagos
-          misPagos={misPagos}
-          isLoading={misPagosLoading}
-          formatCurrency={formatCurrency}
-        />
-
-        {/* Próximo Pago */}
-        <ProximoPago
-          proximoPago={proximoPago}
-          proximoPeriodoInfo={proximoPeriodoInfo}
-          estaAlDia={estaAlDia}
-          formatCurrency={formatCurrency}
-          formatDate={formatDate}
-          puedePagar={puedePagar}
-          handlePagar={handlePagar}
-          isPaying={crearPagoMutation.isPending}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <ResumenPagos
+            misPagos={misPagos}
+            isLoading={misPagosLoading}
+            formatCurrency={formatCurrency}
+          />
+          <ProximoPago
+            proximoPago={proximoPago}
+            proximoPeriodoInfo={proximoPeriodoInfo}
+            estaAlDia={estaAlDia}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+            puedePagar={puedePagar}
+            handlePagar={handlePagar}
+            isPaying={crearPagoMutation.isPending}
+          />
+        </div>
 
         {/* Lista de Facturas */}
         <div>

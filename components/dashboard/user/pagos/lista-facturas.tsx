@@ -102,11 +102,19 @@ export function ListaFacturas({
                     size="sm"
                     variant="default"
                     disabled={isPaying}
-                    className="shrink-0"
+                    className="shrink-0 bg-red-600 hover:bg-red-700 text-white"
                   >
                     {isPaying ? "Procesando..." : "Pagar"}
                   </Button>
                 ) : null}
+                <a
+                  href={`/api/finanzas/mis-facturas/${factura.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Descargar
+                </a>
               </div>
             </div>
           );
@@ -138,4 +146,3 @@ export function ListaFacturas({
     </>
   );
 }
-

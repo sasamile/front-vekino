@@ -35,12 +35,12 @@ export function ProximoPago({
   }
 
   return (
-    <div className="mb-10 p-4 sm:p-6 border rounded-lg">
+    <div className="p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <span className="text-base sm:text-lg font-semibold">
-              Próximo Pago
+              Factura Pendiente
             </span>
             {proximoPago && <BadgeEstado estado={proximoPago.estado} />}
           </div>
@@ -54,7 +54,7 @@ export function ProximoPago({
                 Factura: {proximoPago.numeroFactura}
               </p>
               <p className="text-xs text-muted-foreground">
-                Vence el {formatDate(proximoPago.fechaVencimiento)}
+                {proximoPago.estado === "VENCIDA" ? "Vencido" : "Vence"}: {formatDate(proximoPago.fechaVencimiento)}
               </p>
               {proximoPago.estado === "PAGADA" && proximoPago.fechaPago && (
                 <>
@@ -93,7 +93,7 @@ export function ProximoPago({
                 <Button
                   onClick={() => handlePagar(proximoPago)}
                   disabled={isPaying}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white"
                 >
                   {isPaying ? (
                     "Procesando..."
@@ -116,4 +116,3 @@ export function ProximoPago({
     </div>
   );
 }
-
