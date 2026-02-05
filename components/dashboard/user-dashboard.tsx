@@ -292,9 +292,6 @@ export function UserDashboard() {
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
               {greetingText}{" "}
-              <span role="img" aria-label="saludo">
-                {greetingEmoji}
-              </span>
               , {firstName}
             </h1>
             <p className="text-white/80 text-sm md:text-base">
