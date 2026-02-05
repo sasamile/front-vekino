@@ -262,12 +262,13 @@ export function UserDashboard() {
   };
 
   const { text: greetingText, emoji: greetingEmoji } = getGreeting();
-  const firstName = usuarioInfo?.name?.split(" ")[0] || "Usuario";
+  const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toLowerCase();
+  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL;
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-linear-to-r from-primary/70 via-primary/55 to-primary/20 text-white p-6 md:p-8 border border-white/10">
+      <div className="rounded-3xl bg-primary text-white p-6 md:p-8 border border-white/10">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/80">
@@ -284,15 +285,7 @@ export function UserDashboard() {
               {getUnidadIdentificador()}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              className="bg-white text-primary hover:bg-white/90"
-              onClick={() => router.push("/pagos")}
-            >
-              Ver pagos
-            </Button>
-          </div>
+          <div className="flex flex-wrap gap-2" />
         </div>
       </div>
 
@@ -363,18 +356,41 @@ export function UserDashboard() {
                 </>
               )}
             </div>
-            <Button
-              variant={estaAlDia ? "default" : tieneVencidas ? "destructive" : "outline"}
-              className={cn(
-                estaAlDia && "bg-green-600 hover:bg-green-700 text-white",
-                tieneVencidas && "bg-red-600 hover:bg-red-700 text-white",
-                tienePendientes && !tieneVencidas && "border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20"
-              )}
-              onClick={() => router.push("/pagos")}
-            >
-              Ver Pagos
-              <IconArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              {!estaAlDia && proximoPago ? (
+                <div className="text-right">
+                  <div className={cn(
+                    "text-xl font-bold",
+                    tieneVencidas ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"
+                  )}>
+                    {formatCurrency(proximoPago.valor)}
+                  </div>
+                  <p className={cn(
+                    "text-xs",
+                    tieneVencidas ? "text-red-600 dark:text-red-500" : "text-orange-600 dark:text-orange-500"
+                  )}>
+                    Vence: {formatDate(proximoPago.fechaVencimiento)}
+                  </p>
+                </div>
+              ) : null}
+              <Button
+                variant={estaAlDia ? "default" : "destructive"}
+                className={cn(
+                  estaAlDia && "bg-green-600 hover:bg-green-700 text-white",
+                  !estaAlDia && "bg-red-600 hover:bg-red-700 text-white"
+                )}
+                onClick={() => {
+                  if (!estaAlDia && AVAL_URL) {
+                    window.open(AVAL_URL, "_blank");
+                  } else {
+                    router.push("/pagos");
+                  }
+                }}
+              >
+                {estaAlDia ? "Ver Pagos" : "Pagar Ahora"}
+                <IconArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -382,7 +398,11 @@ export function UserDashboard() {
       {/* Tarjetas de Resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Próximo Pago */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg">
+        <Card
+          className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg cursor-pointer"
+          onClick={() => router.push("/pagos")}
+          role="button"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium ">
               Próximo Pago
@@ -414,7 +434,11 @@ export function UserDashboard() {
         </Card>
 
         {/* Reservas Activas */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-indigo-500/35 via-card to-card border-indigo-300/35 shadow-lg">
+        <Card
+          className="hover:shadow-lg transition-shadow bg-linear-to-br from-indigo-500/35 via-card to-card border-indigo-300/35 shadow-lg cursor-pointer"
+          onClick={() => router.push("/reservations")}
+          role="button"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Reservas Activas
@@ -434,7 +458,11 @@ export function UserDashboard() {
         </Card>
 
         {/* Tickets Abiertos */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg">
+        <Card
+          className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg cursor-pointer"
+          onClick={() => router.push("/comunicacion")}
+          role="button"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Tickets Abiertos
@@ -454,14 +482,18 @@ export function UserDashboard() {
         </Card>
 
         {/* Facturas Pendientes */}
-        <Card className={cn(
-          "hover:shadow-lg transition-shadow border-none",
-          tieneVencidas
-            ? "bg-linear-to-br from-red-500/35 via-card to-card border-red-300/35 shadow-lg"
-            : tienePendientes
-            ? "bg-linear-to-br from-orange-500/35 via-card to-card border-orange-300/35 shadow-lg"
-            : "bg-linear-to-br from-slate-600/35 via-card to-card border-slate-300/35 shadow-lg"
-        )}>
+        <Card
+          className={cn(
+            "hover:shadow-lg transition-shadow border-none cursor-pointer",
+            tieneVencidas
+              ? "bg-linear-to-br from-red-500/35 via-card to-card border-red-300/35 shadow-lg"
+              : tienePendientes
+              ? "bg-linear-to-br from-orange-500/35 via-card to-card border-orange-300/35 shadow-lg"
+              : "bg-linear-to-br from-slate-600/35 via-card to-card border-slate-300/35 shadow-lg"
+          )}
+          onClick={() => router.push("/pagos")}
+          role="button"
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className={cn(
               "text-sm font-medium"

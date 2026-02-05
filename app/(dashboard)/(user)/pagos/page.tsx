@@ -21,6 +21,7 @@ import type { MisPagosResponse } from "@/components/dashboard/user/pagos/types";
 function PagosPage() {
   const { subdomain } = useSubdomain();
   const queryClient = useQueryClient();
+  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL;
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [pagoDialogOpen, setPagoDialogOpen] = useState(false);
@@ -124,6 +125,10 @@ function PagosPage() {
   });
 
   const handlePagar = async (factura: Factura) => {
+    if (AVAL_URL) {
+      window.open(AVAL_URL, "_blank");
+      return;
+    }
     let redirectUrl = `${window.location.origin}/pago-exitoso`;
     if (
       typeof window !== "undefined" &&
@@ -145,6 +150,11 @@ function PagosPage() {
   const onSubmitPago = async (data: { metodoPago: string; observaciones?: string }) => {
     if (!facturaSeleccionada) return;
 
+    if (AVAL_URL && data.metodoPago === "WOMPI") {
+      window.open(AVAL_URL, "_blank");
+      setPagoDialogOpen(false);
+      return;
+    }
     let redirectUrl = `${window.location.origin}/pago-exitoso`;
     if (
       typeof window !== "undefined" &&
