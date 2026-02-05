@@ -301,15 +301,6 @@ export function UserDashboard() {
               {getUnidadIdentificador()}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              className="bg-white text-primary hover:bg-white/90"
-              onClick={() => router.push("/pagos")}
-            >
-              Ver pagos
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -357,6 +348,9 @@ export function UserDashboard() {
                     <IconAlertCircle className="w-7 h-7 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
+                    <p className="font-bold text-lg text-red-700 dark:text-red-400">
+                      {proximoPago ? formatCurrency(proximoPago.valor) : "-"}
+                    </p>
                     <p className="font-bold text-lg text-red-700 dark:text-red-400">
                       Tienes facturas vencidas
                     </p>
@@ -410,7 +404,7 @@ export function UserDashboard() {
       {/* Tarjetas de Resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Próximo Pago */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-primary/30 via-card to-card border border-emerald-300/35 shadow-lg">
+        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-green-500/30 via-card to-card border border-emerald-300/35 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium ">Próximo Pago</CardTitle>
             <IconCreditCard className="h-4 w-4" />
