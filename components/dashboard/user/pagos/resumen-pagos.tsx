@@ -41,7 +41,7 @@ export function ResumenPagos({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-      <div className="rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white">
+      <div className="h-full w-full min-h-[140px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold">Estado Actual</span>
           <span

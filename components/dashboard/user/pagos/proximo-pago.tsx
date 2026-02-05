@@ -35,7 +35,7 @@ export function ProximoPago({
   }
 
   return (
-    <div className="p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white">
+    <div className="h-full w-full min-h-[140px] p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
