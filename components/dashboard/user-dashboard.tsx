@@ -262,8 +262,7 @@ export function UserDashboard() {
   };
 
   const { text: greetingText, emoji: greetingEmoji } = getGreeting();
-  const rawName = usuarioInfo?.name?.split(" ")[0] || "Usuario";
-  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+  const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toUpperCase();
   const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL || "https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval";
 
   return (
@@ -317,8 +316,8 @@ export function UserDashboard() {
                 </>
               ) : tieneVencidas ? (
                 <>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-50 shrink-0 border border-red-100">
-                    <IconAlertCircle className="w-6 h-6 text-red-500" />
+                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 shadow-lg shadow-red-200 dark:shadow-red-900/50">
+                    <IconAlertCircle className="w-7 h-7 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
                     {proximoPago && (
@@ -385,7 +384,7 @@ export function UserDashboard() {
       <div className="grid gap-6 md:grid-cols-3">
         {/* Próximo Pago */}
         <Card
-          className="hover:shadow-md transition-shadow bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-[#00C853] to-[#009624] text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/pagos")}
           role="button"
         >
@@ -423,7 +422,7 @@ export function UserDashboard() {
 
         {/* Reservas Activas */}
         <Card
-          className="hover:shadow-md transition-shadow bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-[#448AFF] to-[#2962FF] text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/reservations")}
           role="button"
         >
@@ -447,7 +446,7 @@ export function UserDashboard() {
 
         {/* Tickets Abiertos */}
         <Card
-          className="hover:shadow-md transition-shadow bg-gradient-to-br from-amber-500 to-amber-600 text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
+          className="hover:shadow-md transition-shadow bg-gradient-to-br from-[#FF9100] to-[#FF6D00] text-white border-0 shadow-sm cursor-pointer rounded-2xl overflow-hidden relative"
           onClick={() => router.push("/comunicacion")}
           role="button"
         >
