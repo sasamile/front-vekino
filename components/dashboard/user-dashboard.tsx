@@ -262,7 +262,7 @@ export function UserDashboard() {
   };
 
   const { text: greetingText, emoji: greetingEmoji } = getGreeting();
-  const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toLowerCase();
+  const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toUpperCase();
   const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL || "https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval";
 
   return (
@@ -310,11 +310,11 @@ export function UserDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-4">
               {estaAlDia ? (
                 <>
-                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 shadow-lg shadow-green-200 dark:shadow-green-900/50">
-                    <IconCheck className="w-7 h-7 text-green-600 dark:text-green-400" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 shadow-lg shadow-green-200 dark:shadow-green-900/50">
+                    <IconCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
                     <p className="font-bold text-lg text-green-700 dark:text-green-400">
@@ -327,11 +327,16 @@ export function UserDashboard() {
                 </>
               ) : tieneVencidas ? (
                 <>
-                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 shadow-lg shadow-red-200 dark:shadow-red-900/50">
-                    <IconAlertCircle className="w-7 h-7 text-red-600 dark:text-red-400" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 shadow-lg shadow-red-200 dark:shadow-red-900/50 shrink-0">
+                    <IconAlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <p className="font-bold text-lg text-red-700 dark:text-red-400">
+                    {proximoPago && (
+                      <div className="text-2xl font-bold text-red-700 dark:text-red-400 mb-1">
+                        {formatCurrency(proximoPago.valor)}
+                      </div>
+                    )}
+                    <p className="font-bold text-base text-red-700 dark:text-red-400">
                       Tienes facturas vencidas
                     </p>
                     <p className="text-sm text-red-600 dark:text-red-500">
@@ -342,37 +347,27 @@ export function UserDashboard() {
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-center w-14 h-14 rounded-full bg-orange-100 dark:bg-orange-900/30 shadow-lg shadow-orange-200 dark:shadow-orange-900/50">
-                    <IconAlertCircle className="w-7 h-7 text-orange-600 dark:text-orange-400" />
-            </div>
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 shadow-lg shadow-orange-200 dark:shadow-orange-900/50 shrink-0">
+                    <IconAlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  </div>
                   <div>
-                    <p className="font-bold text-lg text-orange-700 dark:text-orange-400">
+                    {proximoPago && (
+                      <div className="text-2xl font-bold text-orange-700 dark:text-orange-400 mb-1">
+                        {formatCurrency(proximoPago.valor)}
+                      </div>
+                    )}
+                    <p className="font-bold text-base text-orange-700 dark:text-orange-400">
                       Tienes facturas pendientes
                     </p>
                     <p className="text-sm text-orange-600 dark:text-orange-500">
                       {misPagos?.resumen.pendientes.cantidad || 0} pendientes de pago
                     </p>
-            </div>
+                  </div>
                 </>
               )}
             </div>
+
             <div className="flex flex-col items-end gap-2">
-              {!estaAlDia && proximoPago ? (
-                <div className="text-right">
-                  <div className={cn(
-                    "text-xl font-bold",
-                    tieneVencidas ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"
-                  )}>
-                    {formatCurrency(proximoPago.valor)}
-                  </div>
-                  <p className={cn(
-                    "text-xs",
-                    tieneVencidas ? "text-red-600 dark:text-red-500" : "text-orange-600 dark:text-orange-500"
-                  )}>
-                    Vence: {formatDate(proximoPago.fechaVencimiento)}
-                  </p>
-                </div>
-              ) : null}
               <Button
                 variant={estaAlDia ? "default" : "destructive"}
                 className={cn(

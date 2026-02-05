@@ -65,7 +65,7 @@ const getNavConfig = (
       return {
         navMain: [
           {
-            title: "Dashboard",
+            title: "Inicio",
             url: `/`,
             icon: IconDashboard,
           },
