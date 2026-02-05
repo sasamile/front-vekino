@@ -21,7 +21,7 @@ import type { MisPagosResponse } from "@/components/dashboard/user/pagos/types";
 function PagosPage() {
   const { subdomain } = useSubdomain();
   const queryClient = useQueryClient();
-  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL;
+  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL || "https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval";
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [pagoDialogOpen, setPagoDialogOpen] = useState(false);
@@ -192,6 +192,10 @@ function PagosPage() {
             misPagos={misPagos}
             isLoading={misPagosLoading}
             formatCurrency={formatCurrency}
+            onVerDetalle={() => {
+              const el = document.getElementById("facturas");
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
           />
           <ProximoPago
             proximoPago={proximoPago}
@@ -206,7 +210,7 @@ function PagosPage() {
         </div>
 
         {/* Lista de Facturas */}
-        <div>
+        <div id="facturas">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold">Facturas</h2>

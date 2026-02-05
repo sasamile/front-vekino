@@ -7,12 +7,14 @@ interface ResumenPagosProps {
   misPagos: MisPagosResponse | undefined;
   isLoading: boolean;
   formatCurrency: (amount: number) => string;
+  onVerDetalle?: () => void;
 }
 
 export function ResumenPagos({
   misPagos,
   isLoading,
   formatCurrency,
+  onVerDetalle,
 }: ResumenPagosProps) {
   const estaAlDia = misPagos?.resumen
     ? misPagos.resumen.vencidas.cantidad === 0 &&
@@ -63,7 +65,11 @@ export function ResumenPagos({
         </p>
         <button
           className="inline-flex items-center gap-2 rounded-md bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 text-sm"
-          onClick={() => {}}
+          onClick={() => {
+            if (onVerDetalle) {
+              onVerDetalle();
+            }
+          }}
         >
           Ver Detalle
         </button>

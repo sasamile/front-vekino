@@ -263,7 +263,7 @@ export function UserDashboard() {
 
   const { text: greetingText, emoji: greetingEmoji } = getGreeting();
   const firstName = (usuarioInfo?.name?.split(" ")[0] || "Usuario").toLowerCase();
-  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL;
+  const AVAL_URL = process.env.NEXT_PUBLIC_AVAL_URL || "https://www.avalpaycenter.com/wps/portal/portal-de-pagos/web/pagos-aval";
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
