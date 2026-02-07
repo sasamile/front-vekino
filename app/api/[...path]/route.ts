@@ -59,6 +59,35 @@ async function handler(
 
   const responseHeaders = new Headers(res.headers);
 
+  // En local, el backend devuelve Set-Cookie con Domain=.vekino.site; el navegador
+  // en subdominio.localhost no acepta esa cookie. Reescribir para quitar Domain y Secure.
+  if (isLocal && res.status >= 200 && res.status < 300) {
+    const setCookies =
+      typeof responseHeaders.getSetCookie === "function"
+        ? responseHeaders.getSetCookie()
+        : responseHeaders.get("set-cookie")
+          ? [responseHeaders.get("set-cookie")!]
+          : [];
+    if (setCookies.length > 0) {
+      responseHeaders.delete("set-cookie");
+      for (const cookie of setCookies) {
+        const rewritten = cookie
+          .split(";")
+          .map((part) => part.trim())
+          .filter((part) => {
+            const lower = part.toLowerCase();
+            return (
+              !lower.startsWith("domain=") &&
+              lower !== "secure" &&
+              !lower.startsWith("samesite=none")
+            );
+          })
+          .join("; ");
+        responseHeaders.append("set-cookie", rewritten);
+      }
+    }
+  }
+
   // En respuestas 4xx, NO reenviar Set-Cookie que borre la sesión.
   // Si el backend devuelve 401/403 y además Set-Cookie para borrar la sesión,
   // el navegador borraría la cookie y el usuario quedaría deslogueado "de la nada".

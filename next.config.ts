@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   // El proxy ahora se maneja mediante API routes en app/api/[...path]/route.ts
   // y app/superadmin/[...path]/route.ts
   output: 'standalone',
+  experimental: {
+    // Reduce tiempo de compilación en dev: solo carga los módulos que usas de paquetes grandes
+    optimizePackageImports: [
+      '@tabler/icons-react',
+      'recharts',
+      'lucide-react',
+    ],
+  },
   images: {
     remotePatterns: [
       {
