@@ -58,7 +58,9 @@ const getNavConfig = (
       ? "/propietario"
       : role === "ADMIN"
         ? "/admin"
-        : "/superadmin";
+        : role === "GUARDIA_SEGURIDAD"
+          ? "/guardia"
+          : "/superadmin";
 
   switch (role) {
     case "PROPIETARIO":
@@ -221,6 +223,49 @@ const getNavConfig = (
             title: "Buscar",
             url: `${basePath}/search`,
             icon: IconSearch,
+          },
+        ],
+      };
+
+    case "GUARDIA_SEGURIDAD":
+      return {
+        navMain: [
+          {
+            title: "Minuta",
+            url: `/`,
+            icon: IconFileText,
+          },
+          {
+            title: "Control Visitantes",
+            url: `/control-visitantes`,
+            icon: IconUsers,
+          },
+          {
+            title: "Control Reservas",
+            url: `/control-reservas`,
+            icon: IconCalendar,
+          },
+          {
+            title: "Paquetería",
+            url: `/paqueteria`,
+            icon: IconTicket,
+          },
+          {
+            title: "Novedades",
+            url: `/novedades`,
+            icon: IconMessageReport,
+          },
+          {
+            title: "Avisos",
+            url: `/avisos`,
+            icon: IconMessageReport,
+          },
+        ],
+        navSecondary: [
+          {
+            title: "Ayuda",
+            url: `${basePath}/help`,
+            icon: IconHelp,
           },
         ],
       };

@@ -11,7 +11,7 @@ export function isAuthRoute(pathname: string): boolean {
  * Verifica si una ruta es pública (no requiere autenticación)
  */
 export function isPublicRoute(pathname: string): boolean {
-  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname === '/pago-exitoso' || pathname === '/pre-registro';
+  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname === '/pago-exitoso';
 }
 
 /**
@@ -39,13 +39,14 @@ const ADMIN_ROUTES = [
 const USER_ROUTES = [
   "/pagos",
   "/reservations",
+  "/visitantes",
 ];
 
 /**
  * Lista de rutas exclusivas para GUARDIA_SEGURIDAD
  */
 const GUARDIA_ROUTES = [
-  "/visitantes",
+  "/control-visitantes",
   "/paqueteria",
   "/control-reservas",
   "/avisos",

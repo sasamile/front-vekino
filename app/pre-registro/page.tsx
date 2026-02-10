@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getAxiosInstance } from "@/lib/axios-config";
+import { useSubdomain } from "@/components/providers/subdomain-provider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +15,17 @@ import toast, { Toaster } from "react-hot-toast";
 // Helper component to read search params safely
 function PreRegistroForm() {
   const searchParams = useSearchParams();
-  const subdomain = searchParams.get("subdomain");
+  const { subdomain: contextSubdomain } = useSubdomain();
+  const paramSubdomain = searchParams.get("subdomain");
+  const subdomain = paramSubdomain || contextSubdomain;
+  const unidadParam = searchParams.get("unidad");
   
   const [success, setSuccess] = useState(false);
   const [qrData, setQrData] = useState("");
   const [formData, setFormData] = useState({
     documento: "",
     nombre: "",
-    unidadId: "",
+    unidadId: unidadParam || "",
     unidadNombre: "",
     placa: "",
     tipo: "visitante"
@@ -53,6 +57,16 @@ function PreRegistroForm() {
     },
     enabled: !!subdomain,
   });
+
+  // Pre-select unit name if unidadParam exists and units are loaded
+  useEffect(() => {
+    if (unidadParam && unidades.length > 0 && !formData.unidadNombre) {
+        const u = unidades.find((x: any) => x.id === unidadParam);
+        if (u) {
+            setFormData(prev => ({ ...prev, unidadNombre: u.identificador }));
+        }
+    }
+  }, [unidadParam, unidades, formData.unidadNombre]);
 
   const handleSubmit = () => {
      if (!formData.documento || !formData.nombre || !formData.unidadId) {
