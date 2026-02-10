@@ -9,10 +9,12 @@ import { ResumenPagos } from "@/components/dashboard/user/pagos/resumen-pagos";
 import { ProximoPago } from "@/components/dashboard/user/pagos/proximo-pago";
 import { ListaFacturas } from "@/components/dashboard/user/pagos/lista-facturas";
 import { DialogPago } from "@/components/dashboard/user/pagos/dialog-pago";
+import { DetalleDeudaDialog } from "@/components/dashboard/user/pagos/detalle-deuda-dialog";
 import {
   formatCurrency,
   formatDate,
   puedePagar,
+  getSaldoPendiente,
 } from "@/components/dashboard/user/pagos/utils";
 import type { Factura, CreatePagoRequest } from "@/types/types";
 import type { MisPagosResponse } from "@/components/dashboard/user/pagos/types";
@@ -27,6 +29,7 @@ function PagosPage() {
   const [facturaSeleccionada, setFacturaSeleccionada] =
     useState<Factura | null>(null);
   const [pagoCreado, setPagoCreado] = useState<any>(null);
+  const [verDetalleModalOpen, setVerDetalleModalOpen] = useState(false);
 
   // Obtener mis pagos (resumen y facturas)
   const { data: misPagos, isLoading: misPagosLoading } =
@@ -191,10 +194,23 @@ function PagosPage() {
             misPagos={misPagos}
             isLoading={misPagosLoading}
             formatCurrency={formatCurrency}
-            onVerDetalle={() => {
-              const el = document.getElementById("facturas");
-              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
+            onVerDetalle={() => setVerDetalleModalOpen(true)}
+            deudaDisplay={
+              misPagos?.facturas
+                ? (() => {
+                    const conDeuda = misPagos.facturas.filter(
+                      (f) => getSaldoPendiente(f) > 0
+                    );
+                    return {
+                      cantidad: conDeuda.length,
+                      valor: conDeuda.reduce(
+                        (s, f) => s + getSaldoPendiente(f),
+                        0
+                      ),
+                    };
+                  })()
+                : undefined
+            }
           />
           <ProximoPago
             proximoPago={proximoPago}
@@ -238,6 +254,21 @@ function PagosPage() {
           />
         </div>
       </div>
+
+      <DetalleDeudaDialog
+        open={verDetalleModalOpen}
+        onOpenChange={setVerDetalleModalOpen}
+        misPagos={misPagos}
+        formatCurrency={formatCurrency}
+        formatDate={formatDate}
+        puedePagar={puedePagar}
+        handlePagar={handlePagar}
+        isPaying={crearPagoMutation.isPending}
+        onVerTodasLasFacturas={() => {
+          const el = document.getElementById("facturas");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+      />
 
       {/* Dialog de Pago */}
       <DialogPago

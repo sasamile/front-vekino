@@ -11,6 +11,7 @@ export function BadgeEstado({ estado }: { estado: FacturaEstado }) {
     PAGADA: { variant: "default", label: "Pagada" },
     PENDIENTE: { variant: "secondary", label: "Pendiente" },
     ENVIADA: { variant: "secondary", label: "Enviada" },
+    ABONADO: { variant: "secondary", label: "Abonado" },
     VENCIDA: { variant: "destructive", label: "Vencida" },
     CANCELADA: { variant: "secondary", label: "Cancelada" },
   };

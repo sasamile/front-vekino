@@ -117,7 +117,7 @@ export function DialogPago({
                   Valor a pagar:
                 </span>
                 <span className="text-xl font-bold">
-                  {formatCurrency(factura.valor)}
+                  {formatCurrency(factura.valorConDescuento ?? factura.valor)}
                 </span>
               </div>
             </div>

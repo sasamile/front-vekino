@@ -228,7 +228,7 @@ export function CreatePagoDialog({
                     Valor:
                   </span>
                   <span className="text-sm font-semibold">
-                    {formatCurrency(factura.valor)}
+                    {formatCurrency(factura.valorConDescuento ?? factura.valor)}
                   </span>
                 </div>
               </div>

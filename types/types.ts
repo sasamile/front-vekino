@@ -445,6 +445,7 @@ export type FacturaEstado =
   | "PENDIENTE"
   | "ENVIADA"
   | "PAGADA"
+  | "ABONADO"
   | "VENCIDA"
   | "CANCELADA";
 
@@ -475,6 +476,16 @@ export interface Factura {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  // Campos adicionales que puede devolver la API
+  valorVigente?: number;
+  totalPagado?: number;
+  saldoPendiente?: number;
+  saldoAnterior?: number | null;
+  valorConDescuento?: number;
+  fechaInicioDescuento?: string | null;
+  fechaFinDescuento?: string | null;
+  pdfUrl?: string | null;
+  estaVencida?: boolean;
 }
 
 export interface CreateFacturaRequest {

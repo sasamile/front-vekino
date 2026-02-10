@@ -8,6 +8,8 @@ interface ResumenPagosProps {
   isLoading: boolean;
   formatCurrency: (amount: number) => string;
   onVerDetalle?: () => void;
+  /** Si se pasa, se usa para mostrar deuda (valor con descuento − pagado). Si no, se usa resumen del API. */
+  deudaDisplay?: { cantidad: number; valor: number };
 }
 
 export function ResumenPagos({
@@ -15,6 +17,7 @@ export function ResumenPagos({
   isLoading,
   formatCurrency,
   onVerDetalle,
+  deudaDisplay,
 }: ResumenPagosProps) {
   const estaAlDia = misPagos?.resumen
     ? misPagos.resumen.vencidas.cantidad === 0 &&
@@ -25,14 +28,13 @@ export function ResumenPagos({
     return <Skeleton className="h-[180px] w-full rounded-xl" />;
   }
 
-  // Valores por defecto si no hay datos
   const pendientesCantidad = misPagos?.resumen?.pendientes?.cantidad || 0;
   const vencidasCantidad = misPagos?.resumen?.vencidas?.cantidad || 0;
   const pendientesValor = misPagos?.resumen?.pendientes?.valor || 0;
   const vencidasValor = misPagos?.resumen?.vencidas?.valor || 0;
 
-  const totalDeudaCantidad = pendientesCantidad + vencidasCantidad;
-  const totalDeudaValor = pendientesValor + vencidasValor;
+  const totalDeudaCantidad = deudaDisplay?.cantidad ?? (pendientesCantidad + vencidasCantidad);
+  const totalDeudaValor = deudaDisplay?.valor ?? (pendientesValor + vencidasValor);
 
   return (
     <div className="h-full w-full min-h-[180px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white flex flex-col justify-between">

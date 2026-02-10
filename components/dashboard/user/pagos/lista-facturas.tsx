@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IconCheck } from "@tabler/icons-react";
 import { BadgeEstado } from "./badge-estado";
+import { getValorFacturado, getSaldoPendiente } from "./utils";
 import type { Factura, FacturaEstado } from "@/types/types";
 
 interface ListaFacturasProps {
@@ -57,6 +58,13 @@ export function ListaFacturas({
       <div className="space-y-3">
         {facturas.map((factura) => {
           const isPagada = factura.estado === "PAGADA";
+          const valorFacturado = getValorFacturado(factura);
+          const saldoPendiente = getSaldoPendiente(factura);
+          const montoAPagar = saldoPendiente > 0 ? saldoPendiente : valorFacturado;
+          const esAbonado =
+            factura.estado === "ABONADO" &&
+            saldoPendiente > 0 &&
+            valorFacturado > saldoPendiente;
 
           return (
             <div
@@ -93,9 +101,16 @@ export function ListaFacturas({
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
-                <span className="text-lg font-bold">
-                  {formatCurrency(factura.valor)}
-                </span>
+                <div className="text-right">
+                  <span className="text-lg font-bold">
+                    {formatCurrency(montoAPagar)}
+                  </span>
+                  {esAbonado && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      saldo de {formatCurrency(valorFacturado)}
+                    </p>
+                  )}
+                </div>
                 {!isPagada && puedePagar(factura) ? (
                   <Button
                     onClick={() => handlePagar(factura)}

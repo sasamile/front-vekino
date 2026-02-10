@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { IconArrowRight } from "@tabler/icons-react";
 import { BadgeEstado } from "./badge-estado";
+import { getValorFacturado, getSaldoPendiente } from "./utils";
 import type { Factura, FacturaEstado } from "@/types/types";
 
 interface ProximoPagoProps {
@@ -102,9 +103,26 @@ export function ProximoPago({
         <div className="text-left sm:text-right shrink-0 w-full sm:w-auto">
           {proximoPago ? (
             <>
-              <p className="text-xl sm:text-2xl font-bold mb-3">
-                {formatCurrency(proximoPago.valor)}
-              </p>
+              <div className="mb-3">
+                <p className="text-xl sm:text-2xl font-bold">
+                  {formatCurrency(
+                    (() => {
+                      const saldo = getSaldoPendiente(proximoPago);
+                      const valorF = getValorFacturado(proximoPago);
+                      return saldo > 0 ? saldo : valorF;
+                    })()
+                  )}
+                </p>
+                {(() => {
+                  const saldo = getSaldoPendiente(proximoPago);
+                  const valorF = getValorFacturado(proximoPago);
+                  return saldo > 0 && valorF > saldo ? (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Saldo de {formatCurrency(valorF)} facturado
+                    </p>
+                  ) : null;
+                })()}
+              </div>
               {puedePagar(proximoPago) ? (
                 <Button
                   onClick={() => handlePagar(proximoPago)}

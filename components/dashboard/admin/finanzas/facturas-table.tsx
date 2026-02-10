@@ -51,6 +51,7 @@ const ESTADO_LABELS: Record<string, string> = {
   PENDIENTE: "Pendiente",
   ENVIADA: "Enviada",
   PAGADA: "Pagada",
+  ABONADO: "Abonado",
   VENCIDA: "Vencida",
   CANCELADA: "Cancelada",
 };
@@ -59,6 +60,7 @@ const ESTADO_COLORS: Record<string, string> = {
   PENDIENTE: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
   ENVIADA: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
   PAGADA: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  ABONADO: "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
   VENCIDA: "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400",
   CANCELADA: "bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400",
 };
@@ -230,7 +232,7 @@ export function FacturasTable({
                       </td>
                       <td className="p-4">
                         <span className="text-sm font-medium">
-                          {formatCurrency(factura.valor)}
+                          {formatCurrency(factura.valorConDescuento ?? factura.valor)}
                         </span>
                       </td>
                       <td className="p-4">
@@ -266,7 +268,7 @@ export function FacturasTable({
                               <IconSend className="size-4" />
                             </Button>
                           )}
-                          {onPagar && (factura.estado === "PENDIENTE" || factura.estado === "ENVIADA" || factura.estado === "VENCIDA") && (
+                          {onPagar && (factura.estado === "PENDIENTE" || factura.estado === "ENVIADA" || factura.estado === "VENCIDA" || factura.estado === "ABONADO") && (
                             <Button
                               variant="ghost"
                               size="sm"
