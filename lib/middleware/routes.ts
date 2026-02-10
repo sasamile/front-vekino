@@ -11,7 +11,7 @@ export function isAuthRoute(pathname: string): boolean {
  * Verifica si una ruta es pública (no requiere autenticación)
  */
 export function isPublicRoute(pathname: string): boolean {
-  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname === '/pago-exitoso';
+  return pathname === '/' || pathname.startsWith('/auth') || pathname.startsWith('/api') || pathname === '/pago-exitoso' || pathname === '/pre-registro';
 }
 
 /**

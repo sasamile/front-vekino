@@ -284,17 +284,17 @@ export function UserDashboard() {
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-linear-to-r from-primary/70 via-primary/55 to-primary/20 text-white p-6 md:p-8 border border-white/10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="rounded-3xl bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30 text-white p-6 md:p-8 border border-white/10 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between z-10">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/80">
+            <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/90">
               Tu comunidad
             </p>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-              {greetingText}{" "}
-              , {firstName}
+              Hola, {firstName}!
             </h1>
-            <p className="text-white/80 text-sm md:text-base">
+            <p className="text-white/90 text-sm md:text-base font-medium">
               {getUnidadIdentificador()}
             </p>
           </div>
@@ -304,7 +304,7 @@ export function UserDashboard() {
       {/* Saludo y Estado de Facturas */}
       <Card
         className={cn(
-          "border-2 rounded-2xl shadow-sm bg-card/80 backdrop-blur",
+          "border-0 rounded-2xl shadow-md overflow-hidden",
           estadoColor,
         )}
       >
@@ -401,42 +401,46 @@ export function UserDashboard() {
       {/* Tarjetas de Resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Próximo Pago */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-green-500/30 via-card to-card border border-emerald-300/35 shadow-lg">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-500/10 via-card to-card border-green-200/50 dark:border-green-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium ">Próximo Pago</CardTitle>
-            <IconCreditCard className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-green-700 dark:text-green-400">Próximo Pago</CardTitle>
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
+              <IconCreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
             {proximoPago ? (
               <>
-                <div className="text-2xl font-bold ">
+                <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                   {formatCurrency(proximoPago.valor)}
                 </div>
-                <p className="text-xs mt-1">
+                <p className="text-xs mt-1 text-muted-foreground">
                   Vence: {formatDate(proximoPago.fechaVencimiento)}
                 </p>
-                <p className="text-xs">{proximoPago.numeroFactura}</p>
+                <p className="text-xs text-muted-foreground">{proximoPago.numeroFactura}</p>
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold /70">-</div>
-                <p className="text-xs /80 mt-1">No hay pagos pendientes</p>
+                <div className="text-2xl font-bold text-muted-foreground">-</div>
+                <p className="text-xs text-muted-foreground mt-1">No hay pagos pendientes</p>
               </>
             )}
           </CardContent>
         </Card>
 
         {/* Reservas Activas */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-indigo-500/35 via-card to-card border-indigo-300/35 shadow-lg">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-500/10 via-card to-card border-indigo-200/50 dark:border-indigo-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-400">
               Reservas Activas
             </CardTitle>
-            <IconCalendar className="h-4 w-4" />
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-full">
+              <IconCalendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{reservasActivas.length}</div>
-            <p className="text-xs mt-1">
+            <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">{reservasActivas.length}</div>
+            <p className="text-xs mt-1 text-muted-foreground">
               {reservasActivas.length === 1
                 ? "Reserva activa"
                 : "Reservas activas"}
@@ -445,16 +449,18 @@ export function UserDashboard() {
         </Card>
 
         {/* Tickets Abiertos */}
-        <Card className="hover:shadow-lg transition-shadow bg-linear-to-br from-amber-300/35 via-card to-card border-amber-300/35 shadow-lg">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-amber-500/10 via-card to-card border-amber-200/50 dark:border-amber-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
               Tickets Abiertos
             </CardTitle>
-            <IconTicket className="h-4 w-4" />
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+              <IconTicket className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{ticketsAbiertos.length}</div>
-            <p className="text-xs text-slate-900/80 mt-1">
+            <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{ticketsAbiertos.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {ticketsAbiertos.length === 1
                 ? "Ticket abierto"
                 : "Tickets abiertos"}

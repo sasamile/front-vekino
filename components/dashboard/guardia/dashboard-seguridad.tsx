@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
   IconDoorExit,
   IconEye,
   IconFlag,
+  IconLogout,
 } from "@tabler/icons-react";
 import {
   Dialog,
@@ -34,18 +35,35 @@ export interface MinutaEvent {
   unit: string;
   summary: string;
   status: string;
+  originalData?: any; // For linking back to source (e.g. Visitor ID)
+}
+
+// Interface for Visitante (Matches GuardiaVisitantes)
+interface Visitante {
+  id: string;
+  documento: string;
+  nombre: string;
+  unidad: string;
+  unidadId: string;
+  tipo: string;
+  placa?: string;
+  horaEntrada: string;
+  horaSalida?: string;
+  estado: "ACTIVO" | "FINALIZADO" | "PENDIENTE";
 }
 
 const MODULOS = ["Todos", "Visitantes", "Paquetería", "Reservas", "Novedades", "Avisos", "Minuta"];
 const TIPOS_EVENTO = ["Todos", "Ingresos", "Salidas", "Alertas"];
 
 export default function GuardiaSeguridadDashboard() {
-  const [minutaEvents, setMinutaEvents] = useState<MinutaEvent[]>([
-    { id: 1, time: "06:05", module: "Minuta", type: "Checklist", unit: "Portería", summary: "Recepción de puesto sin novedades. Armamento y llaves completas.", status: "Cerrado" },
-    { id: 2, time: "07:15", module: "Visitantes", type: "Ingreso", unit: "T1-202", summary: "Ingreso Domiciliario Rappi", status: "Cerrado" },
-    { id: 3, time: "08:30", module: "Paquetería", type: "Recibido", unit: "T2-505", summary: "Paquete Amazon recibido", status: "Abierto" },
-    { id: 4, time: "09:00", module: "Avisos", type: "Sistema", unit: "Admin", summary: "Corte de luz programado confirmado", status: "Info" },
-  ]);
+  const [minutaEvents, setMinutaEvents] = useState<MinutaEvent[]>([]);
+  
+  // Local Storage for Visitors
+  const [visitantes, setVisitantes] = useState<Visitante[]>([]);
+
+  // Local Storage for Minuta Events (Rondas, Novedades, Checklists)
+  const [customEvents, setCustomEvents] = useState<MinutaEvent[]>([]);
+  
   const [filterModule, setFilterModule] = useState("all");
   const [filterUnit, setFilterUnit] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
@@ -55,32 +73,125 @@ export default function GuardiaSeguridadDashboard() {
   const [rondaZone, setRondaZone] = useState("Perímetro Exterior");
   const [rondaNote, setRondaNote] = useState("");
 
+  // End Shift State
+  const [endShiftData, setEndShiftData] = useState({
+    consignas: "",
+    recibe: ""
+  });
+
+  // Load data on mount
+  useEffect(() => {
+    // Load Visitors
+    const storedVisitors = localStorage.getItem("vekino_visitantes");
+    if (storedVisitors) {
+      try {
+        setVisitantes(JSON.parse(storedVisitors));
+      } catch (e) {
+        console.error("Error parsing visitors", e);
+      }
+    }
+
+    // Load Minuta Events
+    const storedEvents = localStorage.getItem("vekino_minuta_events");
+    if (storedEvents) {
+      try {
+        setCustomEvents(JSON.parse(storedEvents));
+      } catch (e) {
+        console.error("Error parsing minuta events", e);
+      }
+    } else {
+        // Initialize with demo data if empty
+        const demoEvents = [
+            { id: 1, time: "06:05", module: "Minuta", type: "Checklist", unit: "Portería", summary: "Recepción de puesto sin novedades. Armamento y llaves completas.", status: "Cerrado" },
+            { id: 4, time: "09:00", module: "Avisos", type: "Sistema", unit: "Admin", summary: "Corte de luz programado confirmado", status: "Info" },
+        ];
+        setCustomEvents(demoEvents);
+        localStorage.setItem("vekino_minuta_events", JSON.stringify(demoEvents));
+    }
+  }, []);
+
+  const saveCustomEvents = (newEvents: MinutaEvent[]) => {
+      setCustomEvents(newEvents);
+      localStorage.setItem("vekino_minuta_events", JSON.stringify(newEvents));
+  };
+
+  const saveVisitantes = (newVisitantes: Visitante[]) => {
+      setVisitantes(newVisitantes);
+      localStorage.setItem("vekino_visitantes", JSON.stringify(newVisitantes));
+  };
+
   const logEvent = (event: Omit<MinutaEvent, "id" | "time">) => {
     const now = new Date();
-    const timeString = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newEvent: MinutaEvent = {
-      id: minutaEvents.length + 1,
+      id: Date.now(),
       time: timeString,
       ...event,
     };
-    setMinutaEvents((prev) => [newEvent, ...prev]);
+    const updatedEvents = [newEvent, ...customEvents];
+    saveCustomEvents(updatedEvents);
     toast.success(`Evento registrado: ${event.type}`);
   };
 
+  const handleSalidaVisitante = (visitanteId: string) => {
+      const updatedList = visitantes.map(v => {
+          if (v.id === visitanteId) {
+              return {
+                  ...v,
+                  horaSalida: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  estado: "FINALIZADO" as const
+              };
+          }
+          return v;
+      });
+      saveVisitantes(updatedList);
+      toast.success("Salida de visitante registrada");
+  };
+
+  const combinedEvents = useMemo(() => {
+      // Convert Visitors to Minuta Events
+      const visitorEvents: MinutaEvent[] = visitantes.map(v => ({
+          id: parseInt(v.id) || Date.parse(v.id) || Math.random(), // Ensure number ID for sort if needed, but interface says number. Let's cast or fix interface.
+          // Actually interface says id: number. Visitor id is string.
+          // Let's relax the interface or hash the string.
+          // For display, we can just use a unique key.
+          // Let's cast to any for ID to avoid conflict or change interface.
+          // Changing interface to string | number is better.
+          
+          time: v.horaEntrada,
+          module: "Visitantes",
+          type: "Ingreso",
+          unit: v.unidad || v.unidadId,
+          summary: `${v.nombre} - ${v.documento} ${v.placa ? `(${v.placa})` : ''}`,
+          status: v.estado === "ACTIVO" ? "Abierto" : "Cerrado",
+          originalData: v // Keep original data for actions
+      } as any));
+
+      // Combine and Sort by time (descending usually)
+      // Since time is string "HH:MM", simple sort might fail across days. 
+      // Ideally we store timestamp. For now, we assume same day or just prepend.
+      // Let's just merge list.
+      
+      return [...customEvents, ...visitorEvents].sort((a, b) => {
+          // Simple time string comparison for today's events
+          return b.time.localeCompare(a.time);
+      });
+  }, [visitantes, customEvents]);
+
   const filteredEvents = useMemo(() => {
-    return minutaEvents.filter((e) => {
+    return combinedEvents.filter((e) => {
       if (filterModule !== "all" && e.module !== filterModule) return false;
       if (filterUnit && !e.unit.toLowerCase().includes(filterUnit.toLowerCase())) return false;
       if (filterSearch && !`${e.summary} ${e.unit} ${e.type}`.toLowerCase().includes(filterSearch.toLowerCase())) return false;
       return true;
     });
-  }, [minutaEvents, filterModule, filterUnit, filterSearch]);
+  }, [combinedEvents, filterModule, filterUnit, filterSearch]);
 
   const stats = useMemo(() => ({
-    visitors: minutaEvents.filter((e) => e.module === "Visitantes").length,
-    packages: minutaEvents.filter((e) => e.module === "Paquetería").length,
-    incidents: minutaEvents.filter((e) => e.module === "Novedades" || e.type.includes("Mal Parqueado") || e.type.includes("Ruido") || e.type.includes("Daño")).length,
-  }), [minutaEvents]);
+    visitors: combinedEvents.filter((e) => e.module === "Visitantes").length,
+    packages: combinedEvents.filter((e) => e.module === "Paquetería").length,
+    incidents: combinedEvents.filter((e) => e.module === "Novedades" || e.type.includes("Mal Parqueado") || e.type.includes("Ruido") || e.type.includes("Daño")).length,
+  }), [combinedEvents]);
 
   const badgeVariant = (module: string) => {
     switch (module) {
@@ -204,7 +315,21 @@ export default function GuardiaSeguridadDashboard() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" title="Ver detalle">
                       <IconEye className="size-4" />
                     </Button>
-                    {event.status === "Abierto" && (
+                    
+                    {/* Visitor Exit Action */}
+                    {event.module === "Visitantes" && event.status === "Abierto" && (
+                         <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                            title="Registrar Salida"
+                            onClick={() => handleSalidaVisitante(event.originalData.id)}
+                         >
+                            <IconLogout className="size-4" />
+                         </Button>
+                    )}
+
+                    {event.module !== "Visitantes" && event.status === "Abierto" && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" title="Seguimiento">
                         <IconFlag className="size-4" />
                       </Button>
@@ -309,7 +434,13 @@ export default function GuardiaSeguridadDashboard() {
           </div>
           <div className="space-y-2">
             <Label>Consignas / Pendientes para el Relevo *</Label>
-            <textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm" placeholder="Ej: Queda paquete pendiente..." rows={3} />
+            <textarea 
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm" 
+                placeholder="Ej: Queda paquete pendiente..." 
+                rows={3} 
+                value={endShiftData.consignas}
+                onChange={(e) => setEndShiftData({...endShiftData, consignas: e.target.value})}
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -318,12 +449,31 @@ export default function GuardiaSeguridadDashboard() {
             </div>
             <div className="space-y-2">
               <Label>Recibe (Relevo) *</Label>
-              <Input placeholder="Nombre del compañero" />
+              <Input 
+                placeholder="Nombre del compañero" 
+                value={endShiftData.recibe}
+                onChange={(e) => setEndShiftData({...endShiftData, recibe: e.target.value})}
+              />
             </div>
           </div>
           <DialogFooter className="border-t pt-4">
             <Button variant="outline" onClick={() => setModalEndShift(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={() => { toast.success("Turno cerrado. Sistema bloqueado."); setModalEndShift(false); }}>
+            <Button variant="destructive" onClick={() => { 
+                if (!endShiftData.recibe) {
+                    toast.error("Debe indicar quién recibe el turno");
+                    return;
+                }
+                logEvent({
+                    module: "Minuta",
+                    type: "Cierre de Turno",
+                    unit: "Seguridad",
+                    summary: `Entrega a: ${endShiftData.recibe}. Consignas: ${endShiftData.consignas || "Ninguna"}`,
+                    status: "Cerrado"
+                });
+                toast.success("Turno cerrado. Sistema actualizado."); 
+                setModalEndShift(false); 
+                setEndShiftData({ consignas: "", recibe: "" });
+            }}>
               Firmar y Cerrar Minuta
             </Button>
           </DialogFooter>

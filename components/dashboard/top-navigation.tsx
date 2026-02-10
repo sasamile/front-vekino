@@ -38,7 +38,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconBell, IconUser, IconLogout } from "@tabler/icons-react";
+import { IconBell, IconUser, IconLogout, IconHome } from "@tabler/icons-react";
 import toast from "react-hot-toast";
 import { getAdditionalNavItemsForUser } from "./mobile-bottom-nav";
 import { NotificationsTrigger } from "@/components/dashboard/notifications/notifications-trigger";
@@ -56,7 +56,7 @@ const getNavItems = (role: UserRole): NavItem[] => {
         {
           title: "Inicio",
           url: "/",
-          icon: IconDashboard,
+          icon: IconHome,
         },
         {
           title: "Reservas",

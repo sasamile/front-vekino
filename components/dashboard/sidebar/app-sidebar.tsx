@@ -67,12 +67,12 @@ const getNavConfig = (
           {
             title: "Inicio",
             url: `/`,
-            icon: IconDashboard,
+            icon: IconHome,
           },
           {
             title: "Mi Perfil",
             url: `${basePath}/profile`,
-            icon: IconHome,
+            icon: IconUser,
           },
           {
             title: "Reservas",
