@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: ghcr.io/sasamile/front-vekino:latest
+    image: ghcr.io/factoryia/vekinoweb:latest
     container_name: my-app-frontend
     restart: unless-stopped
     ports:
