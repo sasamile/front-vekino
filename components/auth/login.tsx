@@ -88,10 +88,10 @@ export default function Login() {
       });
 
       // Usar window.location para forzar una recarga completa y que el middleware detecte la cookie
-      // Pequeño delay para asegurar que la cookie se guarde
+      // Delay para dar tiempo al backend a establecer la sesión antes de verifySession en el middleware
       setTimeout(() => {
         window.location.href = "/";
-      }, 100);
+      }, 400);
 
       console.log("Login response:", response.data);
     } catch (err: any) {

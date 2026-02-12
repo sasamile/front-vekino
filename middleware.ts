@@ -100,10 +100,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(homeUrl);
     }
     
-    // Si hay cookie pero la sesión no es válida, permitir login y limpiar cookie
-    const response = NextResponse.next();
-    response.cookies.delete('better-auth.session_token');
-    return response;
+    // Si hay cookie pero la sesión no es válida: NO borrar la cookie aquí.
+    // verifySession puede fallar por timeout o 401 temporal (ej. propietarios vs admin).
+    // Borrarla hacía que la cookie recién creada "desapareciera" para el usuario.
+    return NextResponse.next();
   }
   
   // Permitir acceso a /pago-exitoso sin autenticación estricta (Wompi redirige ahí)
