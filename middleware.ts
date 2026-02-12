@@ -89,10 +89,11 @@ export async function middleware(request: NextRequest) {
     }
     
     // Si hay cookie, verificar la sesión
-    const authData = await verifySession(request, subdomain);
+    const sessionResult = await verifySession(request, subdomain);
     
     // Si la sesión es válida, redirigir a la página principal
-    if (authData) {
+    // Solo redirigir si tenemos authData válido (no si es error temporal)
+    if (sessionResult.authData) {
       // Construir la URL de redirección correctamente
       const homeUrl = request.nextUrl.clone();
       homeUrl.pathname = '/';
@@ -103,6 +104,7 @@ export async function middleware(request: NextRequest) {
     // Si hay cookie pero la sesión no es válida: NO borrar la cookie aquí.
     // verifySession puede fallar por timeout o 401 temporal (ej. propietarios vs admin).
     // Borrarla hacía que la cookie recién creada "desapareciera" para el usuario.
+    // Permitir acceso al login si hay error temporal o real
     return NextResponse.next();
   }
   
@@ -119,30 +121,34 @@ export async function middleware(request: NextRequest) {
   }
   
   // Si hay cookie, verificar la sesión
-  const authData = await verifySession(request, subdomain);
+  const sessionResult = await verifySession(request, subdomain);
   
-  // Si no hay sesión válida, redirigir a login
-  if (!authData) {
+  // Solo redirigir a login si es un error real de autenticación (401), no si es un error temporal
+  // Si es un error temporal (timeout, conexión), permitir el acceso y dejar que el cliente maneje el error
+  if (!sessionResult.authData && !sessionResult.isTemporaryError) {
+    // Error real de autenticación - redirigir a login
     const loginUrl = new URL('/auth/login', request.url);
     return NextResponse.redirect(loginUrl);
   }
 
+  // Si hay error temporal pero tenemos cookie, permitir acceso (el cliente manejará el error)
+  // Si no hay authData por error temporal, no podemos agregar headers, pero permitimos acceso
+  if (!sessionResult.authData) {
+    // Error temporal - permitir acceso sin headers de usuario
+    return NextResponse.next();
+  }
+
+  const authData = sessionResult.authData;
+
   // Verificar si el usuario puede acceder a esta ruta según su rol
-  console.log(`[Middleware] Verificando acceso - Pathname: "${pathname}", Rol: ${authData.user.role}, Subdomain: ${subdomain}`);
   const canAccess = canAccessRoute(pathname, authData.user.role);
   if (!canAccess) {
-    // Log para diagnóstico (remover en producción si es necesario)
-    console.log(`[Middleware] ❌ ACCESO DENEGADO - Ruta: "${pathname}", Rol: ${authData.user.role}, Subdomain: ${subdomain}`);
-    console.log(`[Middleware] Redirigiendo a /`);
-    
     // Si no tiene permiso, redirigir a la página principal o mostrar error
     // TODO: Puedes personalizar esto según tus necesidades
     // Por ejemplo, redirigir a una página de "acceso denegado"
     const homeUrl = new URL('/', request.url);
     return NextResponse.redirect(homeUrl);
   }
-  
-  console.log(`[Middleware] ✅ Acceso permitido - Ruta: "${pathname}", Rol: ${authData.user.role}`);
 
   // Agregar información de autenticación a los headers
   const response = NextResponse.next();

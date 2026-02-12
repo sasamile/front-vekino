@@ -62,16 +62,10 @@ const GUARDIA_ROUTES = [
  */
 export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
   // Normalizar pathname (remover trailing slash y query params para comparación)
-  // Pero mantener el pathname original para logging
-  const originalPath = pathname;
   const normalizedPath = pathname.split('?')[0].replace(/\/$/, '') || '/';
-  
-  // Log para diagnóstico
-  console.log(`[canAccessRoute] Verificando acceso - Pathname original: "${originalPath}", Normalizado: "${normalizedPath}", Rol: ${userRole}`);
   
   // Si la ruta es pública, permitir acceso
   if (isPublicRoute(normalizedPath)) {
-    console.log(`[canAccessRoute] Ruta pública, acceso permitido`);
     return true;
   }
 
@@ -79,55 +73,40 @@ export function canAccessRoute(pathname: string, userRole: UserRole): boolean {
   // IMPORTANTE: Verificar SUPERADMIN primero porque puede acceder a todo
   const matchingSuperAdminRoute = SUPERADMIN_ROUTES.find(route => normalizedPath.startsWith(route));
   if (matchingSuperAdminRoute) {
-    const allowed = userRole === 'SUPERADMIN';
-    console.log(`[canAccessRoute] Ruta SUPERADMIN "${matchingSuperAdminRoute}" - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'SUPERADMIN';
   }
 
   const matchingAdminRoute = ADMIN_ROUTES.find(route => normalizedPath.startsWith(route));
   if (matchingAdminRoute) {
     // ADMIN y SUPERADMIN pueden acceder a rutas de ADMIN
-    const allowed = userRole === 'ADMIN' || userRole === 'SUPERADMIN';
-    console.log(`[canAccessRoute] Ruta ADMIN "${matchingAdminRoute}" - Acceso: ${allowed} (Rol: ${userRole})`);
-    return allowed;
+    return userRole === 'ADMIN' || userRole === 'SUPERADMIN';
   }
 
   const matchingUserRoute = USER_ROUTES.find(route => normalizedPath.startsWith(route));
   if (matchingUserRoute) {
-    const allowed = userRole === 'PROPIETARIO';
-    console.log(`[canAccessRoute] Ruta USER "${matchingUserRoute}" - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'PROPIETARIO';
   }
 
   const matchingGuardiaRoute = GUARDIA_ROUTES.find(route => normalizedPath.startsWith(route));
   if (matchingGuardiaRoute) {
-    const allowed = userRole === 'GUARDIA_SEGURIDAD';
-    console.log(`[canAccessRoute] Ruta GUARDIA "${matchingGuardiaRoute}" - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'GUARDIA_SEGURIDAD';
   }
 
   // Rutas protegidas por prefijo de pathname
   if (normalizedPath.startsWith('/admin')) {
-    const allowed = userRole === 'ADMIN' || userRole === 'SUPERADMIN';
-    console.log(`[canAccessRoute] Ruta /admin/* - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'ADMIN' || userRole === 'SUPERADMIN';
   }
 
   if (normalizedPath.startsWith('/superadmin')) {
-    const allowed = userRole === 'SUPERADMIN';
-    console.log(`[canAccessRoute] Ruta /superadmin/* - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'SUPERADMIN';
   }
 
   if (normalizedPath.startsWith('/user')) {
-    const allowed = userRole === 'PROPIETARIO';
-    console.log(`[canAccessRoute] Ruta /user/* - Acceso: ${allowed}`);
-    return allowed;
+    return userRole === 'PROPIETARIO';
   }
 
   // Para otras rutas (como /), permitir acceso si está autenticado
   // Esto se puede ajustar según las necesidades
-  console.log(`[canAccessRoute] Ruta no específica, acceso permitido por defecto`);
   return true;
 }
 
