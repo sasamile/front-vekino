@@ -25,7 +25,20 @@ export function ResumenPagos({
     : false;
 
   if (isLoading) {
-    return <Skeleton className="h-[180px] w-full rounded-xl" />;
+    return (
+      <div className="h-full w-full min-h-[180px] rounded-xl border shadow-md p-5 sm:p-6 bg-linear-to-br from-amber-200/30 via-white to-white flex flex-col justify-between">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-6 w-20 rounded-md" />
+          </div>
+          <Skeleton className="h-4 w-full max-w-md" />
+        </div>
+        <div className="mt-4">
+          <Skeleton className="h-10 w-32 rounded-md" />
+        </div>
+      </div>
+    );
   }
 
   const pendientesCantidad = misPagos?.resumen?.pendientes?.cantidad || 0;

@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { FormularioReserva } from "@/components/dashboard/user/reservations/formulario-reserva";
-import { CalendarioSemanal } from "@/components/dashboard/user/reservations/calendario-semanal";
+import { CalendarioSemanal, type VistaCalendario } from "@/components/dashboard/user/reservations/calendario-semanal";
 import { HistorialReservas } from "@/components/dashboard/user/reservations/historial-reservas";
 import { BadgeEstado } from "@/components/dashboard/user/reservations/badge-estado";
 import {
@@ -43,6 +43,7 @@ function ReservationsPage() {
   const queryClient = useQueryClient();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedFecha, setSelectedFecha] = useState<Date>(new Date());
+  const [vista, setVista] = useState<VistaCalendario>("semana");
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
 
@@ -76,16 +77,74 @@ function ReservationsPage() {
   const [horaFinSeleccionada, setHoraFinSeleccionada] = useState<string>("");
   const [mesActual, setMesActual] = useState(new Date());
 
-  // Obtener reservas de la semana
-  const { data: reservasSemana = [], isLoading: semanaLoading } = useQuery<Reserva[]>({
-    queryKey: ["usuario-reservas-semana", selectedFecha],
+  // Calcular rango de fechas según la vista
+  const getRangoFechas = (fecha: Date, vistaActual: VistaCalendario) => {
+    const inicio = new Date(fecha);
+    const fin = new Date(fecha);
+    
+    if (vistaActual === "semana") {
+      const diaSemana = inicio.getDay();
+      inicio.setDate(inicio.getDate() - diaSemana);
+      fin.setDate(inicio.getDate() + 6);
+    } else if (vistaActual === "quincena") {
+      const diaSemana = inicio.getDay();
+      inicio.setDate(inicio.getDate() - diaSemana);
+      fin.setDate(inicio.getDate() + 14);
+    } else if (vistaActual === "mes") {
+      inicio.setDate(1); // Primer día del mes
+      fin.setMonth(fin.getMonth() + 1);
+      fin.setDate(0); // Último día del mes
+    }
+    
+    return { inicio, fin };
+  };
+
+  // Obtener reservas según la vista seleccionada
+  const { inicio, fin } = getRangoFechas(selectedFecha, vista);
+  const { data: reservasVista = [], isLoading: semanaLoading } = useQuery<Reserva[]>({
+    queryKey: ["usuario-reservas-vista", selectedFecha, vista],
     queryFn: async () => {
       const axiosInstance = getAxiosInstance(subdomain);
-      const fechaInicio = selectedFecha.toISOString();
-      const response = await axiosInstance.get(
-        `/usuario/reservas/semana?fechaInicio=${fechaInicio}`
-      );
-      return response.data;
+      
+      // Para semana, usar el endpoint específico de semana
+      if (vista === "semana") {
+        const fechaInicio = inicio.toISOString();
+        const response = await axiosInstance.get(
+          `/usuario/reservas/semana?fechaInicio=${fechaInicio}`
+        );
+        return Array.isArray(response.data) ? response.data : [];
+      }
+      
+      // Para quincena y mes, intentar usar el endpoint con filtros de fecha
+      // Si falla, usar el endpoint de semana y filtrar en el cliente
+      try {
+        const fechaInicio = inicio.toISOString();
+        const fechaFin = fin.toISOString();
+        const response = await axiosInstance.get(
+          `/usuario/reservas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+        );
+        const reservas = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+        
+        // Filtrar reservas que estén dentro del rango
+        return reservas.filter((reserva: Reserva) => {
+          const fechaReserva = new Date(reserva.fechaInicio);
+          return fechaReserva >= inicio && fechaReserva <= fin;
+        });
+      } catch (error) {
+        // Si el endpoint no acepta esos parámetros, usar el endpoint de semana
+        // y hacer múltiples llamadas o filtrar en el cliente
+        const fechaInicio = inicio.toISOString();
+        const response = await axiosInstance.get(
+          `/usuario/reservas/semana?fechaInicio=${fechaInicio}`
+        );
+        const reservasSemana = Array.isArray(response.data) ? response.data : [];
+        
+        // Filtrar reservas que estén dentro del rango
+        return reservasSemana.filter((reserva: Reserva) => {
+          const fechaReserva = new Date(reserva.fechaInicio);
+          return fechaReserva >= inicio && fechaReserva <= fin;
+        });
+      }
     },
   });
 
@@ -458,17 +517,48 @@ function ReservationsPage() {
         tieneHorasDisponibles={tieneHorasDisponiblesWrapper}
       />
 
-      {/* Calendario Semanal */}
+      {/* Calendario Semanal/Quincenal/Mensual */}
       <CalendarioSemanal
-        reservasSemana={reservasSemana}
+        reservasSemana={reservasVista}
         isLoading={semanaLoading}
         selectedFecha={selectedFecha}
-        onSemanaChange={(direccion) => {
+        vista={vista}
+        onVistaChange={(nuevaVista) => {
+          setVista(nuevaVista);
+          // Ajustar la fecha seleccionada según la nueva vista
+          const hoy = new Date();
+          if (nuevaVista === "mes") {
+            // Para mes, ir al primer día del mes actual
+            setSelectedFecha(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+          } else {
+            // Para semana y quincena, usar la fecha actual
+            setSelectedFecha(hoy);
+          }
+        }}
+        onPeriodoChange={(direccion) => {
           const nuevaFecha = new Date(selectedFecha);
-          nuevaFecha.setDate(selectedFecha.getDate() + (direccion === 'siguiente' ? 7 : -7));
+          
+          if (vista === "semana") {
+            nuevaFecha.setDate(selectedFecha.getDate() + (direccion === 'siguiente' ? 7 : -7));
+          } else if (vista === "quincena") {
+            nuevaFecha.setDate(selectedFecha.getDate() + (direccion === 'siguiente' ? 15 : -15));
+          } else if (vista === "mes") {
+            nuevaFecha.setMonth(selectedFecha.getMonth() + (direccion === 'siguiente' ? 1 : -1));
+            // Asegurar que estemos en el primer día del mes
+            nuevaFecha.setDate(1);
+          }
+          
           setSelectedFecha(nuevaFecha);
         }}
-        onHoyClick={() => setSelectedFecha(new Date())}
+        onHoyClick={() => {
+          const hoy = new Date();
+          if (vista === "mes") {
+            // Para mes, ir al primer día del mes actual
+            setSelectedFecha(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+          } else {
+            setSelectedFecha(hoy);
+          }
+        }}
       />
 
       {/* Historial de Reservas */}

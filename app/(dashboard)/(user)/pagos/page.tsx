@@ -221,6 +221,7 @@ function PagosPage() {
             puedePagar={puedePagar}
             handlePagar={handlePagar}
             isPaying={crearPagoMutation.isPending}
+            isLoading={misPagosLoading}
           />
         </div>
 

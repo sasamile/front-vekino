@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { IconArrowRight } from "@tabler/icons-react";
 import { BadgeEstado } from "./badge-estado";
 import { getValorFacturado, getSaldoPendiente } from "./utils";
@@ -19,6 +20,7 @@ interface ProximoPagoProps {
   puedePagar: (factura: Factura) => boolean;
   handlePagar: (factura: Factura) => void;
   isPaying: boolean;
+  isLoading?: boolean;
 }
 
 export function ProximoPago({
@@ -30,8 +32,29 @@ export function ProximoPago({
   puedePagar,
   handlePagar,
   isPaying,
+  isLoading = false,
 }: ProximoPagoProps) {
-  // Eliminamos el retorno nulo para mostrar siempre la tarjeta
+  if (isLoading) {
+    return (
+      <div className="h-full w-full min-h-[180px] p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white flex flex-col justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+          <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-full max-w-xs" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <div className="text-left sm:text-right shrink-0 w-full sm:w-auto space-y-3">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-10 w-full sm:w-36 rounded-md" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="h-full w-full min-h-[180px] p-5 sm:p-6 rounded-xl border shadow-md bg-linear-to-br from-red-200/30 via-white to-white flex flex-col justify-between">

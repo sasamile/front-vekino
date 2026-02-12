@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -240,7 +241,95 @@ export default function UserVisitantes() {
   };
 
   if (isLoadingUser) {
-    return <div className="p-8 text-center">Cargando información de usuario...</div>;
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-5 w-64" />
+          </div>
+        </div>
+        
+        {/* Tabs Skeleton */}
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-1/2 rounded-md" />
+            <Skeleton className="h-10 w-1/2 rounded-md" />
+          </div>
+          
+          {/* Content Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Form Card Skeleton */}
+            <Card className="lg:col-span-1 border-primary/20 shadow-lg h-fit">
+              <CardHeader className="bg-primary/5 border-b">
+                <div className="flex items-center gap-2 pt-2">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <Skeleton className="h-6 w-32" />
+                </div>
+                <Skeleton className="h-4 w-40 mt-2" />
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-10 w-full rounded-md" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="h-10 w-full rounded-md mt-4" />
+              </CardContent>
+            </Card>
+            
+            {/* Table Card Skeleton */}
+            <Card className="lg:col-span-2 h-full shadow-lg border-muted/60 flex flex-col">
+              <CardHeader className="border-b bg-muted/5 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-4 w-56" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-48 rounded-md" />
+                    <Skeleton className="h-9 w-32 rounded-md" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
+                <div className="overflow-auto h-[500px] p-4 space-y-3">
+                  {/* Header skeleton */}
+                  <div className="grid grid-cols-5 gap-4 pb-3 border-b">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Skeleton key={i} className="h-4 w-full" />
+                    ))}
+                  </div>
+                  {/* Rows skeleton */}
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="grid grid-cols-5 gap-4 py-3 border-b">
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-8 w-20 rounded-full mx-auto" />
+                      <Skeleton className="h-8 w-8 rounded-md mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!userInfo?.unidadId) {
@@ -390,7 +479,39 @@ export default function UserVisitantes() {
                 <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
                 <div className="overflow-auto h-[500px]">
                     {isLoadingVisitantes ? (
-                        <div className="text-center py-8 text-muted-foreground">Cargando visitantes...</div>
+                        <div className="p-4">
+                          {/* Header skeleton */}
+                          <div className="grid grid-cols-5 gap-4 pb-3 border-b mb-3">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                          {/* Rows skeleton */}
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <div key={i} className="grid grid-cols-5 gap-4 py-3 border-b">
+                              <div className="space-y-1">
+                                <Skeleton className="h-3 w-12" />
+                                <Skeleton className="h-3 w-10" />
+                              </div>
+                              <div className="space-y-1">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                              </div>
+                              <div className="space-y-1">
+                                <Skeleton className="h-3 w-20" />
+                                <Skeleton className="h-3 w-16" />
+                              </div>
+                              <div className="flex items-center justify-start">
+                                <Skeleton className="h-6 w-20 rounded-full" />
+                              </div>
+                              <div className="flex items-center justify-start">
+                                <Skeleton className="h-7 w-7 rounded-md" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                     ) : filteredVisitantes.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">No se encontraron registros</div>
                     ) : (

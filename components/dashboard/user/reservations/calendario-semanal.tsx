@@ -3,16 +3,26 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { IconCalendar, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IconCalendar, IconChevronLeft, IconChevronRight, IconChevronDown } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import type { Reserva } from "@/types/types";
 import { formatTime, formatDateShort } from "./utils";
+
+export type VistaCalendario = "semana" | "quincena" | "mes";
 
 interface CalendarioSemanalProps {
   reservasSemana: Reserva[];
   isLoading: boolean;
   selectedFecha: Date;
-  onSemanaChange: (direccion: 'anterior' | 'siguiente') => void;
+  vista: VistaCalendario;
+  onVistaChange: (vista: VistaCalendario) => void;
+  onPeriodoChange: (direccion: 'anterior' | 'siguiente') => void;
   onHoyClick: () => void;
 }
 
@@ -20,22 +30,98 @@ export function CalendarioSemanal({
   reservasSemana,
   isLoading,
   selectedFecha,
-  onSemanaChange,
+  vista,
+  onVistaChange,
+  onPeriodoChange,
   onHoyClick,
 }: CalendarioSemanalProps) {
-  const getDiasSemana = () => {
+  const getDiasVista = () => {
     const fecha = new Date(selectedFecha);
-    const diaSemana = fecha.getDay();
-    const inicioSemana = new Date(fecha);
-    inicioSemana.setDate(fecha.getDate() - diaSemana);
-    
     const dias: Date[] = [];
-    for (let i = 0; i < 7; i++) {
-      const dia = new Date(inicioSemana);
-      dia.setDate(inicioSemana.getDate() + i);
-      dias.push(dia);
+    
+    if (vista === "semana") {
+      const diaSemana = fecha.getDay();
+      const inicioSemana = new Date(fecha);
+      inicioSemana.setDate(fecha.getDate() - diaSemana);
+      
+      for (let i = 0; i < 7; i++) {
+        const dia = new Date(inicioSemana);
+        dia.setDate(inicioSemana.getDate() + i);
+        dias.push(dia);
+      }
+    } else if (vista === "quincena") {
+      // Quincena: 15 días desde el inicio de la semana actual
+      const diaSemana = fecha.getDay();
+      const inicioSemana = new Date(fecha);
+      inicioSemana.setDate(fecha.getDate() - diaSemana);
+      
+      for (let i = 0; i < 15; i++) {
+        const dia = new Date(inicioSemana);
+        dia.setDate(inicioSemana.getDate() + i);
+        dias.push(dia);
+      }
+    } else if (vista === "mes") {
+      // Mes: todos los días del mes actual
+      const año = fecha.getFullYear();
+      const mes = fecha.getMonth();
+      const primerDia = new Date(año, mes, 1);
+      const ultimoDia = new Date(año, mes + 1, 0);
+      
+      // Ajustar para que empiece en domingo
+      const diaSemanaPrimerDia = primerDia.getDay();
+      const inicioVista = new Date(primerDia);
+      inicioVista.setDate(primerDia.getDate() - diaSemanaPrimerDia);
+      
+      // Calcular cuántos días mostrar (desde el domingo anterior hasta el sábado después del último día)
+      const diasTotales = ultimoDia.getDate() + diaSemanaPrimerDia;
+      const semanasCompletas = Math.ceil(diasTotales / 7);
+      const diasAMostrar = semanasCompletas * 7;
+      
+      for (let i = 0; i < diasAMostrar; i++) {
+        const dia = new Date(inicioVista);
+        dia.setDate(inicioVista.getDate() + i);
+        dias.push(dia);
+      }
     }
+    
     return dias;
+  };
+
+  const getTituloVista = () => {
+    switch (vista) {
+      case "semana":
+        return "Reservas de la Semana";
+      case "quincena":
+        return "Reservas de la Quincena";
+      case "mes":
+        return "Reservas del Mes";
+      default:
+        return "Reservas";
+    }
+  };
+
+  const getDescripcionVista = () => {
+    switch (vista) {
+      case "semana":
+        return "Reservas confirmadas para esta semana";
+      case "quincena":
+        return "Reservas confirmadas para los próximos 15 días";
+      case "mes":
+        return "Reservas confirmadas para este mes";
+      default:
+        return "Reservas confirmadas";
+    }
+  };
+
+  const getEtiquetaVista = (v: VistaCalendario) => {
+    switch (v) {
+      case "semana":
+        return "Semana";
+      case "quincena":
+        return "Quincena";
+      case "mes":
+        return "Mes";
+    }
   };
 
   const reservasPorDia = reservasSemana.reduce((acc, reserva) => {
@@ -56,17 +142,40 @@ export function CalendarioSemanal({
           <div>
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <IconCalendar className="size-4 sm:size-5" />
-              Reservas de la Semana
+              {getTituloVista()}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Reservas confirmadas para esta semana
+              {getDescripcionVista()}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 flex-1 sm:flex-initial"
+                >
+                  {getEtiquetaVista(vista)}
+                  <IconChevronDown className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onVistaChange("semana")}>
+                  Semana
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onVistaChange("quincena")}>
+                  Quincena (15 días)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onVistaChange("mes")}>
+                  Mes
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onSemanaChange('anterior')}
+              onClick={() => onPeriodoChange('anterior')}
               className="flex-1 sm:flex-initial"
             >
               <IconChevronLeft className="size-4" />
@@ -82,7 +191,7 @@ export function CalendarioSemanal({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onSemanaChange('siguiente')}
+              onClick={() => onPeriodoChange('siguiente')}
               className="flex-1 sm:flex-initial"
             >
               <IconChevronRight className="size-4" />
@@ -98,7 +207,12 @@ export function CalendarioSemanal({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-7 gap-2">
+          <div className={cn(
+            "grid gap-2",
+            vista === "semana" && "grid-cols-1 sm:grid-cols-7",
+            vista === "quincena" && "grid-cols-1 sm:grid-cols-7",
+            vista === "mes" && "grid-cols-1 sm:grid-cols-7"
+          )}>
             {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((dia) => (
               <div
                 key={dia}
@@ -108,22 +222,29 @@ export function CalendarioSemanal({
               </div>
             ))}
             
-            {getDiasSemana().map((dia, index) => {
+            {getDiasVista().map((dia, index) => {
               const fechaStr = dia.toISOString().split('T')[0];
               const reservasDelDia = reservasPorDia[fechaStr] || [];
               const esHoy = fechaStr === new Date().toISOString().split('T')[0];
+              
+              // Para vista de mes, verificar si el día pertenece al mes actual
+              const esDelMesActual = vista === "mes" 
+                ? dia.getMonth() === selectedFecha.getMonth() 
+                : true;
               
               return (
                 <div
                   key={index}
                   className={cn(
                     "min-h-[100px] sm:min-h-[120px] border rounded-lg p-2 sm:p-2",
-                    esHoy && "border-primary border-2 bg-primary/5"
+                    esHoy && "border-primary border-2 bg-primary/5",
+                    !esDelMesActual && vista === "mes" && "opacity-40"
                   )}
                 >
                   <div className={cn(
                     "text-xs sm:text-sm font-medium mb-2",
-                    esHoy && "text-primary font-bold"
+                    esHoy && "text-primary font-bold",
+                    !esDelMesActual && vista === "mes" && "text-muted-foreground"
                   )}>
                     {formatDateShort(dia)}
                   </div>
