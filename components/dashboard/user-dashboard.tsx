@@ -29,7 +29,7 @@ import {
   IconFileDownload,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { getValorFacturado, getSaldoPendiente } from "@/components/dashboard/user/pagos/utils";
+import { getValorFacturado, getSaldoPendiente, getEstadoVisual } from "@/components/dashboard/user/pagos/utils";
 import type {
   Reserva,
   ReservaEstado,
@@ -155,7 +155,10 @@ export function UserDashboard() {
 
     // Si no hay pendientes, buscar ABONADAS con saldo pendiente
     const facturasAbonadas = misPagos.facturas.filter(
-      (f) => f.estado === "ABONADO" && getSaldoPendiente(f) > 0
+      (f) => {
+        const estadoVisual = getEstadoVisual(f);
+        return estadoVisual === "ABONADO" && getSaldoPendiente(f) > 0;
+      }
     );
 
     if (facturasAbonadas.length > 0) {
@@ -398,7 +401,7 @@ export function UserDashboard() {
                     <p className="font-bold text-lg text-red-700 dark:text-red-400">
                       {proximoPago
                         ? formatCurrency(
-                            proximoPago.estado === "ABONADO" && getSaldoPendiente(proximoPago) > 0
+                            getEstadoVisual(proximoPago) === "ABONADO" && getSaldoPendiente(proximoPago) > 0
                               ? getSaldoPendiente(proximoPago)
                               : getValorFacturado(proximoPago)
                           )
@@ -469,7 +472,7 @@ export function UserDashboard() {
               <>
                 <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                   {formatCurrency(
-                    proximoPago.estado === "ABONADO" && getSaldoPendiente(proximoPago) > 0
+                    getEstadoVisual(proximoPago) === "ABONADO" && getSaldoPendiente(proximoPago) > 0
                       ? getSaldoPendiente(proximoPago)
                       : getValorFacturado(proximoPago)
                   )}
@@ -616,10 +619,11 @@ export function UserDashboard() {
             {misPagos && misPagos.facturas.length > 0 ? (
               <div className="space-y-3">
                 {misPagos.facturas.slice(0, 5).map((factura) => {
-                  const isPagada = factura.estado === "PAGADA";
-                  const isVencida = factura.estado === "VENCIDA";
-                  const isPendiente = factura.estado === "PENDIENTE";
-                  const isAbonado = factura.estado === "ABONADO";
+                  const estadoVisual = getEstadoVisual(factura);
+                  const isPagada = estadoVisual === "PAGADA";
+                  const isVencida = estadoVisual === "VENCIDA";
+                  const isPendiente = estadoVisual === "PENDIENTE";
+                  const isAbonado = estadoVisual === "ABONADO";
                   const valorFacturado = getValorFacturado(factura);
                   const saldoPendiente = getSaldoPendiente(factura);
                   const montoAPagar = saldoPendiente > 0 ? saldoPendiente : valorFacturado;
@@ -669,18 +673,18 @@ export function UserDashboard() {
                           </div>
                           <Badge
                             variant={
-                              factura.estado === "PAGADA" || factura.estado === "ABONADO"
+                              estadoVisual === "PAGADA" || estadoVisual === "ABONADO"
                                 ? "default"
-                                : factura.estado === "VENCIDA"
+                                : estadoVisual === "VENCIDA"
                                   ? "destructive"
                                   : "secondary"
                             }
                             className={cn(
                               "text-xs mt-1 font-semibold",
-                              factura.estado === "ABONADO" && "bg-green-600 hover:bg-green-700 text-white"
+                              estadoVisual === "ABONADO" && "bg-green-600 hover:bg-green-700 text-white"
                             )}
                           >
-                            {factura.estado}
+                            {estadoVisual}
                           </Badge>
                         </div>
                         <a

@@ -20,11 +20,16 @@ export const puedePagar = (factura: any) => {
   if ("puedePagar" in factura && typeof factura.puedePagar === "boolean") {
     return factura.puedePagar;
   }
+  const estadoVisual = getEstadoVisual(factura);
+  // Si el estado visual es PAGADA, no se puede pagar
+  if (estadoVisual === "PAGADA") {
+    return false;
+  }
   return (
-    factura.estado === "PENDIENTE" ||
-    factura.estado === "VENCIDA" ||
-    factura.estado === "ENVIADA" ||
-    factura.estado === "ABONADO"
+    estadoVisual === "PENDIENTE" ||
+    estadoVisual === "VENCIDA" ||
+    estadoVisual === "ENVIADA" ||
+    estadoVisual === "ABONADO"
   );
 };
 
@@ -51,5 +56,26 @@ export function getSaldoPendiente(factura: {
     return Math.max(0, valorFacturado - factura.totalPagado);
   }
   return factura.saldoPendiente ?? 0;
+}
+
+/**
+ * Obtiene el estado visual de la factura.
+ * Si el totalPagado es igual al valorConDescuento, retorna "PAGADA" en lugar de "ABONADO".
+ */
+export function getEstadoVisual(factura: {
+  estado: string;
+  totalPagado?: number | null;
+  valorConDescuento?: number | null;
+}): string {
+  // Si el estado es ABONADO y el totalPagado es igual al valorConDescuento, mostrar como PAGADA
+  if (
+    factura.estado === "ABONADO" &&
+    factura.totalPagado != null &&
+    factura.valorConDescuento != null &&
+    factura.totalPagado === factura.valorConDescuento
+  ) {
+    return "PAGADA";
+  }
+  return factura.estado;
 }
 

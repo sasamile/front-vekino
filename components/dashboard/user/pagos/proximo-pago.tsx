@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IconArrowRight } from "@tabler/icons-react";
 import { BadgeEstado } from "./badge-estado";
-import { getValorFacturado, getSaldoPendiente } from "./utils";
+import { getValorFacturado, getSaldoPendiente, getEstadoVisual } from "./utils";
 import type { Factura, FacturaEstado } from "@/types/types";
 
 interface ProximoPagoProps {
@@ -65,7 +65,7 @@ export function ProximoPago({
               Factura Pendiente
             </span>
             {proximoPago ? (
-              <BadgeEstado estado={proximoPago.estado} />
+              <BadgeEstado estado={getEstadoVisual(proximoPago) as FacturaEstado} />
             ) : (
               <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
                 AL DÍA
@@ -82,9 +82,9 @@ export function ProximoPago({
                 Factura: {proximoPago.numeroFactura}
               </p>
               <p className="text-xs text-muted-foreground">
-                {proximoPago.estado === "VENCIDA" ? "Vencido" : "Vence"}: {formatDate(proximoPago.fechaVencimiento)}
+                {getEstadoVisual(proximoPago) === "VENCIDA" ? "Vencido" : "Vence"}: {formatDate(proximoPago.fechaVencimiento)}
               </p>
-              {proximoPago.estado === "PAGADA" && proximoPago.fechaPago && (
+              {getEstadoVisual(proximoPago) === "PAGADA" && proximoPago.fechaPago && (
                 <>
                   <p className="text-xs text-muted-foreground mt-2">
                     Pagada el {formatDate(proximoPago.fechaPago)}

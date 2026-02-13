@@ -15,6 +15,7 @@ import {
   formatDate,
   puedePagar,
   getSaldoPendiente,
+  getEstadoVisual,
 } from "@/components/dashboard/user/pagos/utils";
 import type { Factura, CreatePagoRequest } from "@/types/types";
 import type { MisPagosResponse } from "@/components/dashboard/user/pagos/types";
@@ -56,7 +57,10 @@ function PagosPage() {
 
     // Primero buscar facturas PENDIENTE o VENCIDA (no pagadas completamente)
     const facturasPendientes = misPagos.facturas.filter(
-      (f) => f.estado === "PENDIENTE" || f.estado === "VENCIDA"
+      (f) => {
+        const estadoVisual = getEstadoVisual(f);
+        return estadoVisual === "PENDIENTE" || estadoVisual === "VENCIDA";
+      }
     );
 
     if (facturasPendientes.length > 0) {
@@ -77,7 +81,10 @@ function PagosPage() {
 
     // Si no hay pendientes, buscar ABONADAS con saldo pendiente
     const facturasAbonadas = misPagos.facturas.filter(
-      (f) => f.estado === "ABONADO" && getSaldoPendiente(f) > 0
+      (f) => {
+        const estadoVisual = getEstadoVisual(f);
+        return estadoVisual === "ABONADO" && getSaldoPendiente(f) > 0;
+      }
     );
 
     if (facturasAbonadas.length > 0) {

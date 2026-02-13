@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IconCheck } from "@tabler/icons-react";
 import { BadgeEstado } from "./badge-estado";
-import { getValorFacturado, getSaldoPendiente } from "./utils";
+import { getValorFacturado, getSaldoPendiente, getEstadoVisual } from "./utils";
 import type { Factura, FacturaEstado } from "@/types/types";
 
 interface ListaFacturasProps {
@@ -77,12 +77,13 @@ export function ListaFacturas({
     <>
       <div className="space-y-3">
         {facturas.map((factura) => {
-          const isPagada = factura.estado === "PAGADA";
+          const estadoVisual = getEstadoVisual(factura) as FacturaEstado;
+          const isPagada = estadoVisual === "PAGADA";
           const valorFacturado = getValorFacturado(factura);
           const saldoPendiente = getSaldoPendiente(factura);
           const montoAPagar = saldoPendiente > 0 ? saldoPendiente : valorFacturado;
           const esAbonado =
-            factura.estado === "ABONADO" &&
+            estadoVisual === "ABONADO" &&
             saldoPendiente > 0 &&
             valorFacturado > saldoPendiente;
 
@@ -96,7 +97,7 @@ export function ListaFacturas({
                   <span className="font-semibold text-base">
                     {factura.numeroFactura}
                   </span>
-                  <BadgeEstado estado={factura.estado} />
+                  <BadgeEstado estado={estadoVisual} />
                   {isPagada && (
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <IconCheck className="size-4" />

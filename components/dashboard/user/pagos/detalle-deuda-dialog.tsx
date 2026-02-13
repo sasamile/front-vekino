@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BadgeEstado } from "./badge-estado";
-import type { Factura } from "@/types/types";
+import type { Factura, FacturaEstado } from "@/types/types";
 import type { MisPagosResponse } from "./types";
-import { getValorFacturado, getSaldoPendiente } from "./utils";
+import { getValorFacturado, getSaldoPendiente, getEstadoVisual } from "./utils";
 import { IconArrowRight } from "@tabler/icons-react";
 
 interface DetalleDeudaDialogProps {
@@ -41,9 +41,10 @@ export function DetalleDeudaDialog({
 
   const facturasConDeuda =
     misPagos?.facturas.filter(
-      (f) =>
-        f.estado !== "PAGADA" &&
-        f.estado !== "CANCELADA"
+      (f) => {
+        const estadoVisual = getEstadoVisual(f);
+        return estadoVisual !== "PAGADA" && estadoVisual !== "CANCELADA";
+      }
     ) ?? [];
 
   const totalDeudaValor = facturasConDeuda.reduce(
@@ -92,11 +93,12 @@ export function DetalleDeudaDialog({
               <h3 className="text-sm font-semibold mb-3">Facturas pendientes</h3>
               <ul className="space-y-3">
                 {facturasConDeuda.map((factura) => {
+                  const estadoVisual = getEstadoVisual(factura) as FacturaEstado;
                   const valorFacturado = getValorFacturado(factura);
                   const saldoPendiente = getSaldoPendiente(factura);
                   const monto = saldoPendiente > 0 ? saldoPendiente : valorFacturado;
                   const esAbonado =
-                    factura.estado === "ABONADO" &&
+                    estadoVisual === "ABONADO" &&
                     saldoPendiente > 0 &&
                     valorFacturado > saldoPendiente;
 
@@ -110,7 +112,7 @@ export function DetalleDeudaDialog({
                           <span className="font-medium text-sm">
                             {factura.numeroFactura}
                           </span>
-                          <BadgeEstado estado={factura.estado} />
+                          <BadgeEstado estado={estadoVisual} />
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {factura.descripcion ||
