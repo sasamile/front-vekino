@@ -50,13 +50,63 @@ function PagosPage() {
       misPagos.resumen.pendientes?.cantidad === 0
     : false;
 
-  // Obtener próximo pago del resumen
-  const proximoPago = misPagos?.resumen?.proximoVencimiento
-    ? misPagos.facturas.find(
-        (f) =>
-          f.numeroFactura === misPagos.resumen.proximoVencimiento?.numeroFactura
-      ) || null
-    : null;
+  // Obtener próximo pago: priorizar facturas PENDIENTE o VENCIDA sobre ABONADAS
+  const getProximoPago = () => {
+    if (!misPagos || !misPagos.facturas.length) return null;
+
+    // Primero buscar facturas PENDIENTE o VENCIDA (no pagadas completamente)
+    const facturasPendientes = misPagos.facturas.filter(
+      (f) => f.estado === "PENDIENTE" || f.estado === "VENCIDA"
+    );
+
+    if (facturasPendientes.length > 0) {
+      // Ordenar por período (más reciente primero) o por fecha de vencimiento
+      facturasPendientes.sort((a, b) => {
+        // Primero por período (más reciente primero)
+        if (a.periodo && b.periodo) {
+          const periodoCompare = b.periodo.localeCompare(a.periodo);
+          if (periodoCompare !== 0) return periodoCompare;
+        }
+        // Si mismo período, por fecha de vencimiento (más próxima primero)
+        const fechaA = new Date(a.fechaVencimiento).getTime();
+        const fechaB = new Date(b.fechaVencimiento).getTime();
+        return fechaA - fechaB;
+      });
+      return facturasPendientes[0];
+    }
+
+    // Si no hay pendientes, buscar ABONADAS con saldo pendiente
+    const facturasAbonadas = misPagos.facturas.filter(
+      (f) => f.estado === "ABONADO" && getSaldoPendiente(f) > 0
+    );
+
+    if (facturasAbonadas.length > 0) {
+      facturasAbonadas.sort((a, b) => {
+        if (a.periodo && b.periodo) {
+          const periodoCompare = b.periodo.localeCompare(a.periodo);
+          if (periodoCompare !== 0) return periodoCompare;
+        }
+        const fechaA = new Date(a.fechaVencimiento).getTime();
+        const fechaB = new Date(b.fechaVencimiento).getTime();
+        return fechaA - fechaB;
+      });
+      return facturasAbonadas[0];
+    }
+
+    // Fallback: usar el resumen del backend si existe
+    if (misPagos.resumen?.proximoVencimiento) {
+      return (
+        misPagos.facturas.find(
+          (f) =>
+            f.numeroFactura === misPagos.resumen.proximoVencimiento?.numeroFactura
+        ) || null
+      );
+    }
+
+    return null;
+  };
+
+  const proximoPago = getProximoPago();
 
   // Calcular próximo período de pago si ya pagó todas las facturas
   const calcularProximoPeriodo = () => {

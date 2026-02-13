@@ -29,6 +29,7 @@ import {
   IconFileDownload,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { getValorFacturado, getSaldoPendiente } from "@/components/dashboard/user/pagos/utils";
 import type {
   Reserva,
   ReservaEstado,
@@ -127,14 +128,63 @@ export function UserDashboard() {
       misPagos.resumen.pendientes.cantidad === 0
     : false;
 
-  // Obtener próximo pago
-  const proximoPago = misPagos?.resumen?.proximoVencimiento
-    ? misPagos.facturas.find(
-        (f) =>
-          f.numeroFactura ===
-          misPagos.resumen.proximoVencimiento?.numeroFactura,
-      ) || null
-    : null;
+  // Obtener próximo pago: priorizar facturas PENDIENTE o VENCIDA sobre ABONADAS
+  const getProximoPago = () => {
+    if (!misPagos || !misPagos.facturas.length) return null;
+
+    // Primero buscar facturas PENDIENTE o VENCIDA (no pagadas completamente)
+    const facturasPendientes = misPagos.facturas.filter(
+      (f) => f.estado === "PENDIENTE" || f.estado === "VENCIDA"
+    );
+
+    if (facturasPendientes.length > 0) {
+      // Ordenar por período (más reciente primero) o por fecha de vencimiento
+      facturasPendientes.sort((a, b) => {
+        // Primero por período (más reciente primero)
+        if (a.periodo && b.periodo) {
+          const periodoCompare = b.periodo.localeCompare(a.periodo);
+          if (periodoCompare !== 0) return periodoCompare;
+        }
+        // Si mismo período, por fecha de vencimiento (más próxima primero)
+        const fechaA = new Date(a.fechaVencimiento).getTime();
+        const fechaB = new Date(b.fechaVencimiento).getTime();
+        return fechaA - fechaB;
+      });
+      return facturasPendientes[0];
+    }
+
+    // Si no hay pendientes, buscar ABONADAS con saldo pendiente
+    const facturasAbonadas = misPagos.facturas.filter(
+      (f) => f.estado === "ABONADO" && getSaldoPendiente(f) > 0
+    );
+
+    if (facturasAbonadas.length > 0) {
+      facturasAbonadas.sort((a, b) => {
+        if (a.periodo && b.periodo) {
+          const periodoCompare = b.periodo.localeCompare(a.periodo);
+          if (periodoCompare !== 0) return periodoCompare;
+        }
+        const fechaA = new Date(a.fechaVencimiento).getTime();
+        const fechaB = new Date(b.fechaVencimiento).getTime();
+        return fechaA - fechaB;
+      });
+      return facturasAbonadas[0];
+    }
+
+    // Fallback: usar el resumen del backend si existe
+    if (misPagos.resumen?.proximoVencimiento) {
+      return (
+        misPagos.facturas.find(
+          (f) =>
+            f.numeroFactura === misPagos.resumen.proximoVencimiento?.numeroFactura
+        ) || null
+      );
+    }
+
+    return null;
+  };
+
+  const proximoPago = getProximoPago();
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
@@ -284,8 +334,8 @@ export function UserDashboard() {
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto">
       {/* Header con saludo mejorado */}
-      <div className="rounded-3xl bg-gradient-to-r from-primary/80 via-primary/60 to-primary/30 text-white p-6 md:p-8 border border-white/10 shadow-lg relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
+      <div className="rounded-3xl bg-linear-to-r from-primary/80 via-primary/60 to-primary/30 text-white p-6 md:p-8 border border-white/10 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/10 mask-[linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between z-10">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.2em] font-semibold text-white/90">
@@ -346,7 +396,13 @@ export function UserDashboard() {
                   </div>
                   <div>
                     <p className="font-bold text-lg text-red-700 dark:text-red-400">
-                      {proximoPago ? formatCurrency(proximoPago.valor) : "-"}
+                      {proximoPago
+                        ? formatCurrency(
+                            proximoPago.estado === "ABONADO" && getSaldoPendiente(proximoPago) > 0
+                              ? getSaldoPendiente(proximoPago)
+                              : getValorFacturado(proximoPago)
+                          )
+                        : "-"}
                     </p>
                     <p className="font-bold text-lg text-red-700 dark:text-red-400">
                       Tienes facturas vencidas
@@ -401,7 +457,7 @@ export function UserDashboard() {
       {/* Tarjetas de Resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Próximo Pago */}
-        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-500/10 via-card to-card border-green-200/50 dark:border-green-900/50 shadow-sm hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-linear-to-br from-green-500/10 via-card to-card border-green-200/50 dark:border-green-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-green-700 dark:text-green-400">Próximo Pago</CardTitle>
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
@@ -412,7 +468,11 @@ export function UserDashboard() {
             {proximoPago ? (
               <>
                 <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                  {formatCurrency(proximoPago.valor)}
+                  {formatCurrency(
+                    proximoPago.estado === "ABONADO" && getSaldoPendiente(proximoPago) > 0
+                      ? getSaldoPendiente(proximoPago)
+                      : getValorFacturado(proximoPago)
+                  )}
                 </div>
                 <p className="text-xs mt-1 text-muted-foreground">
                   Vence: {formatDate(proximoPago.fechaVencimiento)}
@@ -429,7 +489,7 @@ export function UserDashboard() {
         </Card>
 
         {/* Reservas Activas */}
-        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-indigo-500/10 via-card to-card border-indigo-200/50 dark:border-indigo-900/50 shadow-sm hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-linear-to-br from-indigo-500/10 via-card to-card border-indigo-200/50 dark:border-indigo-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-indigo-700 dark:text-indigo-400">
               Reservas Activas
@@ -449,7 +509,7 @@ export function UserDashboard() {
         </Card>
 
         {/* Tickets Abiertos */}
-        <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-amber-500/10 via-card to-card border-amber-200/50 dark:border-amber-900/50 shadow-sm hover:-translate-y-1">
+        <Card className="hover:shadow-lg transition-all duration-300 bg-linear-to-br from-amber-500/10 via-card to-card border-amber-200/50 dark:border-amber-900/50 shadow-sm hover:-translate-y-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-amber-700 dark:text-amber-400">
               Tickets Abiertos
@@ -559,13 +619,17 @@ export function UserDashboard() {
                   const isPagada = factura.estado === "PAGADA";
                   const isVencida = factura.estado === "VENCIDA";
                   const isPendiente = factura.estado === "PENDIENTE";
+                  const isAbonado = factura.estado === "ABONADO";
+                  const valorFacturado = getValorFacturado(factura);
+                  const saldoPendiente = getSaldoPendiente(factura);
+                  const montoAPagar = saldoPendiente > 0 ? saldoPendiente : valorFacturado;
 
                   return (
                     <div
                       key={factura.id}
                       className={cn(
                         "flex items-center justify-between p-4 border-2 rounded-lg hover:shadow-md transition-all",
-                        isPagada
+                        isPagada || isAbonado
                           ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20"
                           : isVencida
                             ? "border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20"
@@ -576,7 +640,7 @@ export function UserDashboard() {
                         <div
                           className={cn(
                             "font-semibold",
-                            isPagada
+                            isPagada || isAbonado
                               ? "text-green-700 dark:text-green-400"
                               : isVencida
                                 ? "text-red-700 dark:text-red-400"
@@ -594,24 +658,27 @@ export function UserDashboard() {
                           <div
                             className={cn(
                               "font-bold",
-                              isPagada
+                              isPagada || isAbonado
                                 ? "text-green-700 dark:text-green-400"
                                 : isVencida
                                   ? "text-red-700 dark:text-red-400"
                                   : "text-orange-700 dark:text-orange-400",
                             )}
                           >
-                            {formatCurrency(factura.valor)}
+                            {formatCurrency(montoAPagar)}
                           </div>
                           <Badge
                             variant={
-                              factura.estado === "PAGADA"
+                              factura.estado === "PAGADA" || factura.estado === "ABONADO"
                                 ? "default"
                                 : factura.estado === "VENCIDA"
                                   ? "destructive"
                                   : "secondary"
                             }
-                            className="text-xs mt-1 font-semibold"
+                            className={cn(
+                              "text-xs mt-1 font-semibold",
+                              factura.estado === "ABONADO" && "bg-green-600 hover:bg-green-700 text-white"
+                            )}
                           >
                             {factura.estado}
                           </Badge>
